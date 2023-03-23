@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
+import {useTheme} from '@mui/material/styles';
 import {Helmet} from 'react-helmet';
 import {useAtom} from 'jotai';
 import {nip06, getPublicKey} from 'nostr-tools';
@@ -19,9 +20,11 @@ import Close from 'svg/close';
 import Creation from 'svg/creation';
 import Import from 'svg/import';
 import Wallet from 'svg/wallet';
+import Github from 'svg/github';
 
 
 const LoginPage = (_: RouteComponentProps) => {
+    const theme = useTheme();
     const [isSm,] = useMediaBreakPoint();
     const [t,] = useTranslation();
     const [, showModal] = useModal();
@@ -125,6 +128,12 @@ const LoginPage = (_: RouteComponentProps) => {
                     {t('Use NIP-07 Wallet')}
                 </Button>
             </Card>
+            <Box sx={{mt: '20px', fontSize: '0.8em', display: 'flex', justifyContent: 'center'}}>
+                <Box component="a" href="https://github.com/nostr-chat/nostr-chat" target="_blank" rel="noreferrer"
+                     sx={{display: 'inline-flex', alignItems: 'center', color: theme.palette.text.secondary}}>
+                    <Github height={20} style={{marginRight: '4px'}}/> {'Github'}
+                </Box>
+            </Box>
         </Box>
     </>;
 }
