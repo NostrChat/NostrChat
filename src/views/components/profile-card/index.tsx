@@ -8,9 +8,9 @@ import useTranslation from 'hooks/use-translation';
 import Avatar from 'views/components/avatar';
 import CopyToClipboard from 'components/copy-clipboard';
 import {keysAtom, ravenAtom} from 'store';
-import {truncate, truncateMiddle} from 'util/truncate';
 import {Profile} from 'types';
 import KeyVariant from 'svg/key-variant';
+import {truncate, truncateMiddle} from 'util/truncate';
 
 const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => void }) => {
     const {profile, pubkey, onDM} = props;

@@ -7,7 +7,7 @@ import {useAtom} from 'jotai';
 import CloseModal from 'components/close-modal';
 import useModal from 'hooks/use-modal';
 import useTranslation from 'hooks/use-translation';
-import MetadataForm from '../../metadata-form';
+import MetadataForm from 'views/components/metadata-form';
 import {commonTsAtom, ravenAtom} from 'store';
 
 const CreateChannel = (props: { onSuccess: () => void }) => {

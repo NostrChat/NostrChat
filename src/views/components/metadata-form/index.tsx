@@ -5,7 +5,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 
 import useTranslation from 'hooks/use-translation';
-import PictureInput from '../picture-input';
+import PictureInput from 'views/components/picture-input';
 import {Metadata} from 'types';
 
 const MetadataForm = (props: {

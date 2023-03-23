@@ -5,7 +5,7 @@ import Home from 'views/home';
 import Login from 'views/login';
 import Welcome from 'views/welcome';
 import Channel from 'views/channel';
-import DirectMessage from './views/direct-message';
+import DirectMessage from 'views/direct-message';
 import Settings from 'views/settings';
 import SettingsProfile from 'views/settings/profile';
 import SettingsKeys from 'views/settings/keys';

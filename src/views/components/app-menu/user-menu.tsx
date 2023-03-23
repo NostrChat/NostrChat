@@ -5,9 +5,8 @@ import {Box} from '@mui/material';
 import {useTheme} from '@mui/material/styles';
 import {nip19} from 'nostr-tools';
 
-import Avatar from '../avatar';
+import Avatar from 'views/components/avatar';
 import {keysAtom, profileAtom} from 'store';
-import useTranslation from 'hooks/use-translation';
 import {truncateMiddle} from 'util/truncate';
 
 
@@ -15,7 +14,6 @@ const UserMenu = () => {
     const [profile] = useAtom(profileAtom);
     const theme = useTheme();
     const [keys] = useAtom(keysAtom);
-    const [t] = useTranslation();
     const navigate = useNavigate();
 
     if (!keys) {

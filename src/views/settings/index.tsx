@@ -44,7 +44,7 @@ const SettingsPage = (_: RouteComponentProps) => {
     }
 
     return <>
-        <Helmet><title>{t(`NostrChat - Settings`)}</title></Helmet>
+        <Helmet><title>{t('NostrChat - Settings')}</title></Helmet>
         <AppWrapper>
             <AppMenu/>
             <AppContent>

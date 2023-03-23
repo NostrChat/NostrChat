@@ -2,7 +2,7 @@ export const truncateMiddle = (str: string, max: number, sep: string) => {
     max = max || 10;
     const len = str.length;
     if (len > max) {
-        sep = sep || "...";
+        sep = sep || '...';
         const seplen = sep.length;
         if (seplen > max) {
             return str.substring(len - max)
@@ -18,6 +18,6 @@ export const truncate = (str: string, num: number): string => {
     if (str.length <= num) {
         return str;
     }
-    return str.slice(0, num) + "...";
+    return str.slice(0, num) + '...';
 };
 

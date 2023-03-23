@@ -8,7 +8,7 @@ import {Helmet} from 'react-helmet';
 import {useAtom} from 'jotai';
 import {nip06, getPublicKey} from 'nostr-tools';
 
-import {InstallNip07Dialog} from '../components/dialogs/no-wallet/nip07';
+import {InstallNip07Dialog} from 'views/components/dialogs/no-wallet/nip07';
 import ImportAccount from 'views/components/dialogs/import-account';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';

@@ -9,7 +9,7 @@ import Button from '@mui/material/Button';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
 import MetadataForm from 'views/components/metadata-form';
-import {keysAtom, profileAtom, ravenAtom} from '../../store';
+import {keysAtom, profileAtom, ravenAtom} from 'store';
 import Plus from 'svg/plus';
 import Close from 'svg/close';
 

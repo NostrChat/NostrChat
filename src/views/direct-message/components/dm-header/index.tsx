@@ -31,7 +31,7 @@ const DmHeader = () => {
             }}>
                 <Avatar src={profile?.picture} seed={directMessage} size={50} type="user"/>
             </Box>
-            <Box sx={{width: `calc(100% - 110px)`}}>
+            <Box sx={{width: 'calc(100% - 110px)'}}>
                 <Box sx={{
                     fontFamily: 'Faktum, sans-serif',
                     overflow: 'hidden',

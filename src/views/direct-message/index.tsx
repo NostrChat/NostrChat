@@ -31,7 +31,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
 
     useEffect(() => {
         if (!('pub' in props)) {
-            navigate(`/`).then();
+            navigate('/').then();
         }
     }, [props]);
 

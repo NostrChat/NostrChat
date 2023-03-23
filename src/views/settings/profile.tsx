@@ -29,7 +29,7 @@ const SettingsProfilePage = (_: RouteComponentProps) => {
     }, [keys]);
 
     return <>
-        <Helmet><title>{t(`NostrChat - Profile`)}</title></Helmet>
+        <Helmet><title>{t('NostrChat - Profile')}</title></Helmet>
         <AppWrapper>
             <SettingsMenu/>
             <AppContent>

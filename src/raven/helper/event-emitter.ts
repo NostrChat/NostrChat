@@ -1,9 +1,9 @@
-import { EventEmitter } from "events";
+import { EventEmitter } from 'events';
 
 export enum EventEmitterEvents {
-    NewListener = "newListener",
-    RemoveListener = "removeListener",
-    Error = "error",
+    NewListener = 'newListener',
+    RemoveListener = 'removeListener',
+    Error = 'error',
 }
 
 type AnyListener = (...args: any) => any;
@@ -50,7 +50,7 @@ export class TypedEventEmitter<
         return super.listenerCount(event);
     }
 
-    public listeners(event: Events | EventEmitterEvents): ReturnType<EventEmitter["listeners"]> {
+    public listeners(event: Events | EventEmitterEvents): ReturnType<EventEmitter['listeners']> {
         return super.listeners(event);
     }
 
@@ -91,7 +91,7 @@ export class TypedEventEmitter<
         return super.removeListener(event, listener);
     }
 
-    public rawListeners(event: Events | EventEmitterEvents): ReturnType<EventEmitter["rawListeners"]> {
+    public rawListeners(event: Events | EventEmitterEvents): ReturnType<EventEmitter['rawListeners']> {
         return super.rawListeners(event);
     }
 }

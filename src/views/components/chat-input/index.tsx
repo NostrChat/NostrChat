@@ -4,9 +4,9 @@ import {useTheme} from '@mui/material/styles';
 import {lighten} from '@mui/material';
 import Button from '@mui/material/Button';
 import Tools from 'views/components/chat-input/tools';
-import {focusElem} from 'util/dom';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import Send from 'svg/send';
+import {focusElem} from 'util/dom';
 
 const ChatInput = (props: { separator: string, senderFn: (message: string) => void }) => {
     const {senderFn, separator} = props;

@@ -44,7 +44,7 @@ const SettingsKeysPage = (_: RouteComponentProps) => {
     const pub = nip19.npubEncode(keys.pub);
 
     return <>
-        <Helmet><title>{t(`NostrChat - Keys`)}</title></Helmet>
+        <Helmet><title>{t('NostrChat - Keys')}</title></Helmet>
         <AppWrapper>
             <SettingsMenu/>
             <AppContent>

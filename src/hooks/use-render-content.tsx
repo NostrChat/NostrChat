@@ -3,9 +3,9 @@ import Box from '@mui/material/Box';
 import Linkify from 'linkify-react';
 import {IntermediateRepresentation} from 'linkifyjs';
 import Link from '@mui/material/Link';
-import {truncateMiddle} from 'util/truncate';
-import useModal from './use-modal';
+import useModal from 'hooks/use-modal';
 import ExternalLinkDialog from 'components/external-link-dialog';
+import {truncateMiddle} from 'util/truncate';
 
 const useRenderContent = (content: string) => {
     const [, showModal] = useModal();
@@ -39,7 +39,7 @@ const useRenderContent = (content: string) => {
     };
 
     return <Linkify options={{render: renderLink}}>{
-        content.split("\n").map((x, i) => <Box key={i} sx={{mb: '6px'}}>{x}</Box>)
+        content.split('\n').map((x, i) => <Box key={i} sx={{mb: '6px'}}>{x}</Box>)
     }</Linkify>
 }
 

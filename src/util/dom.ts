@@ -8,5 +8,5 @@ export const focusElem = (el: HTMLDivElement) => {
 }
 
 export const insertText = (t: string) => {
-    document.execCommand("insertText", false, t);
+    document.execCommand('insertText', false, t);
 }

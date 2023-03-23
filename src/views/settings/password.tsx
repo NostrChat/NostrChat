@@ -23,7 +23,7 @@ const SettingsPasswordPage = (props: RouteComponentProps) => {
     }, [keys]);
 
     return <>
-        <Helmet><title>{t(`NostrChat - Password protection`)}</title></Helmet>
+        <Helmet><title>{t('NostrChat - Password protection')}</title></Helmet>
         <AppWrapper>
             <SettingsMenu/>
             <AppContent>

@@ -3,8 +3,8 @@ import {TypedEventEmitter} from 'raven/helper/event-emitter';
 import {Channel, ChannelUpdate, DirectMessage, EventDeletion, Keys, Metadata, Profile, PublicMessage} from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
-import {notEmpty} from 'util/misc';
 import {getRelays} from 'helper';
+import {notEmpty} from 'util/misc';
 
 type EventWithRelays = Event;
 
