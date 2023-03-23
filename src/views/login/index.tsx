@@ -121,7 +121,7 @@ const LoginPage = (_: RouteComponentProps) => {
                     </Button>
                 </Box>
                 <Button variant="login" size="large" disableElevation fullWidth onClick={loginNip07}
-                        sx={{mb: '22px', p: '14px'}} startIcon={<Wallet height={20}/>}>
+                        sx={{p: '14px'}} startIcon={<Wallet height={20}/>}>
                     {t('Use NIP-07 Wallet')}
                 </Button>
             </Card>
