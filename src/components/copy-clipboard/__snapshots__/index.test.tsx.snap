@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`1 Default render 1`] = `
+<div>
+  <span
+    aria-label="Copied"
+    class=""
+    data-mui-internal-clone-element="true"
+    style="cursor: pointer;"
+  >
+    click here
+  </span>
+</div>
+`;
