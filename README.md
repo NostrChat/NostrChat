@@ -1,4 +1,6 @@
-<img src="logo.png" width="200">
+# NostrChat
+
+<img src="public/logo192.png" width="100">
 
 NostrChat is one of the most decentralized chat apps ever built. 
 
@@ -12,11 +14,11 @@ Our ReadMe is a summary about NostrChat, what it looks like, and how to use it.
 
 [Nostr](https://github.com/nostr-protocol/nostr) is a simple open protocol for creating censorship-resistant global networks.
 
-## How to run NostrChat locally (optional)
+## How to run NostrChat locally 
 
-Install dependencies with yarn  
+Install dependencies
 ```bash
-$ yarn install --ignore-engines
+$ yarn 
 ```
 
 Start 
@@ -24,16 +26,7 @@ Start
 $ yarn start
 ```
 
-NostrChat will open in your browser. 
-
-## Run on your iPhone browser (optional) 
-
-You can join NostrChat.io on your mobile phone. If you'd like to save NostrChat as an icon on your iPhone follow these instructions. 
-
-## Host your own instance of NostrChat (optional) 
-
-You can host NostrChat on Vercel, or any hosting provider. 
-
+NostrChat will open in your browser.
 
 ## Roadmap 🛣️
 
