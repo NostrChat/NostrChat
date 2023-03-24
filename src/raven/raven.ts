@@ -68,14 +68,6 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }, 1000);
     }
 
-    public addRelay(address: string) {
-        this.relays.push(address);
-    }
-
-    public removeRelay(address: string) {
-        this.relays = this.relays.filter(x => x !== address);
-    }
-
     private fetch(filters: Filter[], unsub: boolean = true) {
         const sub = this.pool.sub(this.relays, filters);
 
