@@ -8,8 +8,6 @@ import {notEmpty} from 'util/misc';
 
 const relays = getRelays();
 
-type EventWithRelays = Event;
-
 export enum RavenEvents {
     Ready = 'ready',
     ProfileUpdate = 'profile_update',
@@ -44,10 +42,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     private ready = false;
     private readyTimer: any = null;
 
-    private eventQueue: EventWithRelays [] = [];
+    private eventQueue: Event [] = [];
     private eventQueueTimer: any;
     private eventQueueFlag = true;
-    private eventQueueBuffer: EventWithRelays [] = [];
+    private eventQueueBuffer: Event [] = [];
 
     private nameCache: Record<string, number> = {};
 
@@ -208,7 +206,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         this.pool.publish(this.writeRelays, event);
     }
 
-    pushToEventBuffer(event: EventWithRelays) {
+    pushToEventBuffer(event: Event) {
         if (!this.ready) {
             clearTimeout(this.readyTimer);
             this.readyTimer = setTimeout(() => {

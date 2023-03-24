@@ -28,7 +28,6 @@ import SettingsContent from 'views/settings/components/settings-content';
 import ConfirmDialog from 'components/confirm-dialog';
 import {keysAtom, ravenAtom} from 'store';
 import {RelayDict} from 'types';
-import {DEFAULT_RELAYS} from 'const';
 import {getRelays} from 'helper';
 import ShareIcon from 'svg/share';
 import DeleteIcon from 'svg/delete';
