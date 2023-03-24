@@ -6,6 +6,8 @@ import uniq from 'lodash.uniq';
 import {getRelays} from 'helper';
 import {notEmpty} from 'util/misc';
 
+const relays = getRelays();
+
 type EventWithRelays = Event;
 
 export enum RavenEvents {
@@ -35,7 +37,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     private readonly priv: string | 'nip07';
     private readonly pub: string;
 
-    private relays: string[];
+    private readonly readRelays = Object.keys(relays).filter(r => relays[r].read);
+    private readonly writeRelays = Object.keys(relays).filter(r => relays[r].write);
 
     // A flag to know if we have initial data loading done. Not guaranteed. For UI purposes.
     private ready = false;
@@ -56,8 +59,6 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         this.priv = priv;
         this.pub = pub;
 
-        this.relays = Object.keys(getRelays());
-
         this.pool = new SimplePool();
 
         this.loadMe();
@@ -69,7 +70,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     private fetch(filters: Filter[], unsub: boolean = true) {
-        const sub = this.pool.sub(this.relays, filters);
+        const sub = this.pool.sub(this.readRelays, filters);
 
         sub.on('event', (event) => {
             this.pushToEventBuffer(event);
@@ -165,7 +166,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async updateChannel(channel: Channel, meta: Metadata) {
-        return this.publish(Kind.ChannelMetadata, [['e', channel.id, this.relays[0]]], JSON.stringify(meta));
+        return this.publish(Kind.ChannelMetadata, [['e', channel.id, this.writeRelays[0]]], JSON.stringify(meta));
     }
 
     public async deleteEvents(ids: string[], why: string = '') {
@@ -173,7 +174,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async sendPublicMessage(channel: Channel, message: string) {
-        return this.publish(Kind.ChannelMessage, [['e', channel.id, this.relays[0], 'root']], message);
+        return this.publish(Kind.ChannelMessage, [['e', channel.id, this.writeRelays[0], 'root']], message);
     }
 
     public async sendDirectMessage(toPubkey: string, message: string) {
@@ -198,13 +199,13 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
         if (this.priv === 'nip07') {
             return window.nostr?.signEvent(event).then(event => {
-                this.pool.publish(this.relays, event);
+                this.pool.publish(this.writeRelays, event);
             });
         }
 
         event.id = getEventHash(event);
         event.sig = signEvent(event, this.priv);
-        this.pool.publish(this.relays, event);
+        this.pool.publish(this.writeRelays, event);
     }
 
     pushToEventBuffer(event: EventWithRelays) {
@@ -349,7 +350,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     close = () => {
-        this.pool.close(this.relays);
+        this.pool.close(this.readRelays);
         this.removeAllListeners();
     }
 
