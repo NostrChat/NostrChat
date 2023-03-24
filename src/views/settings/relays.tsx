@@ -9,6 +9,8 @@ import TableRow from '@mui/material/TableRow';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
+import TableHead from '@mui/material/TableHead';
+import Switch from '@mui/material/Switch';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputAdornment from '@mui/material/InputAdornment';
 import {RouteComponentProps, useNavigate} from '@reach/router';
@@ -41,6 +43,7 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
     const [, showModal] = useModal();
     const [isSm] = useMediaBreakPoint();
     const [raven] = useAtom(ravenAtom);
+    const [prevData, setPrevData] = useState<RelayDict>({});
     const [data, setData] = useState<RelayDict>({});
     const [newAddress, setNewAddress] = useState('');
 
@@ -52,41 +55,21 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
 
 
     const load = () => {
-        setData(getRelays());
+        const d = getRelays();
+        setPrevData(d);
+        setData(d);
     }
 
     useEffect(() => {
         load();
     }, []);
 
-    const canRestore = useMemo(() => JSON.stringify(DEFAULT_RELAYS) !== JSON.stringify(data), [data]);
+    const canSave = useMemo(() => JSON.stringify(prevData) !== JSON.stringify(data), [data, prevData]);
+    const canRestore = useMemo(() => localStorage.getItem('relays') !== null, []);
 
     if (!keys) {
         return null;
     }
-
-    const save = (d: RelayDict) => {
-        localStorage.setItem('relays', JSON.stringify(d));
-        load();
-    }
-
-    /*
-    We might consider to enable this.
-
-    const switchRead = (address: string) => {
-        save({
-            ...data,
-            [address]: {read: !data[address].read, write: data[address].write}
-        });
-    }
-
-    const switchWrite = (address: string) => {
-        save({
-            ...data,
-            [address]: {read: data[address].read, write: !data[address].write}
-        });
-    }
-    */
 
     const add = () => {
         let url;
@@ -109,9 +92,7 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
             return;
         }
 
-        raven?.addRelay(address);
-
-        save({
+        setData({
             ...data,
             [address]: {read: true, write: true}
         });
@@ -119,26 +100,55 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
         setNewAddress('');
     }
 
+    const remove = (address: string) => {
+        let {[address]: _, ...nRelays} = data;
+        setData(nRelays);
+    }
+
+    const switchRead = (address: string) => {
+        setData({
+            ...data,
+            [address]: {read: !data[address].read, write: data[address].write}
+        });
+    }
+
+    const switchWrite = (address: string) => {
+        setData({
+            ...data,
+            [address]: {read: data[address].read, write: !data[address].write}
+        });
+    }
+
+    const save = () => {
+        const read = Object.keys(data).filter(d => data[d].read);
+        if (read.length === 0) {
+            showMessage(t('At least 1 read relay is required'), 'error');
+            return;
+        }
+
+        const write = Object.keys(data).filter(d => data[d].write);
+        if (write.length === 0) {
+            showMessage(t('At least 1 write relay is required'), 'error');
+            return;
+        }
+
+        localStorage.setItem('relays', JSON.stringify(data));
+        window.location.reload();
+    }
+
+    const discard = () => {
+        showModal({
+            body: <ConfirmDialog onConfirm={() => {
+                setData(prevData);
+            }}/>
+        });
+    }
+
     const restore = () => {
         showModal({
             body: <ConfirmDialog onConfirm={() => {
                 localStorage.removeItem('relays');
                 window.location.reload();
-            }}/>
-        });
-    }
-
-    const remove = (address: string) => {
-        if (Object.keys(data).length === 1) {
-            showMessage(t('At least 1 relay required'), 'error');
-            return;
-        }
-
-        showModal({
-            body: <ConfirmDialog onConfirm={() => {
-                raven?.removeRelay(address);
-                const {[address]: _, ...nRelays} = data;
-                save(nRelays);
             }}/>
         });
     }
@@ -157,25 +167,44 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
                 <SettingsHeader section={t('Relays')}/>
                 <SettingsContent>
                     <Box sx={{maxWidth: '800px'}}>
+                        {canRestore && (
+                            <Box sx={{
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                mb: '20px'
+                            }}>
+                                <Button variant="outlined" onClick={restore}>{t('Restore defaults')}</Button>
+                            </Box>
+                        )}
                         <TableContainer component={Paper}>
                             <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>{t('Address')}</TableCell>
+                                        <TableCell>{t('Read')}</TableCell>
+                                        <TableCell>{t('Write')}</TableCell>
+                                        <TableCell></TableCell>
+                                        <TableCell></TableCell>
+                                    </TableRow>
+                                </TableHead>
                                 <TableBody>
                                     {Object.keys(data).map(r => {
                                         return <TableRow key={r}>
                                             <TableCell>{r}</TableCell>
-                                            {/*
-                                            We might consider to enable this.
                                             <TableCell sx={{width: '40px'}}>
-                                                <Switch size="small" checked={data[r].read} onChange={() => {
-                                                    switchRead(r)
-                                                }}/>
+                                                <Switch size="small"
+                                                        checked={data[r].read}
+                                                        onChange={() => {
+                                                            switchRead(r);
+                                                        }}/>
                                             </TableCell>
                                             <TableCell sx={{width: '40px'}}>
-                                                <Switch size="small" checked={data[r].write} onChange={() => {
-                                                    switchWrite(r)
-                                                }}/>
+                                                <Switch size="small"
+                                                        checked={data[r].write}
+                                                        onChange={() => {
+                                                            switchWrite(r);
+                                                        }}/>
                                             </TableCell>
-                                            */}
                                             <TableCell sx={{width: '70px'}}>
                                                 <Button size="small" startIcon={<ShareIcon height={20}/>}
                                                         onClick={() => {
@@ -220,14 +249,15 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
                                                    }
                                                }}/>
                             </Box>
-                            {canRestore && (
+                            {canSave && (
                                 <Box sx={{
                                     width: isSm ? '200px' : null,
                                     display: 'flex',
                                     justifyContent: isSm ? 'flex-end' : null,
                                     mt: !isSm ? '10px' : null
                                 }}>
-                                    <Button variant="outlined" onClick={restore}>{t('Restore defaults')}</Button>
+                                    <Button variant="contained" onClick={save} sx={{mr: '6px'}}>{t('Save')}</Button>
+                                    <Button variant="outlined" onClick={discard}>{t('Discard')}</Button>
                                 </Box>
                             )}
                         </Box>
