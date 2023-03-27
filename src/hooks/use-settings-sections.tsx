@@ -1,7 +1,5 @@
 import React from 'react';
-import {useAtom} from 'jotai';
 import useTranslation from 'hooks/use-translation';
-import {keysAtom} from 'store';
 import Account from 'svg/account';
 import Server from 'svg/server';
 import KeyChain from 'svg/key-chain';
@@ -9,7 +7,6 @@ import Lock from 'svg/lock';
 
 const useSettingsSections = () => {
     const [t] = useTranslation();
-    const [keys] = useAtom(keysAtom);
 
     return [
         {
@@ -29,7 +26,7 @@ const useSettingsSections = () => {
             title: t('Password protection'),
             description: t('Secure your private key with a password'),
             href: '/settings/password',
-            hidden: keys?.priv === 'nip07'
+            hidden: true //keys?.priv === 'nip07'
         },
         {
             icon: <Server height={40}/>,
