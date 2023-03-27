@@ -29,7 +29,7 @@ const useSettingsSections = () => {
             title: t('Password protection'),
             description: t('Secure your private key with a password'),
             href: '/settings/password',
-            hidden: keys?.priv === 'nip07'
+            hidden: true //keys?.priv === 'nip07'
         },
         {
             icon: <Server height={40}/>,
