@@ -15,8 +15,6 @@ import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
 import {keysAtom, profileAtom} from 'store';
-import Plus from 'svg/plus';
-import Close from 'svg/close';
 import Creation from 'svg/creation';
 import Import from 'svg/import';
 import Wallet from 'svg/wallet';
@@ -94,15 +92,10 @@ const LoginPage = (_: RouteComponentProps) => {
             <Card sx={{
                 p: '26px 32px 46px 32px',
             }}>
-                <Plus width={44}/><Close width={44} style={{marginLeft: '-14px'}}/>
-                <Box sx={{
-                    fontFamily: 'Faktum, sans-serif',
-                    fontWeight: 'bold',
-                    fontSize: '2.5em',
-                    textAlign: 'center'
-                }}>
-                    {isSm ? t('Welcome to NostrChat') : t('Welcome')}
-                </Box>
+                <Box component="img" src="/logo-large-white.png" sx={{
+                    width: '100%',
+                    m: '20px 0 10px 0'
+                }} />
                 <Divider sx={{m: '28px 0'}}/>
                 <Box sx={{color: 'text.secondary', mb: '28px'}}>{t('Sign in to get started')}</Box>
                 <Box sx={{
