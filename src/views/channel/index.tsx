@@ -89,7 +89,7 @@ const ChannelPage = (props: RouteComponentProps) => {
         return () => {
             window.removeEventListener('chat-view-top', fetchPrev);
         }
-    }, [messages, channel]);
+    }, [messages, channel, hasMore]);
 
     if (!keys) {
         return null;

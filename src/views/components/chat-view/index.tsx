@@ -68,8 +68,8 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
         } else {
             if (firstMessageEl) {
                 ref.current!.style.overflowY = 'auto';
-                if(firstMessageEl.previousSibling){
-                    (firstMessageEl.previousSibling as HTMLDivElement).scrollIntoView( true);
+                if (firstMessageEl.previousSibling) {
+                    (firstMessageEl.previousSibling as HTMLDivElement).scrollIntoView(true);
                 }
                 setFirstMessageEl(null);
             }
