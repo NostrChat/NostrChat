@@ -285,14 +285,6 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     pushToEventBuffer(event: Event) {
-        if (!this.ready) {
-            clearTimeout(this.readyTimer);
-            this.readyTimer = setTimeout(() => {
-                this.ready = true;
-                // this.emit(RavenEvents.Ready);
-            }, 1000);
-        }
-
         const cacheKey = `${event.id}_emitted`
         if (this.nameCache[cacheKey] === undefined) {
             if (this.eventQueueFlag) {
