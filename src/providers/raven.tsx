@@ -32,17 +32,17 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
     const [publicMessages, setPublicMessages] = useAtom(publicMessagesAtom);
     const [directMessages, setDirectMessages] = useAtom(directMessagesAtom);
     const [, setDirectContacts] = useAtom(directContactsAtom);
-    const [since, setSince] = useState<number>(Date.now())
+    const [since, setSince] = useState<number>(0)
 
     const raven = useMemo(() => initRaven(keys), [keys]);
 
     useEffect(() => {
-        console.log('hereee')
+        if (!ravenReady) return;
+
         const timer = setTimeout(() => {
-            if (!ravenReady) return;
-            raven?.listen(channels.map(x => x.id), Math.floor(since / 1000));
+            raven?.listen(channels.map(x => x.id), Math.floor((since || Date.now()) / 1000));
             setSince(Date.now());
-        }, 10000)
+        }, since === 0 ? 500 : 10000);
 
         return () => {
             clearTimeout(timer);
