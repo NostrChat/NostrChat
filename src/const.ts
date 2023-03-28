@@ -10,7 +10,6 @@ export const DEFAULT_RELAYS: RelayDict = {
 
 export const MESSAGE_PER_PAGE = 30;
 export const ACCEPTABLE_LESS_PAGE_MESSAGES = 5;
-export const SCROLL_TOP_MARGIN = 200;
 export const SCROLL_DETECT_THRESHOLD = 5;
 
 export const GLOBAL_CHAT: Channel = {

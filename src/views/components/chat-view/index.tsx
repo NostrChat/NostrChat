@@ -6,7 +6,7 @@ import {useTheme} from '@mui/material/styles';
 import MessageView from 'views/components/message-view';
 import {formatMessageDate, formatMessageTime} from 'helper';
 import {Message} from 'types';
-import {SCROLL_TOP_MARGIN, SCROLL_DETECT_THRESHOLD} from 'const';
+import {SCROLL_DETECT_THRESHOLD} from 'const';
 
 const ChatView = (props: { messages: Message[], separator: string, loading?: boolean }) => {
     const {separator, messages, loading} = props;
@@ -71,7 +71,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
                 // enable scroll
                 ref.current!.style.overflowY = 'auto';
                 // scroll to previous top message element
-                ref.current!.scrollTop = scrollTo.offsetTop - SCROLL_TOP_MARGIN;
+                ref.current!.scrollTop = scrollTo.offsetTop - scrollTo.clientHeight;
                 setScrollTo(null);
             }
         }
