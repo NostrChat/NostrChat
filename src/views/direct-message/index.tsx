@@ -12,7 +12,7 @@ import useTranslation from 'hooks/use-translation';
 import useLiveDirectMessages from 'hooks/use-live-direct-messages';
 import {
     directContactsAtom,
-    directMessageAtom,
+    directMessageAtom, directMessagesAtom,
     keysAtom,
     ravenAtom,
     ravenReadyAtom
@@ -24,6 +24,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     const navigate = useNavigate();
     const [t] = useTranslation();
     const [directMessage, setDirectMessage] = useAtom(directMessageAtom);
+    const [directMessages, setDirectMessages] = useAtom(directMessagesAtom);
     const [directContacts] = useAtom(directContactsAtom);
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [raven] = useAtom(ravenAtom);
@@ -50,6 +51,27 @@ const DirectMessagePage = (props: RouteComponentProps) => {
             }
         }
     }, [props, directContacts]);
+
+    useEffect(() => {
+        if (directMessage) {
+            // decrypt messages one by one.
+            const decrypted = directMessages.filter(m => m.peer === directMessage).find(x => !x.decrypted);
+            if (decrypted) {
+                window.nostr?.nip04.decrypt(decrypted.peer, decrypted.content).then(content => {
+                    setDirectMessages(directMessages.map(m => {
+                        if (m.id === decrypted.id) {
+                            return {
+                                ...m,
+                                content,
+                                decrypted: true
+                            }
+                        }
+                        return m;
+                    }));
+                })
+            }
+        }
+    }, [directMessages, directMessage]);
 
     if (!('pub' in props) || !keys) {
         return null;
