@@ -55,28 +55,6 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
         })));
     }, [directMessages]);
 
-    useEffect(() => {
-        for (const c of channels) {
-            raven?.loadChannel(c.id);
-        }
-    }, [raven, channels]);
-
-    useEffect(() => {
-        // Import channels from the user's messages
-        // Find messages which their channel is not exists in the channels atom.
-        const orphanMessages = publicMessages.filter(x =>
-            (x.creator === keys?.pub) &&
-            (channels.find(y => y.id === x.channelId) === undefined) &&
-            // Skip deleted messages
-            (eventDeletions.find(y => y.eventId === x.channelId) === undefined)
-        );
-
-        for (const m of orphanMessages) {
-            raven?.loadId(m.channelId);
-            raven?.loadChannel(m.channelId);
-        }
-    }, [raven, publicMessages, keys, channels, eventDeletions]);
-
     // Ready state handler
     const handleReadyState = () => {
         logger.info('handleReadyState');

@@ -39,7 +39,7 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
     };
 
     const ps = isMd ? '24px' : '10px';
-    return <Box ref={holderEl} sx={{
+    return <Box className="message" ref={holderEl} sx={{
         display: 'flex',
         p: `${!compactView ? '15px' : '3px'} ${ps} 0 ${ps}`,
         ':hover': {
