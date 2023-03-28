@@ -93,7 +93,8 @@ const LoginPage = (_: RouteComponentProps) => {
                 p: '26px 32px 46px 32px',
             }}>
                 <Box component="img" src="/logo-large-white.png" sx={{
-                    width: '100%',
+                    width: isSm ? '526px' : '100%',
+                    height: isSm ? '132px' : null,
                     m: '20px 0 10px 0'
                 }} />
                 <Divider sx={{m: '28px 0'}}/>
