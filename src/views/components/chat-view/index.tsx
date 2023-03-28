@@ -13,7 +13,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
     const theme = useTheme();
     const ref = useRef<HTMLDivElement | null>(null);
     const [isBottom, setIsBottom] = useState(true);
-    const [scrollTo, setScrollTo] = useState<HTMLDivElement | null>(null);
+    const [firstMessageEl, setFirstMessageEl] = useState<HTMLDivElement | null>(null);
 
     const scrollToBottom = () => {
         ref.current!.scroll({top: ref.current!.scrollHeight, behavior: 'auto'});
@@ -61,18 +61,17 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
     }, [isBottom]);
 
     useEffect(() => {
+        // After loading new messages, scrolls to the first one of them.
         if (loading) {
-            // disable scroll
             ref.current!.style.overflowY = 'hidden';
-            // find top message element and save it to state
-            setScrollTo(ref.current!.querySelector('.message') as HTMLDivElement);
+            setFirstMessageEl(ref.current!.querySelector('.message') as HTMLDivElement);
         } else {
-            if (scrollTo) {
-                // enable scroll
+            if (firstMessageEl) {
                 ref.current!.style.overflowY = 'auto';
-                // scroll to previous top message element
-                ref.current!.scrollTop = scrollTo.offsetTop - scrollTo.clientHeight;
-                setScrollTo(null);
+                if(firstMessageEl.previousSibling){
+                    (firstMessageEl.previousSibling as HTMLDivElement).scrollIntoView( true);
+                }
+                setFirstMessageEl(null);
             }
         }
     }, [loading])
