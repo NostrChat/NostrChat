@@ -6,12 +6,14 @@ import {useTheme} from '@mui/material/styles';
 import MessageView from 'views/components/message-view';
 import {formatMessageDate, formatMessageTime} from 'helper';
 import {Message} from 'types';
+import {SCROLL_TOP_MARGIN, SCROLL_DETECT_THRESHOLD} from 'const';
 
-const ChatView = (props: { messages: Message[], separator: string }) => {
-    const {separator, messages} = props;
+const ChatView = (props: { messages: Message[], separator: string, loading?: boolean }) => {
+    const {separator, messages, loading} = props;
     const theme = useTheme();
     const ref = useRef<HTMLDivElement | null>(null);
     const [isBottom, setIsBottom] = useState(true);
+    const [scrollTo, setScrollTo] = useState<HTMLDivElement | null>(null);
 
     const scrollToBottom = () => {
         ref.current!.scroll({top: ref.current!.scrollHeight, behavior: 'auto'});
@@ -30,8 +32,12 @@ const ChatView = (props: { messages: Message[], separator: string }) => {
         const handleScroll = () => {
             clearTimeout(scrollTimer);
             scrollTimer = setTimeout(() => {
-                const isBottom = Math.abs((div!.scrollHeight - div!.scrollTop) - div!.clientHeight) <= 5
+                const isBottom = Math.abs((div!.scrollHeight - div!.scrollTop) - div!.clientHeight) <= SCROLL_DETECT_THRESHOLD
                 setIsBottom(isBottom);
+                const isTop = (div!.scrollHeight > div!.clientHeight) && div!.scrollTop < SCROLL_DETECT_THRESHOLD;
+                if (isTop) {
+                    window.dispatchEvent(new Event('chat-view-top', {bubbles: true}))
+                }
             }, 50);
         }
 
@@ -53,6 +59,23 @@ const ChatView = (props: { messages: Message[], separator: string }) => {
             window.removeEventListener('chat-media-loaded', imageLoaded)
         }
     }, [isBottom]);
+
+    useEffect(() => {
+        if (loading) {
+            // disable scroll
+            ref.current!.style.overflowY = 'hidden';
+            // find top message element and save it to state
+            setScrollTo(ref.current!.querySelector('.message') as HTMLDivElement);
+        } else {
+            if (scrollTo) {
+                // enable scroll
+                ref.current!.style.overflowY = 'auto';
+                // scroll to previous top message element
+                ref.current!.scrollTop = scrollTo.offsetTop - SCROLL_TOP_MARGIN;
+                setScrollTo(null);
+            }
+        }
+    }, [loading])
 
     return <Box ref={ref} sx={{
         overflowY: 'auto',

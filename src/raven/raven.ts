@@ -4,6 +4,7 @@ import {Channel, ChannelUpdate, DirectMessage, EventDeletion, Keys, Metadata, Pr
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
 import {getRelays} from 'helper';
+import {MESSAGE_PER_PAGE} from 'const';
 import {notEmpty} from 'util/misc';
 
 const relays = getRelays();
@@ -62,34 +63,21 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     private async init() {
-        ((): Promise<Event[]> => {
-            const filters: Filter[] = [{
-                kinds: [Kind.Metadata, Kind.EventDeletion, Kind.ChannelCreation],
-                authors: [this.pub],
-            }, {
-                kinds: [Kind.ChannelMessage],
-                authors: [this.pub],
-            }, {
-                kinds: [Kind.EncryptedDirectMessage],
-                authors: [this.pub],
-            }, {
-                kinds: [Kind.EncryptedDirectMessage],
-                '#p': [this.pub]
-            }];
+        const filters: Filter[] = [{
+            kinds: [Kind.Metadata, Kind.EventDeletion, Kind.ChannelCreation],
+            authors: [this.pub],
+        }, {
+            kinds: [Kind.ChannelMessage],
+            authors: [this.pub],
+        }, {
+            kinds: [Kind.EncryptedDirectMessage],
+            authors: [this.pub],
+        }, {
+            kinds: [Kind.EncryptedDirectMessage],
+            '#p': [this.pub]
+        }];
 
-            return new Promise((resolve) => {
-                const sub = this.pool.sub(this.readRelays, filters);
-                const events: Event[] = [];
-                sub.on('event', (event) => {
-                    events.push(event);
-                });
-
-                sub.on('eose', () => {
-                    sub.unsub();
-                    resolve(events);
-                });
-            })
-        })().then((resp) => {
+        this.fetchP(filters).then((resp) => {
             const deletions = resp.filter(x => x.kind === Kind.EventDeletion).map(x => Raven.findTagValue(x, 'e'));
             const events = resp.sort((a, b) => b.created_at - a.created_at);
 
@@ -126,7 +114,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 ...channels.map(c => ({
                     kinds: [Kind.ChannelMessage],
                     '#e': [c],
-                    limit: 30
+                    limit: MESSAGE_PER_PAGE
                 })),
                 ...directContacts.map(x => ({
                     kinds: [Kind.EncryptedDirectMessage],
@@ -148,6 +136,21 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         });
     }
 
+    public fetchPrevMessages(channel: string, until: number) {
+        return this.fetchP([{
+            kinds: [Kind.ChannelMessage],
+            '#e': [channel],
+            until,
+            limit: MESSAGE_PER_PAGE
+        }]).then(events => {
+            events.forEach((ev) => {
+                this.pushToEventBuffer(ev)
+            });
+
+            return events.length;
+        })
+    }
+
     private fetch(filters: Filter[], unsub: boolean = true) {
         const sub = this.pool.sub(this.readRelays, filters);
 
@@ -162,6 +165,22 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         });
 
         return sub;
+    }
+
+    private fetchP(filters: Filter[]): Promise<Event[]> {
+        return new Promise((resolve) => {
+            const sub = this.pool.sub(this.readRelays, filters);
+            const events: Event[] = [];
+
+            sub.on('event', (event) => {
+                events.push(event);
+            });
+
+            sub.on('eose', () => {
+                sub.unsub();
+                resolve(events);
+            });
+        })
     }
 
     public loadId(id: string) {

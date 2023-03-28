@@ -1,4 +1,4 @@
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {useAtom} from 'jotai';
 import {RouteComponentProps, useNavigate} from '@reach/router';
 import {Helmet} from 'react-helmet';
@@ -14,7 +14,7 @@ import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom} from 'store';
 import {RavenEvents} from 'raven/raven';
-import {GLOBAL_CHAT} from 'const';
+import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {Channel} from 'types';
 
 
@@ -29,6 +29,8 @@ const ChannelPage = (props: RouteComponentProps) => {
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [raven] = useAtom(ravenAtom);
     const [commonTs] = useAtom(commonTsAtom);
+    const [loading, setLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
 
     useEffect(() => {
         if (!('channel' in props)) {
@@ -68,6 +70,27 @@ const ChannelPage = (props: RouteComponentProps) => {
         }
     }, [channels, commonTs, raven]);
 
+    useEffect(() => {
+        const fetchPrev = () => {
+            if (!hasMore) {
+                return;
+            }
+            setLoading(true);
+            raven?.fetchPrevMessages(channel!.id, messages[0].created).then((num) => {
+                if (num < (MESSAGE_PER_PAGE - ACCEPTABLE_LESS_PAGE_MESSAGES)) {
+                    setHasMore(false);
+                }
+            }).finally(() => {
+                setLoading(false);
+            })
+        }
+        window.addEventListener('chat-view-top', fetchPrev);
+
+        return () => {
+            window.removeEventListener('chat-view-top', fetchPrev);
+        }
+    }, [messages, channel]);
+
     if (!keys) {
         return null;
     }
@@ -86,9 +109,9 @@ const ChannelPage = (props: RouteComponentProps) => {
             <AppMenu/>
             <AppContent>
                 <ChannelHeader/>
-                <ChatView separator={channel.id} messages={messages}/>
+                <ChatView separator={channel.id} messages={messages} loading={loading}/>
                 <ChatInput separator={channel.id} senderFn={(message: string) => {
-                    raven?.sendPublicMessage(channel, message);
+                    raven?.sendPublicMessage(channel, message).then();
                 }}/>
             </AppContent>
         </AppWrapper>
