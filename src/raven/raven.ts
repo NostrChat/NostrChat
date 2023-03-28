@@ -39,9 +39,6 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     private readonly readRelays = Object.keys(relays).filter(r => relays[r].read);
     private readonly writeRelays = Object.keys(relays).filter(r => relays[r].write);
 
-    private ready = false;
-    private readyTimer: any = null;
-
     private eventQueue: Event [] = [];
     private eventQueueTimer: any;
     private eventQueueFlag = true;

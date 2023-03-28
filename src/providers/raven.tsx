@@ -37,6 +37,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
     const raven = useMemo(() => initRaven(keys), [keys]);
 
     useEffect(() => {
+        console.log('hereee')
         const timer = setTimeout(() => {
             if (!ravenReady) return;
             raven?.listen(channels.map(x => x.id), Math.floor(since / 1000));
