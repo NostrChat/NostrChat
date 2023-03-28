@@ -4,7 +4,7 @@ import {Channel, ChannelUpdate, DirectMessage, EventDeletion, Keys, Metadata, Pr
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
 import {getRelays} from 'helper';
-import {MESSAGE_PER_PAGE} from 'const';
+import {GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {notEmpty} from 'util/misc';
 
 const relays = getRelays();
@@ -95,6 +95,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
                 return undefined;
             }).filter(x => !deletions.includes(x)).filter(notEmpty));
+
+            if (!channels.includes(GLOBAL_CHAT.id)) {
+                channels.push(GLOBAL_CHAT.id)
+            }
 
             const directContacts = uniq(events.map(x => {
                 if (x.kind === Kind.EncryptedDirectMessage) {
