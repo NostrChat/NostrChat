@@ -18,3 +18,4 @@ export const directMessagesAtom = atom<DirectMessage[]>([]);
 export const directContactsAtom = atom<{pub: string, npub: string}[] | []>([]);
 export const directMessageAtom = atom<string | null>(null);
 export const commonTsAtom = atom<number>(0);
+export const backupWarnAtom = atom<boolean>(false);

@@ -68,7 +68,7 @@ const SettingsKeysPage = (_: RouteComponentProps) => {
                         const priv = nip19.nsecEncode(keys.priv);
                         return <>
                             <Box sx={{mb: '30px', color: theme.palette.text.secondary, fontSize: '0.8em'}}>
-                                {t('Please make sure you have back up of your private key.')}
+                                {t('Please make sure you save a copy of your private key.')}
                             </Box>
                             <TextField sx={{mb: '30px'}} label={t('Private key')} value={reveal ? priv : 'x'.repeat(64)}
                                        fullWidth
