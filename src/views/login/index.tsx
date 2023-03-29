@@ -14,7 +14,7 @@ import ImportAccount from 'views/components/dialogs/import-account';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
-import {keysAtom, profileAtom} from 'store';
+import {keysAtom, profileAtom, backupWarnAtom} from 'store';
 import Creation from 'svg/creation';
 import Import from 'svg/import';
 import Wallet from 'svg/wallet';
@@ -28,6 +28,7 @@ const LoginPage = (_: RouteComponentProps) => {
     const [, showModal] = useModal();
     const [, setKeys] = useAtom(keysAtom);
     const [profile, setProfile] = useAtom(profileAtom);
+    const [, setBackupWarn] = useAtom(backupWarnAtom);
     const navigate = useNavigate();
     const [redirFlag, setRedirFlag] = useState(false);
 
@@ -46,6 +47,7 @@ const LoginPage = (_: RouteComponentProps) => {
     const createAccount = () => {
         const priv = nip06.privateKeyFromSeedWords(nip06.generateSeedWords());
         proceed(priv);
+        setBackupWarn(true);
     }
 
     const importAccount = () => {
