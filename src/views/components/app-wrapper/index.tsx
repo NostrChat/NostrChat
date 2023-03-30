@@ -4,20 +4,25 @@ import {useNavigate} from '@reach/router';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import useTranslation from 'hooks/use-translation';
+import useMediaBreakPoint from 'hooks/use-media-break-point';
 import {backupWarnAtom} from 'store';
 import Alert from 'svg/alert';
 
 
 const AppWrapper = (props: { children: React.ReactNode }) => {
     const theme = useTheme();
+    const [isSm] = useMediaBreakPoint();
     const [t,] = useTranslation();
     const navigate = useNavigate();
     const [backupWarn, setBackupWarn] = useAtom(backupWarnAtom);
+
+    const warnHeight = isSm ? '36px' : '50px';
+
     return <>
         {backupWarn && (
             <Box sx={{
                 width: '100%',
-                height: '36px',
+                height: warnHeight,
                 background: theme.palette.warning.main,
                 color: '#000',
                 fontSize: '0.9em',
@@ -32,15 +37,23 @@ const AppWrapper = (props: { children: React.ReactNode }) => {
                     navigate('/settings/keys').then();
                     setBackupWarn(false);
                 }}>
-                    <Alert height={18}
-                           style={{marginRight: '6px'}}/> {t('Please take a moment to save a copy of your private key.')}
+                    <Box sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mr: '10px',
+                        ml: isSm ? null : '10px'
+                    }}>
+                        <Alert height={18}/>
+                    </Box>
+                    {t('Please take a moment to save a copy of your private key.')}
                 </Box>
             </Box>
         )}
         <Box sx={{
             flexGrow: 1,
             width: '100%',
-            height: backupWarn ? 'calc(100% - 36px)' : '100%',
+            height: backupWarn ? `calc(100% - ${warnHeight})` : '100%',
             overflow: 'hidden',
             display: 'flex',
         }}>
