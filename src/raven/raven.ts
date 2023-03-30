@@ -109,9 +109,13 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
             const filters: Filter[] = [
                 {
-                    kinds: [Kind.ChannelCreation, Kind.EventDeletion, Kind.ChannelMetadata,],
+                    kinds: [Kind.ChannelCreation],
                     ids: channels
                 },
+                ...channels.map(c => ({
+                    kinds: [Kind.ChannelMetadata, Kind.EventDeletion],
+                    '#e': [c],
+                })),
                 ...channels.map(c => ({
                     kinds: [Kind.ChannelMessage],
                     '#e': [c],
