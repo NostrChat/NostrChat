@@ -27,19 +27,10 @@
     <meta name="twitter:description" content="A decentralized chat application"/>
     <meta name="twitter:image" content="https://www.nostrchat.io/logo512.png"/>
     <script>
-      let lastTime = (new Date()).getTime();
-      const checkInterval = 10000;
 
-      setInterval(function () {
-        const currentTime = (new Date()).getTime();
-
-        if (currentTime > (lastTime + checkInterval * 2)) {  // ignore small delays
-          console.log("wakeup");
-        }
-
-        lastTime = currentTime;
-      }, checkInterval);
-
+      document.addEventListener("visibilitychange", function() {
+        window.alert('visibilitychange : ' + document.visibilityState);
+      }, false);
     </script>
   </head>
   <body>
