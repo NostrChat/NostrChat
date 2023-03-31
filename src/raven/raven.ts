@@ -188,12 +188,24 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         })
     }
 
-    public loadId(id: string) {
-        const cacheKey = `${id}_loaded_id`;
-        if (this.nameCache[cacheKey] === undefined) {
-            this.fetch([{ids: [id]}]);
-            this.nameCache[cacheKey] = 1;
-        }
+    public loadChannel(id: string) {
+        const filters: Filter[] = [
+            {
+                kinds: [Kind.ChannelCreation],
+                ids: [id]
+            },
+            {
+                kinds: [Kind.ChannelMetadata, Kind.EventDeletion],
+                '#e': [id],
+            },
+            {
+                kinds: [Kind.ChannelMessage],
+                '#e': [id],
+                limit: MESSAGE_PER_PAGE
+            }
+        ];
+
+        this.fetch(filters);
     }
 
     public loadProfiles(pubs: string[]) {
@@ -234,6 +246,18 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }], false);
     }
 
+    private async findHealthyRelay(relays: string[]) {
+        for (const relay of relays) {
+            try {
+                await this.pool.ensureRelay(relay);
+                return relay;
+            } catch (e) {
+            }
+        }
+
+        throw new Error("Couldn't find a working relay");
+    }
+
     public async updateProfile(profile: Metadata) {
         return this.publish(Kind.Metadata, [], JSON.stringify(profile));
     }
@@ -243,7 +267,9 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async updateChannel(channel: Channel, meta: Metadata) {
-        return this.publish(Kind.ChannelMetadata, [['e', channel.id, this.writeRelays[0]]], JSON.stringify(meta));
+        return this.findHealthyRelay(this.pool.seenOn(channel.id)).then(relay => {
+            return this.publish(Kind.ChannelMetadata, [['e', channel.id, relay]], JSON.stringify(meta));
+        });
     }
 
     public async deleteEvents(ids: string[], why: string = '') {
@@ -251,7 +277,9 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async sendPublicMessage(channel: Channel, message: string) {
-        return this.publish(Kind.ChannelMessage, [['e', channel.id, this.writeRelays[0], 'root']], message);
+        return this.findHealthyRelay(this.writeRelays).then(relay => {
+            return this.publish(Kind.ChannelMessage, [['e', channel.id, relay, 'root']], message);
+        });
     }
 
     public async sendDirectMessage(toPubkey: string, message: string) {
@@ -263,26 +291,42 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(Kind.RecommendRelay, [], relay);
     }
 
-    async publish(kind: number, tags: Array<any>[], content: string) {
-        const event: Event = {
-            kind,
-            tags,
-            pubkey: this.pub,
-            content,
-            created_at: Math.floor(Date.now() / 1000),
-            id: '',
-            sig: ''
-        }
+    private publish(kind: number, tags: Array<any>[], content: string): Promise<Event> {
+        return new Promise((resolve, reject) => {
+            this.signEvent({
+                kind,
+                tags,
+                pubkey: this.pub,
+                content,
+                created_at: Math.floor(Date.now() / 1000),
+                id: '',
+                sig: ''
+            }).then(event => {
+                if (!event) {
+                    reject("Couldn't sign event!");
+                    return;
+                }
 
-        if (this.priv === 'nip07') {
-            return window.nostr?.signEvent(event).then(event => {
                 this.pool.publish(this.writeRelays, event);
-            });
-        }
+                // TODO: .on('ok') doesn't work!!!
 
-        event.id = getEventHash(event);
-        event.sig = signEvent(event, this.priv);
-        this.pool.publish(this.writeRelays, event);
+                resolve(event);
+            }).catch(() => {
+                reject("Couldn't sign event!");
+            })
+        })
+    }
+
+    private async signEvent(event: Event): Promise<Event | undefined> {
+        if (this.priv === 'nip07') {
+            return window.nostr?.signEvent(event);
+        } else {
+            return {
+                ...event,
+                id: getEventHash(event),
+                sig: signEvent(event, this.priv)
+            };
+        }
     }
 
     pushToEventBuffer(event: Event) {
@@ -337,10 +381,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
         const channelUpdates: ChannelUpdate[] = this.eventQueue.filter(x => x.kind === Kind.ChannelMetadata).map(ev => {
             const content = Raven.parseJson(ev.content);
-            const channelId = ev.tags[0][1];
-            if (!channelId) {
-                return null;
-            }
+            const channelId = Raven.findTagValue(ev, 'e');
+            if (!channelId) return null;
             return content ? {
                 id: ev.id,
                 creator: ev.pubkey,
@@ -354,8 +396,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }
 
         const deletions: EventDeletion[] = this.eventQueue.filter(x => x.kind === Kind.EventDeletion).map(ev => {
+            const eventId = Raven.findTagValue(ev, 'e');
+            if (!eventId) return null;
             return {
-                eventId: ev.tags[0][1],
+                eventId,
                 why: ev.content || ''
             };
         }).filter(notEmpty).flat();
@@ -364,11 +408,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }
 
         const publicMessages: PublicMessage[] = this.eventQueue.filter(x => x.kind === Kind.ChannelMessage).map(ev => {
-                const channelId = ev.tags[0][1];
-                if (!channelId) {
-                    return null;
-                }
-
+                const channelId = Raven.findTagValue(ev, 'e');
+                if (!channelId) return null;
                 return ev.content ? {
                     id: ev.id,
                     channelId,
@@ -383,11 +424,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }
 
         Promise.all(this.eventQueue.filter(x => x.kind === Kind.EncryptedDirectMessage).map(ev => {
-            const receiver = ev.tags.find(([tag]) => tag === 'p')?.[1];
-
-            if (!receiver) {
-                return null;
-            }
+            const receiver = Raven.findTagValue(ev, 'p');
+            if (!receiver) return null;
 
             const peer = receiver === this.pub ? ev.pubkey : receiver;
             const msg = {

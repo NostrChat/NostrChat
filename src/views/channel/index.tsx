@@ -12,6 +12,7 @@ import useTranslation from 'hooks/use-translation';
 import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
+import useToast from 'hooks/use-toast';
 import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom} from 'store';
 import {RavenEvents} from 'raven/raven';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
@@ -22,6 +23,7 @@ const ChannelPage = (props: RouteComponentProps) => {
     const [keys] = useAtom(keysAtom);
     const navigate = useNavigate();
     const [t] = useTranslation();
+    const [, showMessage] = useToast();
     const channels = useLiveChannels();
     const channel = useLiveChannel();
     const messages = useLivePublicMessages(channel?.id);
@@ -111,7 +113,9 @@ const ChannelPage = (props: RouteComponentProps) => {
                 <ChannelHeader/>
                 <ChatView separator={channel.id} messages={messages} loading={loading}/>
                 <ChatInput separator={channel.id} senderFn={(message: string) => {
-                    raven?.sendPublicMessage(channel, message).then();
+                    raven?.sendPublicMessage(channel, message).catch(e => {
+                        showMessage(e, 'error');
+                    });
                 }}/>
             </AppContent>
         </AppWrapper>
