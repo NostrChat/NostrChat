@@ -36,6 +36,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
 
     const raven = useMemo(() => initRaven(keys), [keys]);
 
+    // Listen for events in an interval.
     useEffect(() => {
         if (!ravenReady) return;
 
@@ -48,6 +49,22 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
             clearTimeout(timer);
         }
     }, [since, ravenReady, raven, channels]);
+
+    // Trigger listen once the window visibility changes.
+    const visibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+            raven?.listen(channels.map(x => x.id), Math.floor((since || Date.now()) / 1000));
+            setSince(Date.now());
+        }
+    }
+    useEffect(() => {
+        document.addEventListener('visibilitychange', visibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', visibilityChange);
+        }
+    }, [since, ravenReady, raven, channels]);
+
 
     useEffect(() => {
         setDirectContacts([...new Set(directMessages.map(x => x.peer))].map(p => ({
