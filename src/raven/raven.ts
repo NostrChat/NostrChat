@@ -243,7 +243,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async updateChannel(channel: Channel, meta: Metadata) {
-        return this.publish(Kind.ChannelMetadata, [['e', channel.id, this.writeRelays[0]]], JSON.stringify(meta));
+        return this.publish(Kind.ChannelMetadata, [['e', channel.id, this.pool.seenOn(channel.id)[0]]], JSON.stringify(meta));
     }
 
     public async deleteEvents(ids: string[], why: string = '') {
@@ -251,7 +251,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async sendPublicMessage(channel: Channel, message: string) {
-        return this.publish(Kind.ChannelMessage, [['e', channel.id, this.writeRelays[0], 'root']], message);
+        return this.publish(Kind.ChannelMessage, [['e', channel.id, this.pool.seenOn(channel.id)[0], 'root']], message);
     }
 
     public async sendDirectMessage(toPubkey: string, message: string) {
