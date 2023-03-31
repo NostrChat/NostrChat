@@ -37,7 +37,7 @@ const JoinChannel = (props: { onSuccess: () => void }) => {
         }
 
         setCommonTs(Date.now());
-        raven?.loadId(id);
+        raven?.loadChannel(id);
         onSuccess();
     }
 

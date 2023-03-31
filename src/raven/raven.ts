@@ -188,12 +188,24 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         })
     }
 
-    public loadId(id: string) {
-        const cacheKey = `${id}_loaded_id`;
-        if (this.nameCache[cacheKey] === undefined) {
-            this.fetch([{ids: [id]}]);
-            this.nameCache[cacheKey] = 1;
-        }
+    public loadChannel(id: string) {
+        const filters: Filter[] = [
+            {
+                kinds: [Kind.ChannelCreation],
+                ids: [id]
+            },
+            {
+                kinds: [Kind.ChannelMetadata, Kind.EventDeletion],
+                '#e': [id],
+            },
+            {
+                kinds: [Kind.ChannelMessage],
+                '#e': [id],
+                limit: MESSAGE_PER_PAGE
+            }
+        ];
+
+        this.fetch(filters);
     }
 
     public loadProfiles(pubs: string[]) {
