@@ -234,6 +234,18 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }], false);
     }
 
+    private async findHealthyRelay(relays: string[]) {
+        for (const relay of relays) {
+            try {
+                await this.pool.ensureRelay(relay);
+                return relay;
+            } catch (e) {
+            }
+        }
+
+        throw new Error("Couldn't find a working relay");
+    }
+
     public async updateProfile(profile: Metadata) {
         return this.publish(Kind.Metadata, [], JSON.stringify(profile));
     }
@@ -243,7 +255,9 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async updateChannel(channel: Channel, meta: Metadata) {
-        return this.publish(Kind.ChannelMetadata, [['e', channel.id, this.pool.seenOn(channel.id)[0]]], JSON.stringify(meta));
+        return this.findHealthyRelay(this.pool.seenOn(channel.id)).then(relay => {
+            return this.publish(Kind.ChannelMetadata, [['e', channel.id, relay]], JSON.stringify(meta));
+        });
     }
 
     public async deleteEvents(ids: string[], why: string = '') {
@@ -251,7 +265,9 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async sendPublicMessage(channel: Channel, message: string) {
-        return this.publish(Kind.ChannelMessage, [['e', channel.id, this.pool.seenOn(channel.id)[0], 'root']], message);
+        return this.findHealthyRelay(this.writeRelays).then(relay => {
+            return this.publish(Kind.ChannelMessage, [['e', channel.id, relay, 'root']], message);
+        });
     }
 
     public async sendDirectMessage(toPubkey: string, message: string) {
