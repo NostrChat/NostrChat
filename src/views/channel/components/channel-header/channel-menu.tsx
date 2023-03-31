@@ -7,6 +7,7 @@ import MenuItem from '@mui/material/MenuItem';
 
 import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
+import useToast from 'hooks/use-toast';
 import useLiveChannel from 'hooks/use-live-channel';
 import EditChannel from 'views/components/dialogs/edit-channel';
 import ConfirmDialog from 'components/confirm-dialog';
@@ -19,6 +20,7 @@ const ChannelMenu = () => {
     const open = Boolean(anchorEl);
     const [t] = useTranslation();
     const [, showModal] = useModal();
+    const [, showMessage] = useToast();
     const [raven] = useAtom(ravenAtom);
     const navigate = useNavigate();
 
@@ -47,8 +49,11 @@ const ChannelMenu = () => {
     const del = () => {
         showModal({
             body: <ConfirmDialog onConfirm={() => {
-                raven?.deleteEvents([channel!.id], '');
-                navigate('/channel').then();
+                raven?.deleteEvents([channel!.id], '').then(() => {
+                    navigate('/channel').then();
+                }).catch((e) => {
+                    showMessage(e, 'error');
+                });
             }}/>
         });
         closeMenu();

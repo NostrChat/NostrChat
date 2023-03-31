@@ -6,6 +6,7 @@ import {useAtom} from 'jotai';
 
 import CloseModal from 'components/close-modal';
 import useModal from 'hooks/use-modal';
+import useToast from 'hooks/use-toast';
 import useTranslation from 'hooks/use-translation';
 import MetadataForm from 'views/components/metadata-form';
 import {commonTsAtom, ravenAtom} from 'store';
@@ -13,6 +14,7 @@ import {commonTsAtom, ravenAtom} from 'store';
 const CreateChannel = (props: { onSuccess: () => void }) => {
     const {onSuccess} = props;
     const [, showModal] = useModal();
+    const [, showMessage] = useToast();
     const [t] = useTranslation();
     const [raven] = useAtom(ravenAtom);
     const [, setCommonTs] = useAtom(commonTsAtom)
@@ -32,8 +34,11 @@ const CreateChannel = (props: { onSuccess: () => void }) => {
                         picture: 'Channel picture'
                     }} onSubmit={(data) => {
                         setCommonTs(Date.now());
-                        raven?.createChannel(data);
-                        onSuccess();
+                        raven?.createChannel(data).then(() => {
+                            onSuccess();
+                        }).catch((e) => {
+                            showMessage(e, 'error');
+                        });
                     }}/>
                 </Box>
             </DialogContent>

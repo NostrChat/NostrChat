@@ -40,9 +40,12 @@ const SettingsProfilePage = (_: RouteComponentProps) => {
                         about: profile?.about || '',
                         picture: profile?.picture || ''
                     }} submitBtnLabel={t('Save')} skipButton={<Button/>} onSubmit={(data) => {
-                        raven?.updateProfile(data);
-                        showMessage(t('Your profile updated'), 'success');
-                        navigate('/settings').then();
+                        raven?.updateProfile(data).then(() => {
+                            showMessage(t('Your profile updated'), 'success');
+                            navigate('/settings').then();
+                        }).catch(e => {
+                            showMessage(e, 'error');
+                        });
                     }}/>
                 </SettingsContent>
             </AppContent>

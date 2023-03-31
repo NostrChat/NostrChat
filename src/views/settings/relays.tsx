@@ -155,7 +155,9 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
     const recommend = (address: string) => {
         raven?.recommendRelay(address).then(() => {
             showMessage(t('Done'), 'success');
-        });
+        }).catch(e => {
+            showMessage(e, 'error');
+        })
     }
 
     return <>

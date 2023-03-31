@@ -263,26 +263,42 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(Kind.RecommendRelay, [], relay);
     }
 
-    async publish(kind: number, tags: Array<any>[], content: string) {
-        const event: Event = {
-            kind,
-            tags,
-            pubkey: this.pub,
-            content,
-            created_at: Math.floor(Date.now() / 1000),
-            id: '',
-            sig: ''
-        }
+    private publish(kind: number, tags: Array<any>[], content: string): Promise<Event> {
+        return new Promise((resolve, reject) => {
+            this.signEvent({
+                kind,
+                tags,
+                pubkey: this.pub,
+                content,
+                created_at: Math.floor(Date.now() / 1000),
+                id: '',
+                sig: ''
+            }).then(event => {
+                if (!event) {
+                    reject("Couldn't sign event!");
+                    return;
+                }
 
-        if (this.priv === 'nip07') {
-            return window.nostr?.signEvent(event).then(event => {
                 this.pool.publish(this.writeRelays, event);
-            });
-        }
+                // TODO: .on('ok') doesn't work!!!
 
-        event.id = getEventHash(event);
-        event.sig = signEvent(event, this.priv);
-        this.pool.publish(this.writeRelays, event);
+                resolve(event);
+            }).catch(() => {
+                reject("Couldn't sign event!");
+            })
+        })
+    }
+
+    private async signEvent(event: Event): Promise<Event | undefined> {
+        if (this.priv === 'nip07') {
+            return window.nostr?.signEvent(event);
+        } else {
+            return {
+                ...event,
+                id: getEventHash(event),
+                sig: signEvent(event, this.priv)
+            };
+        }
     }
 
     pushToEventBuffer(event: Event) {

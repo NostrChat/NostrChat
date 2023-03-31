@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import CloseModal from 'components/close-modal';
 import MetadataForm from 'views/components/metadata-form';
 import useModal from 'hooks/use-modal';
+import useToast from 'hooks/use-toast';
 import useTranslation from 'hooks/use-translation';
 import {ravenAtom} from 'store';
 import {Channel} from 'types';
@@ -14,6 +15,7 @@ import {Channel} from 'types';
 const EditChannel = (props: { channel: Channel, onSuccess: () => void }) => {
     const {channel, onSuccess} = props;
     const [, showModal] = useModal();
+    const [, showMessage] = useToast();
     const [t] = useTranslation();
     const [raven] = useAtom(ravenAtom);
 
@@ -39,8 +41,11 @@ const EditChannel = (props: { channel: Channel, onSuccess: () => void }) => {
                         about: 'Description',
                         picture: 'Channel picture'
                     }} submitBtnLabel='Update' skipButton={<span/>} onSubmit={(data) => {
-                        raven?.updateChannel(channel, data);
-                        onSuccess();
+                        raven?.updateChannel(channel, data).then(()=>{
+                            onSuccess();
+                        }).catch((e) => {
+                            showMessage(e, 'error');
+                        });
                     }}/>
                 </Box>
             </DialogContent>
