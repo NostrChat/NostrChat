@@ -30,6 +30,7 @@ NostrChat will open in your browser.
 
 ## Roadmap 🛣️
 
+- NIP42 Support
 - Threads & Reply
 - Reactions
 - Message menu with delete & reaction & thread & copy message link
