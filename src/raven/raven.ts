@@ -369,10 +369,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
         const channelUpdates: ChannelUpdate[] = this.eventQueue.filter(x => x.kind === Kind.ChannelMetadata).map(ev => {
             const content = Raven.parseJson(ev.content);
-            const channelId = ev.tags[0][1];
-            if (!channelId) {
-                return null;
-            }
+            const channelId = Raven.findTagValue(ev, 'e');
+            if (!channelId) return null;
             return content ? {
                 id: ev.id,
                 creator: ev.pubkey,
@@ -386,8 +384,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }
 
         const deletions: EventDeletion[] = this.eventQueue.filter(x => x.kind === Kind.EventDeletion).map(ev => {
+            const eventId = Raven.findTagValue(ev, 'e');
+            if (!eventId) return null;
             return {
-                eventId: ev.tags[0][1],
+                eventId,
                 why: ev.content || ''
             };
         }).filter(notEmpty).flat();
@@ -396,11 +396,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }
 
         const publicMessages: PublicMessage[] = this.eventQueue.filter(x => x.kind === Kind.ChannelMessage).map(ev => {
-                const channelId = ev.tags[0][1];
-                if (!channelId) {
-                    return null;
-                }
-
+                const channelId = Raven.findTagValue(ev, 'e');
+                if (!channelId) return null;
                 return ev.content ? {
                     id: ev.id,
                     channelId,
@@ -415,11 +412,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }
 
         Promise.all(this.eventQueue.filter(x => x.kind === Kind.EncryptedDirectMessage).map(ev => {
-            const receiver = ev.tags.find(([tag]) => tag === 'p')?.[1];
-
-            if (!receiver) {
-                return null;
-            }
+            const receiver = Raven.findTagValue(ev, 'p');
+            if (!receiver) return null;
 
             const peer = receiver === this.pub ? ev.pubkey : receiver;
             const msg = {
