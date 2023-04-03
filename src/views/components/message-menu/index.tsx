@@ -8,7 +8,7 @@ import EyeOff from 'svg/eye-off';
 import {useAtom} from 'jotai';
 import {keysAtom, ravenAtom} from 'store';
 import useModal from 'hooks/use-modal';
-import ReasonDialog from 'views/components/dialogs/reason-dialog';
+import ConfirmDialog from 'components/confirm-dialog';
 import useTranslation from 'hooks/use-translation';
 
 const MessageMenu = (props: { message: Message }) => {
@@ -23,8 +23,8 @@ const MessageMenu = (props: { message: Message }) => {
 
     const hide = () => {
         showModal({
-            body: <ReasonDialog title={t('Hide Message')} onConfirm={(reason) => {
-                raven?.hideMessage(message.id, reason);
+            body: <ConfirmDialog onConfirm={() => {
+                raven?.hideMessage(message.id, '');
             }}/>
         });
     }
