@@ -1,6 +1,16 @@
 import {Event, Filter, getEventHash, Kind, nip04, signEvent, SimplePool, Sub} from 'nostr-tools';
 import {TypedEventEmitter} from 'raven/helper/event-emitter';
-import {Channel, ChannelUpdate, DirectMessage, EventDeletion, Keys, Metadata, Profile, PublicMessage} from 'types';
+import {
+    Channel,
+    ChannelUpdate,
+    DirectMessage,
+    EventDeletion,
+    Keys,
+    Metadata,
+    Profile,
+    PublicMessage,
+    PublicMessageHide,
+} from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
 import {getRelays} from 'helper';
@@ -17,6 +27,7 @@ export enum RavenEvents {
     EventDeletion = 'event_deletion',
     PublicMessage = 'public_message',
     DirectMessage = 'direct_message',
+    PublicMessageHide = 'hide_public_message'
 }
 
 type EventHandlerMap = {
@@ -27,6 +38,7 @@ type EventHandlerMap = {
     [RavenEvents.EventDeletion]: (data: EventDeletion[]) => void;
     [RavenEvents.PublicMessage]: (data: PublicMessage[]) => void;
     [RavenEvents.DirectMessage]: (data: DirectMessage[]) => void;
+    [RavenEvents.PublicMessageHide]: (data: PublicMessageHide[]) => void;
 };
 
 
@@ -64,6 +76,9 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             kinds: [Kind.Metadata, Kind.EventDeletion, Kind.ChannelCreation],
             authors: [this.pub],
         }, {
+            kinds: [Kind.ChannelHideMessage],
+            authors: [this.pub],
+        }, {
             kinds: [Kind.ChannelMessage],
             authors: [this.pub],
         }, {
@@ -80,6 +95,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
             const profile = events.find(x => x.kind === Kind.Metadata);
             if (profile) this.pushToEventBuffer(profile);
+
+            for (const e of events.filter(x => x.kind === Kind.ChannelHideMessage)) {
+                this.pushToEventBuffer(e);
+            }
 
             const channels = uniq(events.map(x => {
                 if (x.kind === Kind.ChannelCreation) {
@@ -291,6 +310,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(Kind.RecommendRelay, [], relay);
     }
 
+    public async hideMessage(id: string, reason: string) {
+        return this.publish(Kind.ChannelHideMessage, [['e', id]], JSON.stringify({reason}));
+    }
+
     private publish(kind: number, tags: Array<any>[], content: string): Promise<Event> {
         return new Promise((resolve, reject) => {
             this.signEvent({
@@ -451,6 +474,19 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }).filter(notEmpty)).then((directMessages: DirectMessage[]) => {
             this.emit(RavenEvents.DirectMessage, directMessages);
         });
+
+        const publicMessageHides: PublicMessageHide[] = this.eventQueue.filter(x => x.kind === Kind.ChannelHideMessage).map(ev => {
+            const content = Raven.parseJson(ev.content);
+            const id = Raven.findTagValue(ev, 'e');
+            if (!id) return null;
+            return {
+                id,
+                reason: content?.reason || ''
+            };
+        }).filter(notEmpty);
+        if (publicMessageHides.length > 0) {
+            this.emit(RavenEvents.PublicMessageHide, publicMessageHides);
+        }
 
         this.eventQueue = [];
         this.eventQueueFlag = true;

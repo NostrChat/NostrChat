@@ -11,10 +11,12 @@ import {
     profileAtom,
     profilesAtom,
     publicMessagesAtom,
-    ravenAtom, ravenReadyAtom
+    ravenAtom,
+    ravenReadyAtom,
+    publicMessageHidesAtom
 } from 'store';
 import {initRaven, RavenEvents} from 'raven/raven';
-import {Channel, ChannelUpdate, DirectMessage, EventDeletion, Profile, PublicMessage} from 'types';
+import {Channel, ChannelUpdate, DirectMessage, EventDeletion, Profile, PublicMessage, PublicMessageHide} from 'types';
 import {createLogger} from 'logger';
 
 
@@ -31,6 +33,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
     const [eventDeletions, setEventDeletions] = useAtom(eventDeletionsAtom);
     const [publicMessages, setPublicMessages] = useAtom(publicMessagesAtom);
     const [directMessages, setDirectMessages] = useAtom(directMessagesAtom);
+    const [publicMessageHides, setPublicMessageHides] = useAtom(publicMessageHidesAtom);
     const [, setDirectContacts] = useAtom(directContactsAtom);
     const [since, setSince] = useState<number>(0)
 
@@ -191,6 +194,22 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
         }
     }, [raven, directMessages]);
 
+    // Hidden message handler
+    const handlePublicMessageHide = (data: PublicMessageHide[]) =>{
+        logger.info('handlePublicMessageHide', data);
+        const append = data.filter(x => publicMessageHides.find(y => y.id === x.id) === undefined);
+        setPublicMessageHides([...publicMessageHides, ...append]);
+    }
+
+    useEffect(()=>{
+        raven?.removeListener(RavenEvents.PublicMessageHide, handlePublicMessageHide);
+        raven?.addListener(RavenEvents.PublicMessageHide, handlePublicMessageHide);
+
+        return () => {
+            raven?.removeListener(RavenEvents.PublicMessageHide, handlePublicMessageHide);
+        }
+    }, [raven, publicMessageHides]);
+
     // Init raven
     useEffect(() => {
         setRaven(raven);
@@ -203,6 +222,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
             raven?.removeListener(RavenEvents.EventDeletion, handleEventDeletion);
             raven?.removeListener(RavenEvents.PublicMessage, handlePublicMessage);
             raven?.removeListener(RavenEvents.DirectMessage, handleDirectMessage);
+            raven?.removeListener(RavenEvents.PublicMessageHide, handlePublicMessageHide);
         }
     }, [raven]);
 
