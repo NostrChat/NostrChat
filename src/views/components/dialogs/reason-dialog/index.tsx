@@ -32,8 +32,8 @@ const ReasonDialog = (props: { title: string, onConfirm: (reason: string) => voi
             <DialogContent>
                 <Box sx={{pt: '6px'}}>
                     <TextField label={t('Reason')} value={reason} onChange={reasonChanged} fullWidth autoFocus
-                              helperText={'optional'}/>
-                    <Box sx={{display: 'flex', justifyContent: 'flex-end'}}>
+                               placeholder={'optional'}/>
+                    <Box sx={{display: 'flex', justifyContent: 'flex-end', mt: '10px'}}>
                         <Button variant="contained" onClick={hide}>Hide</Button>
                     </Box>
                 </Box>

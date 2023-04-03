@@ -2,6 +2,7 @@ import React from 'react';
 import {Message} from 'types';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
+import Tooltip from '@mui/material/Tooltip';
 import {useTheme} from '@mui/material/styles';
 import EyeOff from 'svg/eye-off';
 import {useAtom} from 'jotai';
@@ -29,9 +30,11 @@ const MessageMenu = (props: { message: Message }) => {
     }
 
     if (keys?.pub !== message.creator && !('decrypted' in message)) { // only public messages
-        buttons.push(<IconButton size="small" onClick={hide}>
-            <EyeOff height={20}/>
-        </IconButton>);
+        buttons.push(<Tooltip title={t('Hide')}>
+            <IconButton size="small" onClick={hide}>
+                <EyeOff height={20}/>
+            </IconButton>
+        </Tooltip>);
     }
 
     if (buttons.length === 0) return null;
