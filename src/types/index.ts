@@ -13,7 +13,7 @@ export type Metadata = {
     picture: string
 }
 
-export type Profile = { id: string, creator: string, created: number} & Metadata;
+export type Profile = { id: string, creator: string, created: number } & Metadata;
 
 export type Channel = { id: string, creator: string, created: number } & Metadata
 
@@ -26,5 +26,7 @@ export type PublicMessage = { id: string, channelId: string, content: string, cr
 export type DirectMessage = { id: string, content: string, peer: string, creator: string, created: number, decrypted: boolean };
 
 export type Message = PublicMessage | DirectMessage;
+
+export type PublicMessageHide = { id: string, reason: string };
 
 export type RelayDict = Record<string, { read: boolean; write: boolean }>;

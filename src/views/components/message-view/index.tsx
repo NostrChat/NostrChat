@@ -1,4 +1,4 @@
-import React, {useMemo, useRef} from 'react';
+import React, {useMemo, useRef, useState} from 'react';
 import {useAtom} from 'jotai';
 import {darken} from '@mui/material';
 import Box from '@mui/material/Box';
@@ -10,6 +10,7 @@ import usePopover from 'hooks/use-popover';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import Avatar from 'views/components/avatar';
 import ProfileCard from 'views/components/profile-card';
+import MessageMenu from 'views/components/message-menu';
 import {profilesAtom} from 'store';
 import {Message,} from 'types';
 import {formatMessageTime} from 'helper';
@@ -26,6 +27,7 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
     const holderEl = useRef<HTMLDivElement | null>(null);
     const renderedBody = useContentRenderer(message.content);
     const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 26), ':'), [profile, message]);
+    const [menu, setMenu] = useState<boolean>(false);
 
     const profileClicked = (event: React.MouseEvent<HTMLDivElement>) => {
         showPopover({
@@ -39,13 +41,28 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
     };
 
     const ps = isMd ? '24px' : '10px';
-    return <Box className="message" ref={holderEl} sx={{
-        display: 'flex',
-        p: `${!compactView ? '15px' : '3px'} ${ps} 0 ${ps}`,
-        ':hover': {
-            background: theme.palette.divider
-        }
-    }}>
+    return <Box
+        className="message"
+        ref={holderEl}
+        sx={{
+            display: 'flex',
+            p: `${!compactView ? '15px' : '3px'} ${ps} 0 ${ps}`,
+            position: 'relative',
+            ':hover': {
+                background: theme.palette.divider
+            }
+        }}
+        onMouseEnter={() => {
+            setMenu(true);
+        }}
+        onMouseLeave={() => {
+            setMenu(false);
+        }}>
+        {menu && (<Box sx={{
+            position: 'absolute',
+            right: '10px',
+            top: '-10px'
+        }}><MessageMenu message={message}/></Box>)}
         <Box sx={{
             display: 'flex',
             width: '40px',
