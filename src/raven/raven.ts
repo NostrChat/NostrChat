@@ -2,14 +2,15 @@ import {Event, Filter, getEventHash, Kind, nip04, signEvent, SimplePool, Sub} fr
 import {TypedEventEmitter} from 'raven/helper/event-emitter';
 import {
     Channel,
+    ChannelMessageHide,
     ChannelUpdate,
+    ChannelUserMute,
     DirectMessage,
     EventDeletion,
     Keys,
     Metadata,
     Profile,
     PublicMessage,
-    ChannelMessageHide,
 } from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
@@ -27,7 +28,8 @@ export enum RavenEvents {
     EventDeletion = 'event_deletion',
     PublicMessage = 'public_message',
     DirectMessage = 'direct_message',
-    ChannelMessageHide = 'channel_message_hide'
+    ChannelMessageHide = 'channel_message_hide',
+    ChannelUserMute = 'channel_user_mute'
 }
 
 type EventHandlerMap = {
@@ -39,6 +41,7 @@ type EventHandlerMap = {
     [RavenEvents.PublicMessage]: (data: PublicMessage[]) => void;
     [RavenEvents.DirectMessage]: (data: DirectMessage[]) => void;
     [RavenEvents.ChannelMessageHide]: (data: ChannelMessageHide[]) => void;
+    [RavenEvents.ChannelUserMute]: (data: ChannelUserMute[]) => void;
 };
 
 
@@ -76,7 +79,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             kinds: [Kind.Metadata, Kind.EventDeletion, Kind.ChannelCreation],
             authors: [this.pub],
         }, {
-            kinds: [Kind.ChannelHideMessage],
+            kinds: [Kind.ChannelHideMessage, Kind.ChannelMuteUser],
             authors: [this.pub],
         }, {
             kinds: [Kind.ChannelMessage],
@@ -96,7 +99,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             const profile = events.find(x => x.kind === Kind.Metadata);
             if (profile) this.pushToEventBuffer(profile);
 
-            for (const e of events.filter(x => x.kind === Kind.ChannelHideMessage)) {
+            for (const e of events.filter(x => [Kind.ChannelHideMessage, Kind.ChannelMuteUser].includes(x.kind))) {
                 this.pushToEventBuffer(e);
             }
 
@@ -314,6 +317,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(Kind.ChannelHideMessage, [['e', id]], JSON.stringify({reason}));
     }
 
+    public async muteChannelUser(pubkey:string, reason: string){
+        return this.publish(Kind.ChannelMuteUser, [['p', pubkey]], JSON.stringify({reason}));
+    }
+
     private publish(kind: number, tags: Array<any>[], content: string): Promise<Event> {
         return new Promise((resolve, reject) => {
             this.signEvent({
@@ -486,6 +493,19 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }).filter(notEmpty);
         if (channelMessageHides.length > 0) {
             this.emit(RavenEvents.ChannelMessageHide, channelMessageHides);
+        }
+
+        const channelUserMutes: ChannelUserMute[] = this.eventQueue.filter(x => x.kind === Kind.ChannelMuteUser).map(ev => {
+            const content = Raven.parseJson(ev.content);
+            const pubkey = Raven.findTagValue(ev, 'p');
+            if (!pubkey) return null;
+            return {
+                pubkey,
+                reason: content?.reason || ''
+            };
+        }).filter(notEmpty);
+        if (channelUserMutes.length > 0) {
+            this.emit(RavenEvents.ChannelUserMute, channelUserMutes);
         }
 
         this.eventQueue = [];

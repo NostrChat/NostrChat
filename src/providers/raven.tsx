@@ -4,7 +4,8 @@ import {nip19} from 'nostr-tools';
 
 import {
     channelsAtom,
-    channelUpdatesAtom, directContactsAtom,
+    channelUpdatesAtom,
+    directContactsAtom,
     directMessagesAtom,
     eventDeletionsAtom,
     keysAtom,
@@ -13,10 +14,20 @@ import {
     publicMessagesAtom,
     ravenAtom,
     ravenReadyAtom,
-    channelMessageHidesAtom
+    channelMessageHidesAtom,
+    channelUserMutesAtom
 } from 'store';
 import {initRaven, RavenEvents} from 'raven/raven';
-import {Channel, ChannelUpdate, DirectMessage, EventDeletion, Profile, PublicMessage, ChannelMessageHide} from 'types';
+import {
+    Channel,
+    ChannelUpdate,
+    DirectMessage,
+    EventDeletion,
+    Profile,
+    PublicMessage,
+    ChannelMessageHide,
+    ChannelUserMute
+} from 'types';
 import {createLogger} from 'logger';
 
 
@@ -34,6 +45,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
     const [publicMessages, setPublicMessages] = useAtom(publicMessagesAtom);
     const [directMessages, setDirectMessages] = useAtom(directMessagesAtom);
     const [channelMessageHides, setChannelMessageHides] = useAtom(channelMessageHidesAtom);
+    const [channelUserMutes, setChannelUserMutes] = useAtom(channelUserMutesAtom);
     const [, setDirectContacts] = useAtom(directContactsAtom);
     const [since, setSince] = useState<number>(0)
 
@@ -194,7 +206,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
         }
     }, [raven, directMessages]);
 
-    // Hidden message handler
+    // Channel message hide handler
     const handlePublicMessageHide = (data: ChannelMessageHide[]) =>{
         logger.info('handlePublicMessageHide', data);
         const append = data.filter(x => channelMessageHides.find(y => y.id === x.id) === undefined);
@@ -210,6 +222,22 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
         }
     }, [raven, channelMessageHides]);
 
+    // Channel user mute handler
+    const handleChannelUserMute = (data: ChannelUserMute[]) =>{
+        logger.info('handleChannelUserMute', data);
+        const append = data.filter(x => channelUserMutes.find(y => y.pubkey === x.pubkey) === undefined);
+        setChannelUserMutes([...channelUserMutes, ...append]);
+    }
+
+    useEffect(()=>{
+        raven?.removeListener(RavenEvents.ChannelUserMute, handleChannelUserMute);
+        raven?.addListener(RavenEvents.ChannelUserMute, handleChannelUserMute);
+
+        return () => {
+            raven?.removeListener(RavenEvents.ChannelUserMute, handleChannelUserMute);
+        }
+    }, [raven, channelUserMutes]);
+
     // Init raven
     useEffect(() => {
         setRaven(raven);
@@ -223,6 +251,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
             raven?.removeListener(RavenEvents.PublicMessage, handlePublicMessage);
             raven?.removeListener(RavenEvents.DirectMessage, handleDirectMessage);
             raven?.removeListener(RavenEvents.ChannelMessageHide, handlePublicMessageHide);
+            raven?.removeListener(RavenEvents.ChannelUserMute, handleChannelUserMute);
         }
     }, [raven]);
 
