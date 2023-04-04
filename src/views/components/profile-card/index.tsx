@@ -7,25 +7,20 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import {nip19} from 'nostr-tools';
 import useTranslation from 'hooks/use-translation';
-import useModal from 'hooks/use-modal';
-import usePopover from 'hooks/use-popover';
 import Avatar from 'views/components/avatar';
 import CopyToClipboard from 'components/copy-clipboard';
-import ConfirmDialog from 'components/confirm-dialog';
-import {keysAtom, muteListAtom, ravenAtom} from 'store';
+import {keysAtom, ravenAtom} from 'store';
 import {Profile} from 'types';
 import KeyVariant from 'svg/key-variant';
 import EyeOff from 'svg/eye-off';
 import {truncate, truncateMiddle} from 'util/truncate';
+import MuteBtn from '../mute-btn';
 
 
 const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => void }) => {
     const {profile, pubkey, onDM} = props;
     const [keys] = useAtom(keysAtom);
     const [raven] = useAtom(ravenAtom);
-    const [muteList] = useAtom(muteListAtom);
-    const [, showModal] = useModal();
-    const [, showPopover] = usePopover();
     const theme = useTheme();
     const [t] = useTranslation();
     const [message, setMessage] = useState('');
@@ -33,15 +28,6 @@ const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => voi
     const profileName = useMemo(() => profile?.name ? truncateMiddle(profile.name, 24, ':') : null, [profile]);
     const pub = useMemo(() => nip19.npubEncode(pubkey), [pubkey]);
     const isMe = keys?.pub === pubkey;
-
-    const mute = () => {
-        showModal({
-            body: <ConfirmDialog onConfirm={() => {
-                raven?.updateMuteList([...muteList.pubkeys, pubkey]);
-                showPopover(null);
-            }}/>
-        });
-    }
 
     return <Box sx={{fontSize: '0.8em'}}>
         <Box sx={{
@@ -60,7 +46,9 @@ const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => voi
                 background: theme.palette.background.paper
             }}>
                 <Tooltip title={t('Mute')}>
-                    <IconButton onClick={mute}><EyeOff height={14}/></IconButton>
+                    <MuteBtn pubkey={pubkey}>
+                        <IconButton><EyeOff height={14}/></IconButton>
+                    </MuteBtn>
                 </Tooltip>
             </Box>)}
             <Box sx={{
