@@ -9,7 +9,7 @@ import {
     Metadata,
     Profile,
     PublicMessage,
-    PublicMessageHide,
+    ChannelMessageHide,
 } from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
@@ -27,7 +27,7 @@ export enum RavenEvents {
     EventDeletion = 'event_deletion',
     PublicMessage = 'public_message',
     DirectMessage = 'direct_message',
-    PublicMessageHide = 'hide_public_message'
+    ChannelMessageHide = 'channel_message_hide'
 }
 
 type EventHandlerMap = {
@@ -38,7 +38,7 @@ type EventHandlerMap = {
     [RavenEvents.EventDeletion]: (data: EventDeletion[]) => void;
     [RavenEvents.PublicMessage]: (data: PublicMessage[]) => void;
     [RavenEvents.DirectMessage]: (data: DirectMessage[]) => void;
-    [RavenEvents.PublicMessageHide]: (data: PublicMessageHide[]) => void;
+    [RavenEvents.ChannelMessageHide]: (data: ChannelMessageHide[]) => void;
 };
 
 
@@ -310,7 +310,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(Kind.RecommendRelay, [], relay);
     }
 
-    public async hideMessage(id: string, reason: string) {
+    public async hideChannelMessage(id: string, reason: string) {
         return this.publish(Kind.ChannelHideMessage, [['e', id]], JSON.stringify({reason}));
     }
 
@@ -475,7 +475,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             this.emit(RavenEvents.DirectMessage, directMessages);
         });
 
-        const publicMessageHides: PublicMessageHide[] = this.eventQueue.filter(x => x.kind === Kind.ChannelHideMessage).map(ev => {
+        const channelMessageHides: ChannelMessageHide[] = this.eventQueue.filter(x => x.kind === Kind.ChannelHideMessage).map(ev => {
             const content = Raven.parseJson(ev.content);
             const id = Raven.findTagValue(ev, 'e');
             if (!id) return null;
@@ -484,8 +484,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 reason: content?.reason || ''
             };
         }).filter(notEmpty);
-        if (publicMessageHides.length > 0) {
-            this.emit(RavenEvents.PublicMessageHide, publicMessageHides);
+        if (channelMessageHides.length > 0) {
+            this.emit(RavenEvents.ChannelMessageHide, channelMessageHides);
         }
 
         this.eventQueue = [];

@@ -27,6 +27,6 @@ export type DirectMessage = { id: string, content: string, peer: string, creator
 
 export type Message = PublicMessage | DirectMessage;
 
-export type PublicMessageHide = { id: string, reason: string };
+export type ChannelMessageHide = { id: string, reason: string };
 
 export type RelayDict = Record<string, { read: boolean; write: boolean }>;
