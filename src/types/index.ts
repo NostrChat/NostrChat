@@ -32,3 +32,5 @@ export type ChannelMessageHide = { id: string, reason: string };
 export type ChannelUserMute = { pubkey: string, reason: string };
 
 export type RelayDict = Record<string, { read: boolean; write: boolean }>;
+
+export type MuteList = { pubkeys: string[], encrypted: string };

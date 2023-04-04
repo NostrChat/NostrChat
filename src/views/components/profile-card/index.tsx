@@ -2,33 +2,75 @@ import {useAtom} from 'jotai';
 import React, {useMemo, useState} from 'react';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
-import {TextField} from '@mui/material';
+import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import {nip19} from 'nostr-tools';
 import useTranslation from 'hooks/use-translation';
+import useModal from 'hooks/use-modal';
+import usePopover from 'hooks/use-popover';
 import Avatar from 'views/components/avatar';
 import CopyToClipboard from 'components/copy-clipboard';
-import {keysAtom, ravenAtom} from 'store';
+import ConfirmDialog from 'components/confirm-dialog';
+import {keysAtom, muteListAtom, ravenAtom} from 'store';
 import {Profile} from 'types';
 import KeyVariant from 'svg/key-variant';
+import EyeOff from 'svg/eye-off';
 import {truncate, truncateMiddle} from 'util/truncate';
+
 
 const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => void }) => {
     const {profile, pubkey, onDM} = props;
     const [keys] = useAtom(keysAtom);
     const [raven] = useAtom(ravenAtom);
+    const [muteList] = useAtom(muteListAtom);
+    const [, showModal] = useModal();
+    const [, showPopover] = usePopover();
     const theme = useTheme();
     const [t] = useTranslation();
     const [message, setMessage] = useState('');
 
     const profileName = useMemo(() => profile?.name ? truncateMiddle(profile.name, 24, ':') : null, [profile]);
     const pub = useMemo(() => nip19.npubEncode(pubkey), [pubkey]);
+    const isMe = keys?.pub === pubkey;
+
+    const mute = () => {
+        showModal({
+            body: <ConfirmDialog onConfirm={() => {
+                raven?.updateMuteList([...muteList.pubkeys, pubkey]);
+                showPopover(null);
+            }}/>
+        });
+    }
 
     return <Box sx={{fontSize: '0.8em'}}>
         <Box sx={{
             mb: '10px',
-            display: 'flex'
+            display: 'flex',
+            position: 'relative',
+            height: '200px',
         }}>
-            <Avatar src={profile?.picture} seed={pubkey} size={200} type="user"/>
+            {!isMe && (<Box sx={{
+                position: 'absolute',
+                right: '4px',
+                top: '4px',
+                zIndex: 2,
+                padding: '3px',
+                borderRadius: theme.shape.borderRadius,
+                background: theme.palette.background.paper
+            }}>
+                <Tooltip title={t('Mute')}>
+                    <IconButton onClick={mute}><EyeOff height={14}/></IconButton>
+                </Tooltip>
+            </Box>)}
+            <Box sx={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                zIndex: 1
+            }}>
+                <Avatar src={profile?.picture} seed={pubkey} size={200} type="user"/>
+            </Box>
         </Box>
         {profileName && (<Box sx={{mb: '10px', fontWeight: 600}}>{profileName}</Box>)}
         {profile?.about && (
@@ -57,7 +99,7 @@ const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => voi
                 {truncateMiddle(pub, 24, ':')}
             </Box>
         </CopyToClipboard>
-        {keys?.pub !== pubkey && (
+        {!isMe && (
             <TextField
                 autoComplete="off"
                 InputProps={{

@@ -7,7 +7,8 @@ import {
     PublicMessage,
     DirectMessage,
     ChannelMessageHide,
-    ChannelUserMute
+    ChannelUserMute,
+    MuteList
 } from 'types';
 import {GLOBAL_CHAT} from 'const';
 
@@ -28,5 +29,6 @@ export const directContactsAtom = atom<{ pub: string, npub: string }[] | []>([])
 export const directMessageAtom = atom<string | null>(null);
 export const channelMessageHidesAtom = atom<ChannelMessageHide[]>([]);
 export const channelUserMutesAtom = atom<ChannelUserMute[]>([]);
+export const muteListAtom = atom<MuteList>({pubkeys: [], encrypted: ''});
 export const commonTsAtom = atom<number>(0);
 export const backupWarnAtom = atom<boolean>(false);
