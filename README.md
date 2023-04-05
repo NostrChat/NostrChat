@@ -31,9 +31,11 @@ NostrChat will open in your browser.
 ## Roadmap 🛣️
 
 - Mute user & Hide message ✅
-- ~~Threads~~ & Reply
+- Replying
 - Reactions
+- Threads
 - Message menu with delete & reaction & thread & copy message link
+- Channel invite links
 - Channel & DM unread indicator
 - Mentions
 - NIP42 Support
