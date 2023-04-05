@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import Box from '@mui/material/Box';
 import Linkify from 'linkify-react';
 import {IntermediateRepresentation} from 'linkifyjs';
@@ -6,6 +6,19 @@ import Link from '@mui/material/Link';
 import useModal from 'hooks/use-modal';
 import ExternalLinkDialog from 'components/external-link-dialog';
 import {truncateMiddle} from 'util/truncate';
+
+const InMessageImg = (props: { href: string }) => {
+    const {href} = props;
+    const [loaded, setLoaded] = useState(false);
+    return <Box component="img" src={href} sx={{
+        maxWidth: '300px',
+        maxHeight: '300px',
+        height: loaded ? null : '300px'
+    }} onLoad={() => {
+        window.dispatchEvent(new Event('chat-media-loaded', {bubbles: true}));
+        setLoaded(true);
+    }}/>
+}
 
 const useRenderContent = (content: string) => {
     const [, showModal] = useModal();
@@ -21,12 +34,7 @@ const useRenderContent = (content: string) => {
                 {(() => {
                     if (href === content) {
                         if (/(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/.test(href)) {
-                            return <Box component="img" src={href} sx={{
-                                maxWidth: '300px',
-                                maxHeight: '300px'
-                            }} onLoad={() => {
-                                window.dispatchEvent(new Event('chat-media-loaded', {bubbles: true}))
-                            }}/>
+                            return <InMessageImg href={href}/>;
                         }
                     }
 
