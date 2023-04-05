@@ -1,10 +1,12 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {useAtom} from 'jotai';
+import uniq from 'lodash.uniq';
 import {nip19} from 'nostr-tools';
 
 import {
     channelsAtom,
-    channelUpdatesAtom, directContactsAtom,
+    channelUpdatesAtom,
+    directContactsAtom,
     directMessagesAtom,
     eventDeletionsAtom,
     keysAtom,
@@ -13,10 +15,22 @@ import {
     publicMessagesAtom,
     ravenAtom,
     ravenReadyAtom,
-    publicMessageHidesAtom
+    channelMessageHidesAtom,
+    channelUserMutesAtom,
+    muteListAtom
 } from 'store';
 import {initRaven, RavenEvents} from 'raven/raven';
-import {Channel, ChannelUpdate, DirectMessage, EventDeletion, Profile, PublicMessage, PublicMessageHide} from 'types';
+import {
+    Channel,
+    ChannelUpdate,
+    DirectMessage,
+    EventDeletion,
+    Profile,
+    PublicMessage,
+    ChannelMessageHide,
+    ChannelUserMute,
+    MuteList
+} from 'types';
 import {createLogger} from 'logger';
 
 
@@ -33,7 +47,9 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
     const [eventDeletions, setEventDeletions] = useAtom(eventDeletionsAtom);
     const [publicMessages, setPublicMessages] = useAtom(publicMessagesAtom);
     const [directMessages, setDirectMessages] = useAtom(directMessagesAtom);
-    const [publicMessageHides, setPublicMessageHides] = useAtom(publicMessageHidesAtom);
+    const [channelMessageHides, setChannelMessageHides] = useAtom(channelMessageHidesAtom);
+    const [channelUserMutes, setChannelUserMutes] = useAtom(channelUserMutesAtom);
+    const [muteList, setMuteList] = useAtom(muteListAtom);
     const [, setDirectContacts] = useAtom(directContactsAtom);
     const [since, setSince] = useState<number>(0)
 
@@ -194,21 +210,64 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
         }
     }, [raven, directMessages]);
 
-    // Hidden message handler
-    const handlePublicMessageHide = (data: PublicMessageHide[]) =>{
+    // Channel message hide handler
+    const handlePublicMessageHide = (data: ChannelMessageHide[]) => {
         logger.info('handlePublicMessageHide', data);
-        const append = data.filter(x => publicMessageHides.find(y => y.id === x.id) === undefined);
-        setPublicMessageHides([...publicMessageHides, ...append]);
+        const append = data.filter(x => channelMessageHides.find(y => y.id === x.id) === undefined);
+        setChannelMessageHides([...channelMessageHides, ...append]);
     }
 
-    useEffect(()=>{
-        raven?.removeListener(RavenEvents.PublicMessageHide, handlePublicMessageHide);
-        raven?.addListener(RavenEvents.PublicMessageHide, handlePublicMessageHide);
+    useEffect(() => {
+        raven?.removeListener(RavenEvents.ChannelMessageHide, handlePublicMessageHide);
+        raven?.addListener(RavenEvents.ChannelMessageHide, handlePublicMessageHide);
 
         return () => {
-            raven?.removeListener(RavenEvents.PublicMessageHide, handlePublicMessageHide);
+            raven?.removeListener(RavenEvents.ChannelMessageHide, handlePublicMessageHide);
         }
-    }, [raven, publicMessageHides]);
+    }, [raven, channelMessageHides]);
+
+    // Channel user mute handler
+    const handleChannelUserMute = (data: ChannelUserMute[]) => {
+        logger.info('handleChannelUserMute', data);
+        const append = data.filter(x => channelUserMutes.find(y => y.pubkey === x.pubkey) === undefined);
+        setChannelUserMutes([...channelUserMutes, ...append]);
+    }
+
+    useEffect(() => {
+        raven?.removeListener(RavenEvents.ChannelUserMute, handleChannelUserMute);
+        raven?.addListener(RavenEvents.ChannelUserMute, handleChannelUserMute);
+
+        return () => {
+            raven?.removeListener(RavenEvents.ChannelUserMute, handleChannelUserMute);
+        }
+    }, [raven, channelUserMutes]);
+
+    // Mute list handler
+    const handleMuteList = (data: MuteList) => {
+        logger.info('handleMuteList', data);
+        setMuteList(data);
+    }
+
+    useEffect(() => {
+        raven?.removeListener(RavenEvents.MuteList, handleMuteList);
+        raven?.addListener(RavenEvents.MuteList, handleMuteList);
+
+        return () => {
+            raven?.removeListener(RavenEvents.MuteList, handleMuteList);
+        }
+    }, [raven, muteList]);
+
+    // muteList runtime decryption for nip04 wallet users.
+    useEffect(() => {
+        if (muteList.encrypted && keys) {
+            window.nostr?.nip04.decrypt(keys.pub, muteList.encrypted).then(e => JSON.parse(e)).then(resp => {
+                setMuteList({
+                    pubkeys: uniq(resp.map((x: any) => x?.[1])),
+                    encrypted: ''
+                })
+            })
+        }
+    }, [muteList, keys]);
 
     // Init raven
     useEffect(() => {
@@ -222,7 +281,9 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
             raven?.removeListener(RavenEvents.EventDeletion, handleEventDeletion);
             raven?.removeListener(RavenEvents.PublicMessage, handlePublicMessage);
             raven?.removeListener(RavenEvents.DirectMessage, handleDirectMessage);
-            raven?.removeListener(RavenEvents.PublicMessageHide, handlePublicMessageHide);
+            raven?.removeListener(RavenEvents.ChannelMessageHide, handlePublicMessageHide);
+            raven?.removeListener(RavenEvents.ChannelUserMute, handleChannelUserMute);
+            raven?.removeListener(RavenEvents.MuteList, handleMuteList);
         }
     }, [raven]);
 

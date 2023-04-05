@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import Avatar from 'views/components/avatar';
 import AppContentHeaderBase from 'views/components/app-content-header-base';
+import Menu from 'views/direct-message/components/dm-header/menu';
 import {directMessageAtom, profilesAtom} from 'store';
 
 const DmHeader = () => {
@@ -44,6 +45,15 @@ const DmHeader = () => {
                     {profile.about}
                 </Box>
             )}
+        </Box>
+        <Box sx={{
+            width: '50px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+        }}>
+            <Menu pubkey={directMessage}/>
         </Box>
     </AppContentHeaderBase>;
 }

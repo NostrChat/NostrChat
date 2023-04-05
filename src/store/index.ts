@@ -1,5 +1,15 @@
 import {atom} from 'jotai';
-import {Channel, ChannelUpdate, EventDeletion, Profile, PublicMessage, DirectMessage, PublicMessageHide} from 'types';
+import {
+    Channel,
+    ChannelUpdate,
+    EventDeletion,
+    Profile,
+    PublicMessage,
+    DirectMessage,
+    ChannelMessageHide,
+    ChannelUserMute,
+    MuteList
+} from 'types';
 import {GLOBAL_CHAT} from 'const';
 
 export * from 'store/ui';
@@ -17,6 +27,8 @@ export const publicMessagesAtom = atom<PublicMessage[]>([]);
 export const directMessagesAtom = atom<DirectMessage[]>([]);
 export const directContactsAtom = atom<{ pub: string, npub: string }[] | []>([]);
 export const directMessageAtom = atom<string | null>(null);
-export const publicMessageHidesAtom = atom<PublicMessageHide[]>([]);
+export const channelMessageHidesAtom = atom<ChannelMessageHide[]>([]);
+export const channelUserMutesAtom = atom<ChannelUserMute[]>([]);
+export const muteListAtom = atom<MuteList>({pubkeys: [], encrypted: ''});
 export const commonTsAtom = atom<number>(0);
 export const backupWarnAtom = atom<boolean>(false);

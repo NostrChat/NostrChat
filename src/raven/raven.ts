@@ -2,14 +2,15 @@ import {Event, Filter, getEventHash, Kind, nip04, signEvent, SimplePool, Sub} fr
 import {TypedEventEmitter} from 'raven/helper/event-emitter';
 import {
     Channel,
+    ChannelMessageHide,
     ChannelUpdate,
+    ChannelUserMute,
     DirectMessage,
     EventDeletion,
     Keys,
-    Metadata,
+    Metadata, MuteList,
     Profile,
     PublicMessage,
-    PublicMessageHide,
 } from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
@@ -19,6 +20,11 @@ import {notEmpty} from 'util/misc';
 
 const relays = getRelays();
 
+
+enum NewKinds {
+    MuteList = 10000,
+}
+
 export enum RavenEvents {
     Ready = 'ready',
     ProfileUpdate = 'profile_update',
@@ -27,7 +33,9 @@ export enum RavenEvents {
     EventDeletion = 'event_deletion',
     PublicMessage = 'public_message',
     DirectMessage = 'direct_message',
-    PublicMessageHide = 'hide_public_message'
+    ChannelMessageHide = 'channel_message_hide',
+    ChannelUserMute = 'channel_user_mute',
+    MuteList = 'mute_list'
 }
 
 type EventHandlerMap = {
@@ -38,7 +46,9 @@ type EventHandlerMap = {
     [RavenEvents.EventDeletion]: (data: EventDeletion[]) => void;
     [RavenEvents.PublicMessage]: (data: PublicMessage[]) => void;
     [RavenEvents.DirectMessage]: (data: DirectMessage[]) => void;
-    [RavenEvents.PublicMessageHide]: (data: PublicMessageHide[]) => void;
+    [RavenEvents.ChannelMessageHide]: (data: ChannelMessageHide[]) => void;
+    [RavenEvents.ChannelUserMute]: (data: ChannelUserMute[]) => void;
+    [RavenEvents.MuteList]: (data: MuteList) => void;
 };
 
 
@@ -76,7 +86,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             kinds: [Kind.Metadata, Kind.EventDeletion, Kind.ChannelCreation],
             authors: [this.pub],
         }, {
-            kinds: [Kind.ChannelHideMessage],
+            kinds: [Kind.ChannelHideMessage, Kind.ChannelMuteUser],
+            authors: [this.pub],
+        }, {
+            kinds: [NewKinds.MuteList],
             authors: [this.pub],
         }, {
             kinds: [Kind.ChannelMessage],
@@ -96,7 +109,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             const profile = events.find(x => x.kind === Kind.Metadata);
             if (profile) this.pushToEventBuffer(profile);
 
-            for (const e of events.filter(x => x.kind === Kind.ChannelHideMessage)) {
+            const muteList = events.find(x => x.kind.toString() === NewKinds.MuteList.toString());
+            if (muteList) this.pushToEventBuffer(muteList);
+
+            for (const e of events.filter(x => [Kind.ChannelHideMessage, Kind.ChannelMuteUser].includes(x.kind))) {
                 this.pushToEventBuffer(e);
             }
 
@@ -310,8 +326,18 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(Kind.RecommendRelay, [], relay);
     }
 
-    public async hideMessage(id: string, reason: string) {
+    public async hideChannelMessage(id: string, reason: string) {
         return this.publish(Kind.ChannelHideMessage, [['e', id]], JSON.stringify({reason}));
+    }
+
+    public async muteChannelUser(pubkey: string, reason: string) {
+        return this.publish(Kind.ChannelMuteUser, [['p', pubkey]], JSON.stringify({reason}));
+    }
+
+    public async updateMuteList(userIds: string[]) {
+        const list = [...userIds.map(id => ['p', id])];
+        const content = await (this.priv === 'nip07' ? window.nostr!.nip04.encrypt(this.pub, JSON.stringify(list)) : nip04.encrypt(this.priv, this.pub, JSON.stringify(list)));
+        return this.publish(NewKinds.MuteList, [], content);
     }
 
     private publish(kind: number, tags: Array<any>[], content: string): Promise<Event> {
@@ -475,7 +501,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             this.emit(RavenEvents.DirectMessage, directMessages);
         });
 
-        const publicMessageHides: PublicMessageHide[] = this.eventQueue.filter(x => x.kind === Kind.ChannelHideMessage).map(ev => {
+        const channelMessageHides: ChannelMessageHide[] = this.eventQueue.filter(x => x.kind === Kind.ChannelHideMessage).map(ev => {
             const content = Raven.parseJson(ev.content);
             const id = Raven.findTagValue(ev, 'e');
             if (!id) return null;
@@ -484,8 +510,43 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 reason: content?.reason || ''
             };
         }).filter(notEmpty);
-        if (publicMessageHides.length > 0) {
-            this.emit(RavenEvents.PublicMessageHide, publicMessageHides);
+        if (channelMessageHides.length > 0) {
+            this.emit(RavenEvents.ChannelMessageHide, channelMessageHides);
+        }
+
+        const channelUserMutes: ChannelUserMute[] = this.eventQueue.filter(x => x.kind === Kind.ChannelMuteUser).map(ev => {
+            const content = Raven.parseJson(ev.content);
+            const pubkey = Raven.findTagValue(ev, 'p');
+            if (!pubkey) return null;
+            return {
+                pubkey,
+                reason: content?.reason || ''
+            };
+        }).filter(notEmpty);
+        if (channelUserMutes.length > 0) {
+            this.emit(RavenEvents.ChannelUserMute, channelUserMutes);
+        }
+
+        const muteListEv = this.eventQueue.filter(x => x.kind.toString() === NewKinds.MuteList.toString())
+            .sort((a, b) => b.created_at - a.created_at)[0];
+
+        if (muteListEv) {
+            const visiblePubkeys = Raven.filterTagValue(muteListEv, 'p').map(x => x?.[1])
+
+            if (muteListEv.content !== '' && this.priv !== 'nip07') {
+                nip04.decrypt(this.priv, this.pub, muteListEv.content).then(e => JSON.parse(e)).then(resp => {
+                    const allPubkeys = [...visiblePubkeys, ...resp.map((x: any) => x?.[1])];
+                    this.emit(RavenEvents.MuteList, {
+                        pubkeys: uniq(allPubkeys),
+                        encrypted: ''
+                    });
+                });
+            } else {
+                this.emit(RavenEvents.MuteList, {
+                    pubkeys: visiblePubkeys,
+                    encrypted: muteListEv.content.trim()
+                });
+            }
         }
 
         this.eventQueue = [];
@@ -515,6 +576,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     static findTagValue(ev: Event, tag: 'e' | 'p') {
         return ev.tags.find(([t]) => t === tag)?.[1]
+    }
+
+    static filterTagValue(ev: Event, tag: 'e' | 'p') {
+        return ev.tags.filter(([t]) => t === tag)
     }
 }
 

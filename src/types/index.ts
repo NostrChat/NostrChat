@@ -15,7 +15,7 @@ export type Metadata = {
 
 export type Profile = { id: string, creator: string, created: number } & Metadata;
 
-export type Channel = { id: string, creator: string, created: number } & Metadata
+export type Channel = { id: string, creator: string, created: number } & Metadata;
 
 export type ChannelUpdate = { channelId: string } & Channel;
 
@@ -27,6 +27,10 @@ export type DirectMessage = { id: string, content: string, peer: string, creator
 
 export type Message = PublicMessage | DirectMessage;
 
-export type PublicMessageHide = { id: string, reason: string };
+export type ChannelMessageHide = { id: string, reason: string };
+
+export type ChannelUserMute = { pubkey: string, reason: string };
 
 export type RelayDict = Record<string, { read: boolean; write: boolean }>;
+
+export type MuteList = { pubkeys: string[], encrypted: string };

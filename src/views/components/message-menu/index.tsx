@@ -24,7 +24,7 @@ const MessageMenu = (props: { message: Message }) => {
     const hide = () => {
         showModal({
             body: <ConfirmDialog onConfirm={() => {
-                raven?.hideMessage(message.id, '');
+                raven?.hideChannelMessage(message.id, '');
             }}/>
         });
     }

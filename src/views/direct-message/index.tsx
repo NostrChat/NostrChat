@@ -12,8 +12,10 @@ import useTranslation from 'hooks/use-translation';
 import useLiveDirectMessages from 'hooks/use-live-direct-messages';
 import {
     directContactsAtom,
-    directMessageAtom, directMessagesAtom,
+    directMessageAtom,
+    directMessagesAtom,
     keysAtom,
+    muteListAtom,
     ravenAtom,
     ravenReadyAtom
 } from 'store';
@@ -27,6 +29,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     const [directMessages, setDirectMessages] = useAtom(directMessagesAtom);
     const [directContacts] = useAtom(directContactsAtom);
     const [ravenReady] = useAtom(ravenReadyAtom);
+    const [muteList] = useAtom(muteListAtom);
     const [raven] = useAtom(ravenAtom);
     const messages = useLiveDirectMessages(directMessage || undefined);
 
@@ -72,6 +75,17 @@ const DirectMessagePage = (props: RouteComponentProps) => {
             }
         }
     }, [directMessages, directMessage]);
+
+    useEffect(() => {
+        if ('pub' in props) {
+            const {pub} = props;
+            const contact = directContacts.find(x => x.npub === pub);
+            if (muteList.pubkeys.find(x => x === contact?.pub)) {
+                navigate('/').then();
+            }
+        }
+
+    }, [props, muteList])
 
     if (!('pub' in props) || !keys) {
         return null;
