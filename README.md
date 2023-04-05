@@ -30,8 +30,8 @@ NostrChat will open in your browser.
 
 ## Roadmap 🛣️
 
-- Mute user & Hide message
-- Threads & Reply
+- Mute user & Hide message ✅
+- ~~Threads~~ & Reply
 - Reactions
 - Message menu with delete & reaction & thread & copy message link
 - Channel & DM unread indicator
