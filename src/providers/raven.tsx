@@ -17,7 +17,7 @@ import {
     ravenReadyAtom,
     channelMessageHidesAtom,
     channelUserMutesAtom,
-    muteListAtom
+    muteListAtom, directMessageAtom
 } from 'store';
 import {initRaven, RavenEvents} from 'raven/raven';
 import {
@@ -47,6 +47,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
     const [eventDeletions, setEventDeletions] = useAtom(eventDeletionsAtom);
     const [publicMessages, setPublicMessages] = useAtom(publicMessagesAtom);
     const [directMessages, setDirectMessages] = useAtom(directMessagesAtom);
+    const [directMessage,] = useAtom(directMessageAtom);
     const [channelMessageHides, setChannelMessageHides] = useAtom(channelMessageHidesAtom);
     const [channelUserMutes, setChannelUserMutes] = useAtom(channelUserMutesAtom);
     const [muteList, setMuteList] = useAtom(muteListAtom);
@@ -268,6 +269,27 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
             })
         }
     }, [muteList, keys]);
+
+    // decrypt direct messages one by one to avoid show nip7 wallet dialog many times.
+    useEffect(() => {
+        if (directMessage) {
+            const decrypted = directMessages.filter(m => m.peer === directMessage).find(x => !x.decrypted);
+            if (decrypted) {
+                window.nostr?.nip04.decrypt(decrypted.peer, decrypted.content).then(content => {
+                    setDirectMessages(directMessages.map(m => {
+                        if (m.id === decrypted.id) {
+                            return {
+                                ...m,
+                                content,
+                                decrypted: true
+                            }
+                        }
+                        return m;
+                    }));
+                })
+            }
+        }
+    }, [directMessages, directMessage]);
 
     // Init raven
     useEffect(() => {

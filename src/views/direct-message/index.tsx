@@ -13,7 +13,6 @@ import useLiveDirectMessages from 'hooks/use-live-direct-messages';
 import {
     directContactsAtom,
     directMessageAtom,
-    directMessagesAtom,
     keysAtom,
     muteListAtom,
     ravenAtom,
@@ -26,7 +25,6 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     const navigate = useNavigate();
     const [t] = useTranslation();
     const [directMessage, setDirectMessage] = useAtom(directMessageAtom);
-    const [directMessages, setDirectMessages] = useAtom(directMessagesAtom);
     const [directContacts] = useAtom(directContactsAtom);
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [muteList] = useAtom(muteListAtom);
@@ -54,27 +52,6 @@ const DirectMessagePage = (props: RouteComponentProps) => {
             }
         }
     }, [props, directContacts]);
-
-    useEffect(() => {
-        if (directMessage) {
-            // decrypt messages one by one.
-            const decrypted = directMessages.filter(m => m.peer === directMessage).find(x => !x.decrypted);
-            if (decrypted) {
-                window.nostr?.nip04.decrypt(decrypted.peer, decrypted.content).then(content => {
-                    setDirectMessages(directMessages.map(m => {
-                        if (m.id === decrypted.id) {
-                            return {
-                                ...m,
-                                content,
-                                decrypted: true
-                            }
-                        }
-                        return m;
-                    }));
-                })
-            }
-        }
-    }, [directMessages, directMessage]);
 
     useEffect(() => {
         if ('pub' in props) {
