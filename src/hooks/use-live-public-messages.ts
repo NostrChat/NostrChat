@@ -16,7 +16,7 @@ const useLivePublicMessages = (channelId?: string) => {
     const [muteList] = useAtom(muteListAtom);
 
     return useMemo(() => messages
-        .filter(x => x.channelId === channelId)
+        .filter(x => x.root === channelId)
         .filter(c => eventDeletions.find(x => x.eventId === c.id) === undefined)
         .filter(c => channelMessageHides.find(x => x.id === c.id) === undefined)
         .filter(c => channelUserMutes.find(x => x.pubkey === c.creator) === undefined)

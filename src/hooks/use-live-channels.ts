@@ -19,8 +19,8 @@ const useLiveChannels = () => {
 
         return c;
     }).filter(c => eventDeletions.find(x => x.eventId === c.id) === undefined).sort((a, b) => {
-        const aLastMessage = publicMessages.filter(x => x.channelId === a.id).sort((a, b) => b.created - a.created)[0]?.created;
-        const bLastMessage = publicMessages.filter(x => x.channelId === b.id).sort((a, b) => b.created - a.created)[0]?.created;
+        const aLastMessage = publicMessages.filter(x => x.root === a.id).sort((a, b) => b.created - a.created)[0]?.created;
+        const bLastMessage = publicMessages.filter(x => x.root === b.id).sort((a, b) => b.created - a.created)[0]?.created;
         return (bLastMessage || 0) - (aLastMessage || 0);
     })
 

@@ -457,13 +457,16 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }
 
         const publicMessages: PublicMessage[] = this.eventQueue.filter(x => x.kind === Kind.ChannelMessage).map(ev => {
-                const channelId = Raven.findTagValue(ev, 'e');
-                if (!channelId) return null;
+                const eTags = Raven.filterTagValue(ev, 'e');
+                const root = eTags.find(x => x[3] === 'root')?.[1];
+                const mentions = Raven.filterTagValue(ev, 'p').map(x => x?.[1]).filter(notEmpty);
+                if (!root) return null;
                 return ev.content ? {
                     id: ev.id,
-                    channelId,
+                    root,
                     content: ev.content,
                     creator: ev.pubkey,
+                    mentions,
                     created: ev.created_at,
                 } : null;
             }
