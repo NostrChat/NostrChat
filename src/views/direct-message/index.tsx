@@ -17,7 +17,8 @@ import {
     keysAtom,
     muteListAtom,
     ravenAtom,
-    ravenReadyAtom
+    ravenReadyAtom,
+    replyingToAtom
 } from 'store';
 
 
@@ -31,6 +32,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [muteList] = useAtom(muteListAtom);
     const [raven] = useAtom(ravenAtom);
+    const [replyingTo, setReplyingTo] = useAtom(replyingToAtom);
     const messages = useLiveDirectMessages(directMessage || undefined);
 
     useEffect(() => {
@@ -57,7 +59,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
 
     useEffect(() => {
         if (directMessage) {
-            // decrypt messages one by one.
+            // decrypt messages one by one. TODO: This might be handled in raven provider
             const decrypted = directMessages.filter(m => m.peer === directMessage).find(x => !x.decrypted);
             if (decrypted) {
                 window.nostr?.nip04.decrypt(decrypted.peer, decrypted.content).then(content => {
@@ -103,7 +105,8 @@ const DirectMessagePage = (props: RouteComponentProps) => {
                 <DmHeader/>
                 <ChatView separator={directMessage} messages={messages}/>
                 <ChatInput separator={directMessage} senderFn={(message: string) => {
-                    raven?.sendDirectMessage(directMessage, message);
+                    raven?.sendDirectMessage({toPubkey: directMessage, message, replyTo: replyingTo || undefined});
+                    setReplyingTo(null);
                 }}/>
             </AppContent>
         </AppWrapper>

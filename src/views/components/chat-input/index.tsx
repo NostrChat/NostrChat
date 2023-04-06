@@ -1,20 +1,31 @@
 import React, {useEffect, useRef} from 'react';
+import {useAtom} from 'jotai';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import {lighten} from '@mui/material';
+import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import Tools from 'views/components/chat-input/tools';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
+import {replyingToAtom} from 'store';
 import Send from 'svg/send';
+import Close from 'svg/close';
 import {focusElem} from 'util/dom';
+import {truncate} from 'util/truncate';
+
 
 const ChatInput = (props: { separator: string, senderFn: (message: string) => void }) => {
     const {senderFn, separator} = props;
     const theme = useTheme();
     const [, isMd] = useMediaBreakPoint();
     const inputRef = useRef<HTMLDivElement | null>(null);
+    const [replyingTo, setReplyingTo] = useAtom(replyingToAtom);
     const storageKey = `${separator}_msg`;
     let saveTimer: any = null;
+
+    useEffect(() => {
+        if (replyingTo) focusElem(inputRef.current!);
+    }, [replyingTo]);
 
     useEffect(() => {
         inputRef.current!.innerText = localStorage.getItem(storageKey) || '';
@@ -46,6 +57,29 @@ const ChatInput = (props: { separator: string, senderFn: (message: string) => vo
         flexGrow: 0,
         flexShrink: 0,
     }}>
+        {replyingTo && (
+            <Box sx={{
+                p: '10px',
+                mb: '10px',
+                fontSize: '0.8em',
+                background: theme.palette.divider,
+                borderRadius: theme.shape.borderRadius,
+                display: 'flex',
+                alignItems: 'center'
+            }}>
+                <Box sx={{
+                    flexGrow: 1,
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                }}>
+                    {`RE: ${truncate(replyingTo.content, 300)}`}
+                </Box>
+                <IconButton onClick={() => {
+                    setReplyingTo(null);
+                }}><Close height={20}/></IconButton>
+            </Box>
+        )}
         <Box sx={{
             background: theme.palette.divider,
             borderRadius: theme.shape.borderRadius,

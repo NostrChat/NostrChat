@@ -13,7 +13,7 @@ import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import useToast from 'hooks/use-toast';
-import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom} from 'store';
+import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom, replyingToAtom} from 'store';
 import {RavenEvents} from 'raven/raven';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {Channel} from 'types';
@@ -31,6 +31,7 @@ const ChannelPage = (props: RouteComponentProps) => {
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [raven] = useAtom(ravenAtom);
     const [commonTs] = useAtom(commonTsAtom);
+    const [replyingTo, setReplyingTo] = useAtom(replyingToAtom);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
 
@@ -55,7 +56,6 @@ const ChannelPage = (props: RouteComponentProps) => {
             }
         }
     }, [props, channels]);
-
 
     useEffect(() => {
         const handleChannelCreation = (data: Channel[]) => {
@@ -113,8 +113,9 @@ const ChannelPage = (props: RouteComponentProps) => {
                 <ChannelHeader/>
                 <ChatView separator={channel.id} messages={messages} loading={loading}/>
                 <ChatInput separator={channel.id} senderFn={(message: string) => {
-                    raven?.sendPublicMessage(channel, message).catch(e => {
+                    raven?.sendPublicMessage({channel, message, replyTo: replyingTo || undefined}).catch(e => {
                         showMessage(e, 'error');
+                        setReplyingTo(null);
                     });
                 }}/>
             </AppContent>

@@ -8,6 +8,7 @@ import {
     DirectMessage,
     EventDeletion,
     Keys,
+    Message,
     Metadata, MuteList,
     Profile,
     PublicMessage,
@@ -223,6 +224,15 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         })
     }
 
+    public fetchById = (id: string) => {
+        return this.fetchP([
+            {
+                kinds: [Kind.ChannelMessage],
+                ids: [id]
+            }
+        ]);
+    }
+
     public loadChannel(id: string) {
         const filters: Filter[] = [
             {
@@ -311,15 +321,28 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(Kind.EventDeletion, [...ids.map(id => ['e', id])], why);
     }
 
-    public async sendPublicMessage(channel: Channel, message: string) {
-        return this.findHealthyRelay(this.writeRelays).then(relay => {
-            return this.publish(Kind.ChannelMessage, [['e', channel.id, relay, 'root']], message);
-        });
+    public async sendPublicMessage(opts: {
+        channel: Channel,
+        message: string,
+        replyTo?: Message
+    }) {
+        const relay = this.findHealthyRelay(this.writeRelays);
+        const tags = [['e', opts.channel.id, relay, 'root']];
+        if (opts.replyTo) {
+            tags.push(['e', opts.replyTo.id, relay, 'reply']);
+            tags.push(['p', opts.replyTo.creator, relay]);
+        }
+        return this.publish(Kind.ChannelMessage, tags, opts.message);
     }
 
-    public async sendDirectMessage(toPubkey: string, message: string) {
-        const encrypted = await (this.priv === 'nip07' ? window.nostr!.nip04.encrypt(toPubkey, message) : nip04.encrypt(this.priv, toPubkey, message));
-        return this.publish(Kind.EncryptedDirectMessage, [['p', toPubkey]], encrypted);
+    public async sendDirectMessage(opts: { toPubkey: string, message: string, replyTo?: Message }) {
+        const relay = await this.findHealthyRelay(this.writeRelays);
+        const encrypted = await (this.priv === 'nip07' ? window.nostr!.nip04.encrypt(opts.toPubkey, opts.message) : nip04.encrypt(this.priv, opts.toPubkey, opts.message));
+        const tags = [['p', opts.toPubkey]];
+        if (opts.replyTo) {
+            tags.push(['e', opts.replyTo.id, relay, 'reply']);
+        }
+        return this.publish(Kind.EncryptedDirectMessage, tags, encrypted);
     }
 
     public async recommendRelay(relay: string) {
@@ -457,15 +480,25 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }
 
         const publicMessages: PublicMessage[] = this.eventQueue.filter(x => x.kind === Kind.ChannelMessage).map(ev => {
-                const channelId = Raven.findTagValue(ev, 'e');
-                if (!channelId) return null;
-                return ev.content ? {
-                    id: ev.id,
-                    channelId,
-                    content: ev.content,
-                    creator: ev.pubkey,
-                    created: ev.created_at,
-                } : null;
+                const eTags = Raven.filterTagValue(ev, 'e');
+                const root = eTags.find(x => x[3] === 'root')?.[1];
+                const replyTo = eTags.find(x => x[3] === 'reply')?.[1];
+                const mentions = Raven.filterTagValue(ev, 'p').map(x => x?.[1]).filter(notEmpty);
+                if (!root) return null;
+                if (ev.content) {
+                    if (mentions.length > 0) this.loadProfiles(mentions);
+
+                    return {
+                        id: ev.id,
+                        channelId: root,
+                        content: ev.content,
+                        creator: ev.pubkey,
+                        created: ev.created_at,
+                        replyTo,
+                        mentions
+                    };
+                }
+                return null;
             }
         ).filter(notEmpty);
         if (publicMessages.length > 0) {
@@ -476,6 +509,9 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             const receiver = Raven.findTagValue(ev, 'p');
             if (!receiver) return null;
 
+            const eTags = Raven.filterTagValue(ev, 'e');
+            const replyTo = eTags.find(x => x[3] === 'reply')?.[1];
+
             const peer = receiver === this.pub ? ev.pubkey : receiver;
             const msg = {
                 id: ev.id,
@@ -483,6 +519,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 peer,
                 creator: ev.pubkey,
                 created: ev.created_at,
+                replyTo,
                 decrypted: false
             };
 

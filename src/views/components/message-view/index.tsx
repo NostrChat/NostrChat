@@ -11,6 +11,7 @@ import useMediaBreakPoint from 'hooks/use-media-break-point';
 import Avatar from 'views/components/avatar';
 import ProfileCard from 'views/components/profile-card';
 import MessageMenu from 'views/components/message-menu';
+import ReplyView from 'views/components/message-view/reply-view';
 import {profilesAtom} from 'store';
 import {Message,} from 'types';
 import {formatMessageTime} from 'helper';
@@ -26,7 +27,7 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
     const [, isMd] = useMediaBreakPoint();
     const holderEl = useRef<HTMLDivElement | null>(null);
     const renderedBody = useContentRenderer(message.content);
-    const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 26), ':'), [profile, message]);
+    const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 24), ':'), [profile, message]);
     const [menu, setMenu] = useState<boolean>(false);
 
     const profileClicked = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -74,7 +75,7 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
                     <Avatar src={profile?.picture} seed={message.creator} size={40} type="user"/>
                 </Box>}
         </Box>
-        <Box sx={{flexGrow: 1, ml: '12px'}}>
+        <Box sx={{flexGrow: 1, ml: '12px', minWidth: 0}}>
             {!compactView && (<Box sx={{
                 display: 'flex',
                 alignItems: 'center',
@@ -93,6 +94,7 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
                     fontSize: '90%'
                 }}>{formatMessageTime(message.created)}</Box>
             </Box>)}
+            <ReplyView parent={message} />
             <Box sx={{
                 fontSize: '0.9em',
                 mt: '4px',

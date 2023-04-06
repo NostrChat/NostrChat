@@ -101,7 +101,7 @@ const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => voi
                 }}
                 onKeyUp={(e) => {
                     if (e.key === 'Enter' && message.trim() !== '') {
-                        raven?.sendDirectMessage(pubkey, message).then(() => {
+                        raven?.sendDirectMessage({toPubkey: pubkey, message}).then(() => {
                             setMessage('');
                             onDM();
                         });
