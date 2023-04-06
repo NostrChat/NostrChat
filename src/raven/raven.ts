@@ -326,7 +326,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         message: string,
         replyTo?: Message
     }) {
-        const relay = this.findHealthyRelay(this.writeRelays);
+        const relay = await this.findHealthyRelay(this.writeRelays);
         const tags = [['e', opts.channel.id, relay, 'root']];
         if (opts.replyTo) {
             tags.push(['e', opts.replyTo.id, relay, 'reply']);
@@ -422,6 +422,45 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }
     }
 
+    public eventToPublicMessage(ev: Event): PublicMessage | null {
+        const eTags = Raven.filterTagValue(ev, 'e');
+        const root = eTags.find(x => x[3] === 'root')?.[1];
+        const replyTo = eTags.find(x => x[3] === 'reply')?.[1];
+        const mentions = Raven.filterTagValue(ev, 'p').map(x => x?.[1]).filter(notEmpty);
+        if (!root) return null;
+        if (ev.content) {
+            return {
+                id: ev.id,
+                channelId: root,
+                content: ev.content,
+                creator: ev.pubkey,
+                created: ev.created_at,
+                replyTo,
+                mentions
+            };
+        }
+        return null;
+    }
+
+    public eventToDirectMessage(ev: Event): DirectMessage | null {
+        const receiver = Raven.findTagValue(ev, 'p');
+        if (!receiver) return null;
+
+        const eTags = Raven.filterTagValue(ev, 'e');
+        const replyTo = eTags.find(x => x[3] === 'reply')?.[1];
+
+        const peer = receiver === this.pub ? ev.pubkey : receiver;
+        return {
+            id: ev.id,
+            content: ev.content,
+            peer,
+            creator: ev.pubkey,
+            created: ev.created_at,
+            replyTo,
+            decrypted: false
+        };
+    }
+
     async processEventQueue() {
         this.eventQueueFlag = false;
 
@@ -479,55 +518,16 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             this.emit(RavenEvents.EventDeletion, deletions);
         }
 
-        const publicMessages: PublicMessage[] = this.eventQueue.filter(x => x.kind === Kind.ChannelMessage).map(ev => {
-                const eTags = Raven.filterTagValue(ev, 'e');
-                const root = eTags.find(x => x[3] === 'root')?.[1];
-                const replyTo = eTags.find(x => x[3] === 'reply')?.[1];
-                const mentions = Raven.filterTagValue(ev, 'p').map(x => x?.[1]).filter(notEmpty);
-                if (!root) return null;
-                if (ev.content) {
-                    if (mentions.length > 0) this.loadProfiles(mentions);
-
-                    return {
-                        id: ev.id,
-                        channelId: root,
-                        content: ev.content,
-                        creator: ev.pubkey,
-                        created: ev.created_at,
-                        replyTo,
-                        mentions
-                    };
-                }
-                return null;
-            }
-        ).filter(notEmpty);
+        const publicMessages: PublicMessage[] = this.eventQueue.filter(x => x.kind === Kind.ChannelMessage).map(ev => this.eventToPublicMessage(ev)).filter(notEmpty);
         if (publicMessages.length > 0) {
             this.emit(RavenEvents.PublicMessage, publicMessages);
         }
 
         Promise.all(this.eventQueue.filter(x => x.kind === Kind.EncryptedDirectMessage).map(ev => {
-            const receiver = Raven.findTagValue(ev, 'p');
-            if (!receiver) return null;
-
-            const eTags = Raven.filterTagValue(ev, 'e');
-            const replyTo = eTags.find(x => x[3] === 'reply')?.[1];
-
-            const peer = receiver === this.pub ? ev.pubkey : receiver;
-            const msg = {
-                id: ev.id,
-                content: ev.content,
-                peer,
-                creator: ev.pubkey,
-                created: ev.created_at,
-                replyTo,
-                decrypted: false
-            };
-
-            if (this.priv === 'nip07') {
-                return msg;
-            }
-
-            return nip04.decrypt(this.priv, peer, ev.content).then(content => {
+            const msg = this.eventToDirectMessage(ev);
+            if (!msg) return null;
+            if (this.priv === 'nip07') return msg;
+            return nip04.decrypt(this.priv, msg.peer, msg.content).then(content => {
                 return {
                     ...msg,
                     content,
