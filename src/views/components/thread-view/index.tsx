@@ -51,7 +51,7 @@ const ThreadView = (props: { senderFn: (message: string) => void }) => {
                     setThreadRoot(null)
                 }}><Close height={20}/></IconButton>
             </Box>
-            <MessageView message={threadRoot} compactView={false}/>
+            <MessageView message={threadRoot} compactView={false} inThreadView/>
             <Divider textAlign="left" sx={{
                 fontSize: '0.7em',
                 color: darken(theme.palette.text.secondary, 0.4),
@@ -64,7 +64,7 @@ const ThreadView = (props: { senderFn: (message: string) => void }) => {
             overflowX: 'hidden',
         }}>
             {threadRoot.children?.map(msg => {
-                return <MessageView key={msg.id} message={msg} compactView={false}/>
+                return <MessageView key={msg.id} message={msg} compactView={false} inThreadView/>
             })}
         </Box>
         <ChatInput separator={threadRoot.id} senderFn={props.senderFn}/>

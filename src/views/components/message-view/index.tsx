@@ -17,8 +17,8 @@ import {Message,} from 'types';
 import {formatMessageTime} from 'helper';
 import {truncateMiddle} from 'util/truncate';
 
-const MessageView = (props: { message: Message, compactView: boolean, }) => {
-    const {message, compactView} = props;
+const MessageView = (props: { message: Message, compactView: boolean, inThreadView?: boolean }) => {
+    const {message, compactView, inThreadView} = props;
     const [profiles] = useAtom(profilesAtom);
     const profile = profiles.find(x => x.creator === message.creator);
     const [, setThreadRoot] = useAtom(threadRootAtom);
@@ -61,7 +61,7 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
         }
     }, [isVisible]);
 
-    const hasReply = message.children && message.children.length > 0;
+    const hasReply = !inThreadView && message.children && message.children.length > 0;
 
     const ps = isMd ? '24px' : '10px';
     return <Box
@@ -87,7 +87,7 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
             position: 'absolute',
             right: '10px',
             top: '-10px'
-        }}><MessageMenu message={message}/></Box>)}
+        }}><MessageMenu message={message} inThreadView={inThreadView}/></Box>)}
         <Box sx={{
             display: 'flex',
             width: '40px',

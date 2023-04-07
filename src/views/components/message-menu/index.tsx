@@ -12,8 +12,8 @@ import useTranslation from 'hooks/use-translation';
 import EyeOff from 'svg/eye-off';
 import MessageReplyText from 'svg/message-reply-text';
 
-const MessageMenu = (props: { message: Message }) => {
-    const {message} = props;
+const MessageMenu = (props: { message: Message, inThreadView?: boolean }) => {
+    const {message, inThreadView} = props;
     const theme = useTheme();
     const [keys] = useAtom(keysAtom);
     const [raven] = useAtom(ravenAtom);
@@ -35,11 +35,13 @@ const MessageMenu = (props: { message: Message }) => {
 
     const buttons = [];
 
-    buttons.push(<Tooltip title={t('Reply in thread')}>
-        <IconButton size="small" onClick={openThread}>
-            <MessageReplyText height={18}/>
-        </IconButton>
-    </Tooltip>)
+    if (!inThreadView) {
+        buttons.push(<Tooltip title={t('Reply in thread')}>
+            <IconButton size="small" onClick={openThread}>
+                <MessageReplyText height={18}/>
+            </IconButton>
+        </Tooltip>)
+    }
 
     if (keys?.pub !== message.creator && !('decrypted' in message)) { // only public messages
         buttons.push(<Tooltip title={t('Hide')}>
