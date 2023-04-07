@@ -1,5 +1,6 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useAtom} from 'jotai';
+import uniq from 'lodash.uniq';
 import {darken} from '@mui/material';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
@@ -16,6 +17,7 @@ import MessageMenu from 'views/components/message-menu';
 import {profilesAtom, threadRootAtom} from 'store';
 import {Message,} from 'types';
 import {formatMessageTime, formatMessageFromNow, formatMessageDateTime} from 'helper';
+import ChevronRight from 'svg/chevron-right';
 import {truncateMiddle} from 'util/truncate';
 
 const MessageView = (props: { message: Message, compactView: boolean, dateFormat: 'time' | 'fromNow', inThreadView?: boolean }) => {
@@ -36,7 +38,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 26), ':'), [profile, message]);
     const messageTime = useMemo(() => dateFormat === 'time' ? formatMessageTime(message.created) : formatMessageFromNow(message.created), [message]);
     const messageDateTime = useMemo(() => formatMessageDateTime(message.created), [message]);
-    const hasReply = !inThreadView && message.children && message.children.length > 0;
+    const lastReply = useMemo(() => message.children && message.children.length > 0 ? formatMessageFromNow(message.children.sort((a, b) => b.created - a.created)[0].created) : null, [message]);
 
     const profileClicked = (event: React.MouseEvent<HTMLDivElement>) => {
         showPopover({
@@ -131,19 +133,47 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                 lineHeight: '1.4em',
                 color: theme.palette.text.secondary
             }}>{renderedBody}</Box>
-            {hasReply && (
+            {(!inThreadView && message.children && message.children.length > 0) && (
                 <Box sx={{
-                    color: theme.palette.primary.main,
+                    p: '6px',
+                    mb: '4px',
                     display: 'inline-flex',
+                    alignItems: 'center',
                     fontSize: '0.8rem',
                     cursor: 'pointer',
+                    border: '1px solid transparent',
+                    color: darken(theme.palette.text.secondary, 0.3),
+                    borderRadius: theme.shape.borderRadius,
+                    'svg': {
+                        display: 'none',
+                    },
                     ':hover': {
-                        textDecoration: 'underline'
+                        borderColor: theme.palette.divider,
+                        background: theme.palette.background.paper,
+                        'svg': {
+                            display: 'block',
+                        },
                     }
                 }} onClick={() => {
                     setThreadRoot(message);
                 }}>
-                    {message.children?.length === 1 ? t('1 reply') : t('{{n}} replies', {n: message.children?.length})}
+                    {uniq(message.children.map(m => m.creator)).slice(0, 4).map(c => {
+                        const profile = profiles.find(x => x.creator === c);
+                        return <Box sx={{
+                            mr: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                        }}>
+                            <Avatar src={profile?.picture} seed={c} size={20} type='user'/>
+                        </Box>
+                    })}
+                    <Box sx={{mr: '10px', color: theme.palette.primary.main, fontWeight: 'bold'}}>
+                        {message.children.length === 1 ? t('1 reply') : t('{{n}} replies', {n: message.children.length})}
+                    </Box>
+                    <Box sx={{mr: '10px'}}>
+                        {t('Last reply {{n}}', {n: lastReply!})}
+                    </Box>
+                    <ChevronRight height={20}/>
                 </Box>
             )}
         </Box>
