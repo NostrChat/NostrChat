@@ -29,31 +29,44 @@ const ThreadView = (props: { senderFn: (message: string) => void }) => {
         flexGrow: 0,
         flexShrink: 0,
         background: lighten(theme.palette.background.default, .03),
+        display: 'flex',
+        flexDirection: 'column'
     }}>
         <Box sx={{
-            height: '88px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            borderBottom: `1px solid ${theme.palette.divider}`,
-            alignItems: 'center',
-            p: '0 20px'
+            flexGrow: 0,
+            flexShrink: 0,
         }}>
-            <Box sx={{fontFamily: 'Faktum, sans-serif'}}>
-                {t('Thread')}
+            <Box sx={{
+                height: '88px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                borderBottom: `1px solid ${theme.palette.divider}`,
+                alignItems: 'center',
+                p: '0 20px'
+            }}>
+                <Box sx={{fontFamily: 'Faktum, sans-serif'}}>
+                    {t('Thread')}
+                </Box>
+                <IconButton onClick={() => {
+                    setThreadRoot(null)
+                }}><Close height={20}/></IconButton>
             </Box>
-            <IconButton onClick={() => {
-                setThreadRoot(null)
-            }}><Close height={20}/></IconButton>
+            <MessageView message={threadRoot} compactView={false}/>
+            <Divider textAlign="left" sx={{
+                fontSize: '0.7em',
+                color: darken(theme.palette.text.secondary, 0.4),
+                m: '6px 0'
+            }}>{t('{{n}} replies', {n: threadRoot.children?.length})}</Divider>
         </Box>
-        <MessageView message={threadRoot} compactView={false}/>
-        <Divider textAlign="left" sx={{
-            fontSize: '0.7em',
-            color: darken(theme.palette.text.secondary, 0.4),
-            m: '6px 0'
-        }}>{t('{{n}} replies', {n: threadRoot.children?.length})}</Divider>
-        {threadRoot.children?.map(msg => {
-            return <MessageView key={msg.id} message={msg} compactView={false}/>
-        })}
+        <Box sx={{
+            flexGrow: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+        }}>
+            {threadRoot.children?.map(msg => {
+                return <MessageView key={msg.id} message={msg} compactView={false}/>
+            })}
+        </Box>
         <ChatInput separator={threadRoot.id} senderFn={props.senderFn}/>
     </Box>
 }

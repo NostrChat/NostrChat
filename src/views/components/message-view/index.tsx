@@ -8,10 +8,11 @@ import {nip19} from 'nostr-tools';
 import useContentRenderer from 'hooks/use-render-content';
 import usePopover from 'hooks/use-popover';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
+import useTranslation from 'hooks/use-translation';
 import Avatar from 'views/components/avatar';
 import ProfileCard from 'views/components/profile-card';
 import MessageMenu from 'views/components/message-menu';
-import {profilesAtom} from 'store';
+import {profilesAtom, threadRootAtom} from 'store';
 import {Message,} from 'types';
 import {formatMessageTime} from 'helper';
 import {truncateMiddle} from 'util/truncate';
@@ -20,6 +21,7 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
     const {message, compactView} = props;
     const [profiles] = useAtom(profilesAtom);
     const profile = profiles.find(x => x.creator === message.creator);
+    const [, setThreadRoot] = useAtom(threadRootAtom);
     const theme = useTheme();
     const navigate = useNavigate();
     const [, showPopover] = usePopover();
@@ -29,6 +31,7 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
     const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 26), ':'), [profile, message]);
     const [menu, setMenu] = useState<boolean>(false);
     const [isVisible, setIsVisible] = useState<boolean>(false);
+    const [t] = useTranslation();
 
     const profileClicked = (event: React.MouseEvent<HTMLDivElement>) => {
         showPopover({
@@ -57,6 +60,8 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
             observer.disconnect();
         }
     }, [isVisible]);
+
+    const hasReply = message.children && message.children.length > 0;
 
     const ps = isMd ? '24px' : '10px';
     return <Box
@@ -120,6 +125,21 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
                 lineHeight: '1.4em',
                 color: theme.palette.text.secondary
             }}>{renderedBody}</Box>
+            {hasReply && (
+                <Box sx={{
+                    color: theme.palette.primary.main,
+                    display: 'inline-flex',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    ':hover': {
+                        textDecoration: 'underline'
+                    }
+                }} onClick={() => {
+                    setThreadRoot(message);
+                }}>
+                    {t('{{n}} replies', {n: message.children?.length})}
+                </Box>
+            )}
         </Box>
     </Box>;
 }
