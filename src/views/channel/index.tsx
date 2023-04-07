@@ -13,10 +13,11 @@ import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import useToast from 'hooks/use-toast';
-import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom} from 'store';
+import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom} from 'store';
 import {RavenEvents} from 'raven/raven';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {Channel} from 'types';
+import ThreadView from '../components/thread-view';
 
 
 const ChannelPage = (props: RouteComponentProps) => {
@@ -28,6 +29,7 @@ const ChannelPage = (props: RouteComponentProps) => {
     const channel = useLiveChannel();
     const messages = useLivePublicMessages(channel?.id);
     const [, setChannel] = useAtom(channelAtom);
+    const [threadRoot,] = useAtom(threadRootAtom);
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [raven] = useAtom(ravenAtom);
     const [commonTs] = useAtom(commonTsAtom);
@@ -109,7 +111,7 @@ const ChannelPage = (props: RouteComponentProps) => {
         <Helmet><title>{t(`NostrChat - ${channel.name}`)}</title></Helmet>
         <AppWrapper>
             <AppMenu/>
-            <AppContent>
+            <AppContent divide={!!threadRoot}>
                 <ChannelHeader/>
                 <ChatView separator={channel.id} messages={messages} loading={loading}/>
                 <ChatInput separator={channel.id} senderFn={(message: string) => {
@@ -118,6 +120,11 @@ const ChannelPage = (props: RouteComponentProps) => {
                     });
                 }}/>
             </AppContent>
+            {threadRoot && <ThreadView senderFn={(message: string) => {
+                raven?.sendPublicMessage(channel, message, threadRoot.id).catch(e => {
+                    showMessage(e, 'error');
+                });
+            }}/>}
         </AppWrapper>
     </>;
 }

@@ -8,6 +8,7 @@ import AppMenu from 'views/components/app-menu';
 import ChatInput from 'views/components/chat-input';
 import ChatView from 'views/components/chat-view';
 import DmHeader from 'views/direct-message/components/dm-header';
+import ThreadView from 'views/components/thread-view';
 import useTranslation from 'hooks/use-translation';
 import useLiveDirectMessages from 'hooks/use-live-direct-messages';
 import {
@@ -16,7 +17,8 @@ import {
     keysAtom,
     muteListAtom,
     ravenAtom,
-    ravenReadyAtom
+    ravenReadyAtom,
+    threadRootAtom
 } from 'store';
 
 
@@ -26,6 +28,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     const [t] = useTranslation();
     const [directMessage, setDirectMessage] = useAtom(directMessageAtom);
     const [directContacts] = useAtom(directContactsAtom);
+    const [threadRoot,] = useAtom(threadRootAtom);
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [muteList] = useAtom(muteListAtom);
     const [raven] = useAtom(ravenAtom);
@@ -76,13 +79,16 @@ const DirectMessagePage = (props: RouteComponentProps) => {
         <Helmet><title>{t(`NostrChat - ${directMessage}`)}</title></Helmet>
         <AppWrapper>
             <AppMenu/>
-            <AppContent>
+            <AppContent divide={!!threadRoot}>
                 <DmHeader/>
                 <ChatView separator={directMessage} messages={messages}/>
                 <ChatInput separator={directMessage} senderFn={(message: string) => {
                     raven?.sendDirectMessage(directMessage, message);
                 }}/>
             </AppContent>
+            {threadRoot && <ThreadView senderFn={(message: string) => {
+                raven?.sendDirectMessage(directMessage, message, threadRoot.id);
+            }}/>}
         </AppWrapper>
     </>;
 }

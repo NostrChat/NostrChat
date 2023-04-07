@@ -311,15 +311,19 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(Kind.EventDeletion, [...ids.map(id => ['e', id])], why);
     }
 
-    public async sendPublicMessage(channel: Channel, message: string) {
-        return this.findHealthyRelay(this.writeRelays).then(relay => {
-            return this.publish(Kind.ChannelMessage, [['e', channel.id, relay, 'root']], message);
-        });
+    public async sendPublicMessage(channel: Channel, message: string, parent?: string) {
+        const relay = await this.findHealthyRelay(this.writeRelays);
+        const tags = [['e', channel.id, relay, 'root']];
+        if (parent) tags.push(['e', parent, relay, 'reply']);
+        return this.publish(Kind.ChannelMessage, tags, message);
     }
 
-    public async sendDirectMessage(toPubkey: string, message: string) {
+    public async sendDirectMessage(toPubkey: string, message: string, parent?: string) {
         const encrypted = await (this.priv === 'nip07' ? window.nostr!.nip04.encrypt(toPubkey, message) : nip04.encrypt(this.priv, toPubkey, message));
-        return this.publish(Kind.EncryptedDirectMessage, [['p', toPubkey]], encrypted);
+        const relay = await this.findHealthyRelay(this.writeRelays);
+        const tags = [['p', toPubkey]];
+        if (parent) tags.push(['e', parent, relay, 'root']);
+        return this.publish(Kind.EncryptedDirectMessage, tags, encrypted);
     }
 
     public async recommendRelay(relay: string) {
@@ -459,6 +463,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         const publicMessages: PublicMessage[] = this.eventQueue.filter(x => x.kind === Kind.ChannelMessage).map(ev => {
                 const eTags = Raven.filterTagValue(ev, 'e');
                 const root = eTags.find(x => x[3] === 'root')?.[1];
+                const parent = eTags.find(x => x[3] === 'reply')?.[1];
                 const mentions = Raven.filterTagValue(ev, 'p').map(x => x?.[1]).filter(notEmpty);
                 if (!root) return null;
                 return ev.content ? {
@@ -468,6 +473,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     creator: ev.pubkey,
                     mentions,
                     created: ev.created_at,
+                    parent
                 } : null;
             }
         ).filter(notEmpty);
@@ -478,6 +484,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         Promise.all(this.eventQueue.filter(x => x.kind === Kind.EncryptedDirectMessage).map(ev => {
             const receiver = Raven.findTagValue(ev, 'p');
             if (!receiver) return null;
+            const eTags = Raven.filterTagValue(ev, 'e');
+            const parent = eTags.find(x => x[3] === 'reply')?.[1];
 
             const peer = receiver === this.pub ? ev.pubkey : receiver;
             const msg = {
@@ -486,6 +494,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 peer,
                 creator: ev.pubkey,
                 created: ev.created_at,
+                parent,
                 decrypted: false
             };
 
