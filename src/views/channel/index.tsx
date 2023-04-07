@@ -2,12 +2,14 @@ import {useEffect, useState} from 'react';
 import {useAtom} from 'jotai';
 import {RouteComponentProps, useNavigate} from '@reach/router';
 import {Helmet} from 'react-helmet';
+import isEqual from 'lodash.isequal';
 import AppWrapper from 'views/components/app-wrapper';
 import AppContent from 'views/components/app-content';
 import AppMenu from 'views/components/app-menu';
 import ChannelHeader from 'views/channel/components/channel-header';
 import ChatInput from 'views/components/chat-input';
 import ChatView from 'views/components/chat-view';
+import ThreadView from 'views/components/thread-view';
 import useTranslation from 'hooks/use-translation';
 import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
@@ -17,7 +19,6 @@ import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRo
 import {RavenEvents} from 'raven/raven';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {Channel} from 'types';
-import ThreadView from '../components/thread-view';
 
 
 const ChannelPage = (props: RouteComponentProps) => {
@@ -29,7 +30,7 @@ const ChannelPage = (props: RouteComponentProps) => {
     const channel = useLiveChannel();
     const messages = useLivePublicMessages(channel?.id);
     const [, setChannel] = useAtom(channelAtom);
-    const [threadRoot,] = useAtom(threadRootAtom);
+    const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [raven] = useAtom(ravenAtom);
     const [commonTs] = useAtom(commonTsAtom);
@@ -57,7 +58,6 @@ const ChannelPage = (props: RouteComponentProps) => {
             }
         }
     }, [props, channels]);
-
 
     useEffect(() => {
         const handleChannelCreation = (data: Channel[]) => {
@@ -94,6 +94,13 @@ const ChannelPage = (props: RouteComponentProps) => {
             window.removeEventListener('chat-view-top', fetchPrev);
         }
     }, [messages, channel, hasMore]);
+
+    useEffect(() => {
+        const msg = messages.find(x => x.id === threadRoot?.id);
+        if (threadRoot && msg && !isEqual(msg, threadRoot)) {
+            setThreadRoot(msg);
+        }
+    }, [messages, threadRoot]);
 
     if (!keys) {
         return null;

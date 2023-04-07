@@ -8,7 +8,8 @@ import {
     DirectMessage,
     EventDeletion,
     Keys,
-    Metadata, MuteList,
+    Metadata,
+    MuteList,
     Profile,
     PublicMessage,
 } from 'types';
@@ -69,6 +70,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     private nameCache: Record<string, number> = {};
 
     listenerSub: Sub | null = null;
+    messageListenerSub: Sub | null = null;
 
     constructor(priv: string, pub: string) {
         super();
@@ -281,6 +283,21 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }], false);
     }
 
+    listenMessages = (ids: string[]) => {
+        if (this.messageListenerSub) {
+            this.messageListenerSub.unsub();
+        }
+
+        this.messageListenerSub = this.fetch([{
+            kinds: [
+                Kind.EventDeletion,
+                Kind.ChannelMessage,
+                Kind.Reaction
+            ],
+            '#e': ids,
+        }], false);
+    }
+
     private async findHealthyRelay(relays: string[]) {
         for (const relay of relays) {
             try {
@@ -312,17 +329,18 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async sendPublicMessage(channel: Channel, message: string, parent?: string) {
-        const relay = await this.findHealthyRelay(this.writeRelays);
-        const tags = [['e', channel.id, relay, 'root']];
-        if (parent) tags.push(['e', parent, relay, 'reply']);
-        return this.publish(Kind.ChannelMessage, tags, message);
+        const root = parent || channel.id;
+        const relay = await this.findHealthyRelay(this.pool.seenOn(root));
+        return this.publish(Kind.ChannelMessage, [['e', root, relay, 'root']], message);
     }
 
     public async sendDirectMessage(toPubkey: string, message: string, parent?: string) {
         const encrypted = await (this.priv === 'nip07' ? window.nostr!.nip04.encrypt(toPubkey, message) : nip04.encrypt(this.priv, toPubkey, message));
-        const relay = await this.findHealthyRelay(this.writeRelays);
         const tags = [['p', toPubkey]];
-        if (parent) tags.push(['e', parent, relay, 'root']);
+        if (parent) {
+            const relay = await this.findHealthyRelay(this.pool.seenOn(parent));
+            tags.push(['e', parent, relay, 'root']);
+        }
         return this.publish(Kind.EncryptedDirectMessage, tags, encrypted);
     }
 
@@ -463,7 +481,6 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         const publicMessages: PublicMessage[] = this.eventQueue.filter(x => x.kind === Kind.ChannelMessage).map(ev => {
                 const eTags = Raven.filterTagValue(ev, 'e');
                 const root = eTags.find(x => x[3] === 'root')?.[1];
-                const parent = eTags.find(x => x[3] === 'reply')?.[1];
                 const mentions = Raven.filterTagValue(ev, 'p').map(x => x?.[1]).filter(notEmpty);
                 if (!root) return null;
                 return ev.content ? {
@@ -473,7 +490,6 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     creator: ev.pubkey,
                     mentions,
                     created: ev.created_at,
-                    parent
                 } : null;
             }
         ).filter(notEmpty);
@@ -484,8 +500,6 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         Promise.all(this.eventQueue.filter(x => x.kind === Kind.EncryptedDirectMessage).map(ev => {
             const receiver = Raven.findTagValue(ev, 'p');
             if (!receiver) return null;
-            const eTags = Raven.filterTagValue(ev, 'e');
-            const parent = eTags.find(x => x[3] === 'reply')?.[1];
 
             const peer = receiver === this.pub ? ev.pubkey : receiver;
             const msg = {
@@ -494,7 +508,6 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 peer,
                 creator: ev.pubkey,
                 created: ev.created_at,
-                parent,
                 decrypted: false
             };
 

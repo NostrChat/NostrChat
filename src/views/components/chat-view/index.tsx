@@ -2,11 +2,14 @@ import React, {useEffect, useRef, useState} from 'react';
 import {Box, darken} from '@mui/material';
 import Divider from '@mui/material/Divider';
 import {useTheme} from '@mui/material/styles';
+import {useAtom} from 'jotai';
 
 import MessageView from 'views/components/message-view';
 import {formatMessageDate, formatMessageTime} from 'helper';
 import {Message} from 'types';
 import {SCROLL_DETECT_THRESHOLD} from 'const';
+import {ravenAtom} from 'store';
+import {notEmpty} from 'util/misc';
 
 const ChatView = (props: { messages: Message[], separator: string, loading?: boolean }) => {
     const {separator, messages, loading} = props;
@@ -14,6 +17,8 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
     const ref = useRef<HTMLDivElement | null>(null);
     const [isBottom, setIsBottom] = useState(true);
     const [firstMessageEl, setFirstMessageEl] = useState<HTMLDivElement | null>(null);
+    const [scrollTop, setScrollTop] = useState<number>(0);
+    const [raven] = useAtom(ravenAtom);
 
     const scrollToBottom = () => {
         ref.current!.scroll({top: ref.current!.scrollHeight, behavior: 'auto'});
@@ -32,6 +37,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
         const handleScroll = () => {
             clearTimeout(scrollTimer);
             scrollTimer = setTimeout(() => {
+                setScrollTop(div!.scrollTop);
                 const isBottom = Math.abs((div!.scrollHeight - div!.scrollTop) - div!.clientHeight) <= SCROLL_DETECT_THRESHOLD
                 setIsBottom(isBottom);
                 const isTop = (div!.scrollHeight > div!.clientHeight) && div!.scrollTop < SCROLL_DETECT_THRESHOLD;
@@ -74,7 +80,20 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
                 setFirstMessageEl(null);
             }
         }
-    }, [loading])
+    }, [loading]);
+
+    useEffect(() => {
+        const ids = Array.from(document.querySelectorAll('.message[data-visible=true]')).map(el => el.getAttribute('data-id')).filter(notEmpty);
+        if (ids.length === 0) return;
+
+        const interval = setInterval(() => {
+            raven?.listenMessages(ids);
+        }, 10000);
+
+        return () => {
+            clearInterval(interval);
+        }
+    }, [messages, scrollTop]);
 
     return <Box ref={ref} sx={{
         overflowY: 'auto',

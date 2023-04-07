@@ -2,6 +2,7 @@ import {useEffect} from 'react';
 import {useAtom} from 'jotai';
 import {RouteComponentProps, useNavigate} from '@reach/router';
 import {Helmet} from 'react-helmet';
+import isEqual from 'lodash.isequal';
 import AppWrapper from 'views/components/app-wrapper';
 import AppContent from 'views/components/app-content';
 import AppMenu from 'views/components/app-menu';
@@ -28,7 +29,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     const [t] = useTranslation();
     const [directMessage, setDirectMessage] = useAtom(directMessageAtom);
     const [directContacts] = useAtom(directContactsAtom);
-    const [threadRoot,] = useAtom(threadRootAtom);
+    const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [muteList] = useAtom(muteListAtom);
     const [raven] = useAtom(ravenAtom);
@@ -65,7 +66,14 @@ const DirectMessagePage = (props: RouteComponentProps) => {
             }
         }
 
-    }, [props, muteList])
+    }, [props, muteList]);
+
+    useEffect(() => {
+        const msg = messages.find(x => x.id === threadRoot?.id);
+        if (threadRoot && msg && !isEqual(msg, threadRoot)) {
+            setThreadRoot(msg);
+        }
+    }, [messages, threadRoot]);
 
     if (!('pub' in props) || !keys) {
         return null;

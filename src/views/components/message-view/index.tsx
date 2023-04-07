@@ -1,4 +1,4 @@
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useAtom} from 'jotai';
 import {darken} from '@mui/material';
 import Box from '@mui/material/Box';
@@ -28,6 +28,7 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
     const renderedBody = useContentRenderer(message.content);
     const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 26), ':'), [profile, message]);
     const [menu, setMenu] = useState<boolean>(false);
+    const [isVisible, setIsVisible] = useState<boolean>(false);
 
     const profileClicked = (event: React.MouseEvent<HTMLDivElement>) => {
         showPopover({
@@ -40,8 +41,27 @@ const MessageView = (props: { message: Message, compactView: boolean, }) => {
         });
     };
 
+    useEffect(() => {
+        if (!holderEl.current) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                setIsVisible(true);
+            } else {
+                setIsVisible(false);
+            }
+        });
+        observer.observe(holderEl.current);
+
+        return () => {
+            observer.disconnect();
+        }
+    }, [isVisible]);
+
     const ps = isMd ? '24px' : '10px';
     return <Box
+        data-visible={isVisible}
+        data-id={message.id}
         className="message"
         ref={holderEl}
         sx={{
