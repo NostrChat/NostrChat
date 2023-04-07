@@ -15,16 +15,21 @@ import Close from 'svg/close';
 
 
 const ThreadView = (props: { senderFn: (message: string) => void }) => {
-    const [, isMd] = useMediaBreakPoint();
+    const [, , isLg] = useMediaBreakPoint();
     const theme = useTheme();
     const [t] = useTranslation();
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
-    const isSmallScreen = !isMd;
 
     if (!threadRoot) return null;
 
     return <Box sx={{
-        width: isSmallScreen ? '100%' : 'calc((100% - 270px) / 2)',
+        width: isLg ? 'calc((100% - 270px) / 2)' : '100%',
+        ...(() => isLg ? {} : {
+            position: 'absolute',
+            left: '0',
+            top: '0',
+            zIndex: 10
+        })(),
         height: '100%',
         flexGrow: 0,
         flexShrink: 0,
