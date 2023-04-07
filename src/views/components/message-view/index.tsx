@@ -3,6 +3,7 @@ import {useAtom} from 'jotai';
 import {darken} from '@mui/material';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
+import Tooltip from '@mui/material/Tooltip';
 import {useNavigate} from '@reach/router';
 import {nip19} from 'nostr-tools';
 import useContentRenderer from 'hooks/use-render-content';
@@ -14,24 +15,27 @@ import ProfileCard from 'views/components/profile-card';
 import MessageMenu from 'views/components/message-menu';
 import {profilesAtom, threadRootAtom} from 'store';
 import {Message,} from 'types';
-import {formatMessageTime} from 'helper';
+import {formatMessageTime, formatMessageFromNow, formatMessageDateTime} from 'helper';
 import {truncateMiddle} from 'util/truncate';
 
-const MessageView = (props: { message: Message, compactView: boolean, inThreadView?: boolean }) => {
-    const {message, compactView, inThreadView} = props;
+const MessageView = (props: { message: Message, compactView: boolean, dateFormat: 'time' | 'fromNow', inThreadView?: boolean }) => {
+    const {message, compactView, dateFormat, inThreadView} = props;
+    const theme = useTheme();
+    const navigate = useNavigate();
     const [profiles] = useAtom(profilesAtom);
     const profile = profiles.find(x => x.creator === message.creator);
     const [, setThreadRoot] = useAtom(threadRootAtom);
-    const theme = useTheme();
-    const navigate = useNavigate();
+    const [t] = useTranslation();
     const [, showPopover] = usePopover();
     const [, isMd] = useMediaBreakPoint();
     const holderEl = useRef<HTMLDivElement | null>(null);
-    const renderedBody = useContentRenderer(message.content);
-    const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 26), ':'), [profile, message]);
     const [menu, setMenu] = useState<boolean>(false);
     const [isVisible, setIsVisible] = useState<boolean>(false);
-    const [t] = useTranslation();
+    const renderedBody = useContentRenderer(message.content);
+    const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 26), ':'), [profile, message]);
+    const messageTime = useMemo(() => dateFormat === 'time' ? formatMessageTime(message.created) : formatMessageFromNow(message.created), [message]);
+    const messageDateTime = useMemo(() => formatMessageDateTime(message.created), [message]);
+    const hasReply = !inThreadView && message.children && message.children.length > 0;
 
     const profileClicked = (event: React.MouseEvent<HTMLDivElement>) => {
         showPopover({
@@ -60,8 +64,6 @@ const MessageView = (props: { message: Message, compactView: boolean, inThreadVi
             observer.disconnect();
         }
     }, [isVisible]);
-
-    const hasReply = !inThreadView && message.children && message.children.length > 0;
 
     const ps = isMd ? '24px' : '10px';
     return <Box
@@ -113,10 +115,13 @@ const MessageView = (props: { message: Message, compactView: boolean, inThreadVi
                     mr: '5px',
                     cursor: 'pointer'
                 }}>{profileName}</Box>
-                <Box sx={{
-                    color: darken(theme.palette.text.secondary, 0.3),
-                    fontSize: '90%'
-                }}>{formatMessageTime(message.created)}</Box>
+                <Tooltip title={messageDateTime} placement="right">
+                    <Box sx={{
+                        color: darken(theme.palette.text.secondary, 0.3),
+                        fontSize: '90%',
+                        cursor: 'default'
+                    }}>{messageTime}</Box>
+                </Tooltip>
             </Box>)}
             <Box sx={{
                 fontSize: '0.9em',

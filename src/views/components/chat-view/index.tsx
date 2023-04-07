@@ -115,11 +115,11 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
                             color: darken(theme.palette.text.secondary, 0.4),
                             mt: i === 0 ? '100px' : null
                         }}>{msgDate}</Divider>
-                    <MessageView message={msg} compactView={isCompact}/>
+                    <MessageView message={msg} dateFormat='time' compactView={isCompact}/>
                 </React.Fragment>
             }
 
-            return <MessageView key={msg.id} message={msg} compactView={isCompact}/>;
+            return <MessageView key={msg.id} message={msg} dateFormat='time' compactView={isCompact}/>;
         })}
     </Box>;
 }
