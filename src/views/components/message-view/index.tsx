@@ -143,7 +143,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                 }} onClick={() => {
                     setThreadRoot(message);
                 }}>
-                    {t('{{n}} replies', {n: message.children?.length})}
+                    {message.children?.length === 1 ? t('1 reply') : t('{{n}} replies', {n: message.children?.length})}
                 </Box>
             )}
         </Box>
