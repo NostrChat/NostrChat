@@ -28,10 +28,11 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const [t] = useTranslation();
     const [, showPopover] = usePopover();
     const [, isMd] = useMediaBreakPoint();
+    const renderer = useContentRenderer();
     const holderEl = useRef<HTMLDivElement | null>(null);
     const [menu, setMenu] = useState<boolean>(false);
     const [isVisible, setIsVisible] = useState<boolean>(false);
-    const renderedBody = useContentRenderer(message.content);
+    const renderedBody = useMemo(() => renderer(message.content), [message]);
     const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 26), ':'), [profile, message]);
     const messageTime = useMemo(() => dateFormat === 'time' ? formatMessageTime(message.created) : formatMessageFromNow(message.created), [message]);
     const messageDateTime = useMemo(() => formatMessageDateTime(message.created), [message]);
