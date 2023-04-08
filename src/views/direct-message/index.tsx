@@ -9,7 +9,7 @@ import AppMenu from 'views/components/app-menu';
 import ChatInput from 'views/components/chat-input';
 import ChatView from 'views/components/chat-view';
 import DmHeader from 'views/direct-message/components/dm-header';
-import ThreadView from 'views/components/thread-view';
+import ThreadChatView from 'views/components/thread-chat-view';
 import useTranslation from 'hooks/use-translation';
 import useLiveDirectMessages from 'hooks/use-live-direct-messages';
 import {
@@ -94,7 +94,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
                     raven?.sendDirectMessage(directMessage, message);
                 }}/>
             </AppContent>
-            {threadRoot && <ThreadView senderFn={(message: string) => {
+            {threadRoot && <ThreadChatView senderFn={(message: string) => {
                 raven?.sendDirectMessage(directMessage, message, threadRoot.id);
             }}/>}
         </AppWrapper>

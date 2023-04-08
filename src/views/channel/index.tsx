@@ -9,7 +9,7 @@ import AppMenu from 'views/components/app-menu';
 import ChannelHeader from 'views/channel/components/channel-header';
 import ChatInput from 'views/components/chat-input';
 import ChatView from 'views/components/chat-view';
-import ThreadView from 'views/components/thread-view';
+import ThreadChatView from 'views/components/thread-chat-view';
 import useTranslation from 'hooks/use-translation';
 import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
@@ -127,7 +127,7 @@ const ChannelPage = (props: RouteComponentProps) => {
                     });
                 }}/>
             </AppContent>
-            {threadRoot && <ThreadView senderFn={(message: string) => {
+            {threadRoot && <ThreadChatView senderFn={(message: string) => {
                 raven?.sendPublicMessage(channel, message, threadRoot.id).catch(e => {
                     showMessage(e, 'error');
                 });

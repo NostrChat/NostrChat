@@ -14,7 +14,7 @@ import {threadRootAtom} from 'store';
 import Close from 'svg/close';
 
 
-const ThreadView = (props: { senderFn: (message: string) => void }) => {
+const ThreadChatView = (props: { senderFn: (message: string) => void }) => {
     const [, , isLg] = useMediaBreakPoint();
     const theme = useTheme();
     const [t] = useTranslation();
@@ -77,4 +77,4 @@ const ThreadView = (props: { senderFn: (message: string) => void }) => {
 }
 
 
-export default ThreadView;
+export default ThreadChatView;
