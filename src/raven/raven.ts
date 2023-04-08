@@ -328,10 +328,14 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(Kind.EventDeletion, [...ids.map(id => ['e', id])], why);
     }
 
-    public async sendPublicMessage(channel: Channel, message: string, parent?: string) {
+    public async sendPublicMessage(channel: Channel, message: string, mentions?: string[], parent?: string) {
         const root = parent || channel.id;
         const relay = await this.findHealthyRelay(this.pool.seenOn(root));
-        return this.publish(Kind.ChannelMessage, [['e', root, relay, 'root']], message);
+        const tags = [['e', root, relay, 'root']];
+        if (mentions) {
+            mentions.forEach(m => tags.push(['p', m]));
+        }
+        return this.publish(Kind.ChannelMessage, tags, message);
     }
 
     public async sendDirectMessage(toPubkey: string, message: string, parent?: string) {
