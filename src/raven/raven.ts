@@ -500,10 +500,13 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         Promise.all(this.eventQueue.filter(x => x.kind === Kind.EncryptedDirectMessage).map(ev => {
             const receiver = Raven.findTagValue(ev, 'p');
             if (!receiver) return null;
+            const eTags = Raven.filterTagValue(ev, 'e');
+            const root = eTags.find(x => x[3] === 'root')?.[1];
 
             const peer = receiver === this.pub ? ev.pubkey : receiver;
             const msg = {
                 id: ev.id,
+                root,
                 content: ev.content,
                 peer,
                 creator: ev.pubkey,
