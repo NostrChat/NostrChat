@@ -29,7 +29,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const [, setThreadRoot] = useAtom(threadRootAtom);
     const [t] = useTranslation();
     const [, showPopover] = usePopover();
-    const [, isMd] = useMediaBreakPoint();
+    const [isSm, isMd] = useMediaBreakPoint();
     const renderer = useContentRenderer();
     const holderEl = useRef<HTMLDivElement | null>(null);
     const [menu, setMenu] = useState<boolean>(false);
@@ -38,7 +38,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 26), ':'), [profile, message]);
     const messageTime = useMemo(() => dateFormat === 'time' ? formatMessageTime(message.created) : formatMessageFromNow(message.created), [message]);
     const messageDateTime = useMemo(() => formatMessageDateTime(message.created), [message]);
-    const lastReply = useMemo(() => message.children && message.children.length > 0 ? formatMessageFromNow(message.children[message.children.length -1].created) : null, [message]);
+    const lastReply = useMemo(() => message.children && message.children.length > 0 ? formatMessageFromNow(message.children[message.children.length - 1].created) : null, [message]);
 
     const profileClicked = (event: React.MouseEvent<HTMLDivElement>) => {
         showPopover({
@@ -170,10 +170,14 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                     <Box sx={{mr: '10px', color: theme.palette.primary.main, fontWeight: 'bold'}}>
                         {message.children.length === 1 ? t('1 reply') : t('{{n}} replies', {n: message.children.length})}
                     </Box>
-                    <Box sx={{mr: '10px'}}>
-                        {t('Last reply {{n}}', {n: lastReply!})}
-                    </Box>
-                    <ChevronRight height={20}/>
+                    {isSm && (
+                        <>
+                            <Box sx={{mr: '10px'}}>
+                                {t('Last reply {{n}}', {n: lastReply!})}
+                            </Box>
+                            <ChevronRight height={20}/>
+                        </>
+                    )}
                 </Box>
             )}
         </Box>
