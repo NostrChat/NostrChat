@@ -159,7 +159,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                 }}>
                     {uniq(message.children.map(m => m.creator)).slice(0, 4).map(c => {
                         const profile = profiles.find(x => x.creator === c);
-                        return <Box sx={{
+                        return <Box key={c} sx={{
                             mr: '6px',
                             display: 'flex',
                             alignItems: 'center',
