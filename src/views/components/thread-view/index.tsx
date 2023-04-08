@@ -57,11 +57,11 @@ const ThreadView = (props: { senderFn: (message: string) => void }) => {
                 }}><Close height={20}/></IconButton>
             </Box>
             <MessageView message={threadRoot} dateFormat='fromNow' compactView={false} inThreadView/>
-            <Divider textAlign="left" sx={{
+            {(threadRoot.children && threadRoot.children.length > 0) && (<Divider textAlign="left" sx={{
                 fontSize: '0.7em',
                 color: darken(theme.palette.text.secondary, 0.4),
                 m: '6px 0'
-            }}>{t('{{n}} replies', {n: threadRoot.children?.length})}</Divider>
+            }}>{t('{{n}} replies', {n: threadRoot.children.length})}</Divider>)}
         </Box>
         <Box sx={{
             flexGrow: 1,
