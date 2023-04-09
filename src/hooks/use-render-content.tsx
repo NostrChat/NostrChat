@@ -7,40 +7,43 @@ import useModal from 'hooks/use-modal';
 import ExternalLinkDialog from 'components/external-link-dialog';
 import {truncateMiddle} from 'util/truncate';
 
-const useRenderContent = (content: string) => {
+const useRenderContent = () => {
     const [, showModal] = useModal();
-    const renderLink = (args: IntermediateRepresentation) => {
-        const {href} = args.attributes;
-        if (href.indexOf('https://') === 0) {
-            return <Link href={href} target="_blank" rel="noreferrer" onClick={(e) => {
-                e.preventDefault();
-                showModal({
-                    body: <ExternalLinkDialog link={href}/>
-                });
-            }}>
-                {(() => {
-                    if (href === content) {
-                        if (/(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/.test(href)) {
-                            return <Box component="img" src={href} sx={{
-                                maxWidth: '300px',
-                                maxHeight: '300px'
-                            }} onLoad={() => {
-                                window.dispatchEvent(new Event('chat-media-loaded', {bubbles: true}))
-                            }}/>
+
+    return (content: string) => {
+        const renderLink = (args: IntermediateRepresentation) => {
+            const {href} = args.attributes;
+            if (href.indexOf('https://') === 0) {
+                return <Link href={href} target="_blank" rel="noreferrer" onClick={(e) => {
+                    e.preventDefault();
+                    showModal({
+                        body: <ExternalLinkDialog link={href}/>
+                    });
+                }}>
+                    {(() => {
+                        if (href === content) {
+                            if (/(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/.test(href)) {
+                                return <Box component="img" src={href} sx={{
+                                    maxWidth: '300px',
+                                    maxHeight: '300px'
+                                }} onLoad={() => {
+                                    window.dispatchEvent(new Event('chat-media-loaded', {bubbles: true}))
+                                }}/>
+                            }
                         }
-                    }
 
-                    return truncateMiddle(args.content, 60, '...');
-                })()}
-            </Link>;
-        }
+                        return truncateMiddle(args.content, 60, '...');
+                    })()}
+                </Link>;
+            }
 
-        return <>{args.content}</>;
-    };
+            return <>{args.content}</>;
+        };
 
-    return <Linkify options={{render: renderLink}}>{
-        content.split('\n').map((x, i) => <Box key={i} sx={{mb: '6px'}}>{x}</Box>)
-    }</Linkify>
+        return <Linkify options={{render: renderLink}}>{
+            content.split('\n').map((x, i) => <Box key={i} sx={{mb: '6px'}}>{x}</Box>)
+        }</Linkify>
+    }
 }
 
 export default useRenderContent;

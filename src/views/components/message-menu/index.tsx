@@ -4,22 +4,26 @@ import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import {useTheme} from '@mui/material/styles';
-import EyeOff from 'svg/eye-off';
 import {useAtom} from 'jotai';
-import {keysAtom, ravenAtom} from 'store';
+import {keysAtom, ravenAtom, threadRootAtom} from 'store';
 import useModal from 'hooks/use-modal';
 import ConfirmDialog from 'components/confirm-dialog';
 import useTranslation from 'hooks/use-translation';
+import EyeOff from 'svg/eye-off';
+import MessageReplyText from 'svg/message-reply-text';
 
-const MessageMenu = (props: { message: Message }) => {
-    const {message} = props;
+const MessageMenu = (props: { message: Message, inThreadView?: boolean }) => {
+    const {message, inThreadView} = props;
     const theme = useTheme();
     const [keys] = useAtom(keysAtom);
     const [raven] = useAtom(ravenAtom);
+    const [, setThreadRoot] = useAtom(threadRootAtom);
     const [, showModal] = useModal();
     const [t] = useTranslation();
 
-    const buttons = [];
+    const openThread = () => {
+        setThreadRoot(message);
+    }
 
     const hide = () => {
         showModal({
@@ -27,6 +31,16 @@ const MessageMenu = (props: { message: Message }) => {
                 raven?.hideChannelMessage(message.id, '');
             }}/>
         });
+    }
+
+    const buttons = [];
+
+    if (!inThreadView) {
+        buttons.push(<Tooltip title={t('Reply in thread')}>
+            <IconButton size="small" onClick={openThread}>
+                <MessageReplyText height={18}/>
+            </IconButton>
+        </Tooltip>)
     }
 
     if (keys?.pub !== message.creator && !('decrypted' in message)) { // only public messages
@@ -42,9 +56,12 @@ const MessageMenu = (props: { message: Message }) => {
     return <Box sx={{
         padding: '6px',
         borderRadius: theme.shape.borderRadius,
-        background: theme.palette.background.paper
+        background: theme.palette.background.paper,
+        display: 'flex'
     }}>
-        {buttons.map((b, i) => <React.Fragment key={i}>{b}</React.Fragment>)}
+        {buttons.map((b, i) => <Box
+            sx={{display: 'flex', alignItems: 'center', mr: i === buttons.length - 1 ? null : '6px'}}
+            key={i}>{b}</Box>)}
     </Box>;
 }
 

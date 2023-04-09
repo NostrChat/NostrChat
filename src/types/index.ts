@@ -21,9 +21,9 @@ export type ChannelUpdate = { channelId: string } & Channel;
 
 export type EventDeletion = { eventId: string, why: string };
 
-export type PublicMessage = { id: string, channelId: string, content: string, creator: string, created: number };
+export type PublicMessage = { id: string, root: string, content: string, creator: string, created: number, children?: PublicMessage[], mentions: string[] };
 
-export type DirectMessage = { id: string, content: string, peer: string, creator: string, created: number, decrypted: boolean };
+export type DirectMessage = { id: string, root?: string, content: string, peer: string, creator: string, created: number, children?: DirectMessage[], decrypted: boolean };
 
 export type Message = PublicMessage | DirectMessage;
 

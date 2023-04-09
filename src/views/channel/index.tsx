@@ -2,18 +2,20 @@ import {useEffect, useState} from 'react';
 import {useAtom} from 'jotai';
 import {RouteComponentProps, useNavigate} from '@reach/router';
 import {Helmet} from 'react-helmet';
+import isEqual from 'lodash.isequal';
 import AppWrapper from 'views/components/app-wrapper';
 import AppContent from 'views/components/app-content';
 import AppMenu from 'views/components/app-menu';
 import ChannelHeader from 'views/channel/components/channel-header';
 import ChatInput from 'views/components/chat-input';
 import ChatView from 'views/components/chat-view';
+import ThreadChatView from 'views/components/thread-chat-view';
 import useTranslation from 'hooks/use-translation';
 import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import useToast from 'hooks/use-toast';
-import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom} from 'store';
+import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom} from 'store';
 import {RavenEvents} from 'raven/raven';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {Channel} from 'types';
@@ -28,6 +30,7 @@ const ChannelPage = (props: RouteComponentProps) => {
     const channel = useLiveChannel();
     const messages = useLivePublicMessages(channel?.id);
     const [, setChannel] = useAtom(channelAtom);
+    const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [raven] = useAtom(ravenAtom);
     const [commonTs] = useAtom(commonTsAtom);
@@ -55,7 +58,6 @@ const ChannelPage = (props: RouteComponentProps) => {
             }
         }
     }, [props, channels]);
-
 
     useEffect(() => {
         const handleChannelCreation = (data: Channel[]) => {
@@ -93,6 +95,13 @@ const ChannelPage = (props: RouteComponentProps) => {
         }
     }, [messages, channel, hasMore]);
 
+    useEffect(() => {
+        const msg = messages.find(x => x.id === threadRoot?.id);
+        if (threadRoot && msg && !isEqual(msg, threadRoot)) {
+            setThreadRoot(msg);
+        }
+    }, [messages, threadRoot]);
+
     if (!keys) {
         return null;
     }
@@ -109,15 +118,20 @@ const ChannelPage = (props: RouteComponentProps) => {
         <Helmet><title>{t(`NostrChat - ${channel.name}`)}</title></Helmet>
         <AppWrapper>
             <AppMenu/>
-            <AppContent>
+            <AppContent divide={!!threadRoot}>
                 <ChannelHeader/>
                 <ChatView separator={channel.id} messages={messages} loading={loading}/>
                 <ChatInput separator={channel.id} senderFn={(message: string) => {
-                    raven?.sendPublicMessage(channel, message).catch(e => {
+                    return raven!.sendPublicMessage(channel, message).catch(e => {
                         showMessage(e, 'error');
                     });
                 }}/>
             </AppContent>
+            {threadRoot && <ThreadChatView senderFn={(message: string) => {
+                return raven!.sendPublicMessage(channel, message, [threadRoot.creator], threadRoot.id).catch(e => {
+                    showMessage(e, 'error');
+                });
+            }}/>}
         </AppWrapper>
     </>;
 }

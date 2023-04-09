@@ -11,7 +11,7 @@ import Alert from 'svg/alert';
 
 const AppWrapper = (props: { children: React.ReactNode }) => {
     const theme = useTheme();
-    const [isSm] = useMediaBreakPoint();
+    const {isSm} = useMediaBreakPoint();
     const [t,] = useTranslation();
     const navigate = useNavigate();
     const [backupWarn, setBackupWarn] = useAtom(backupWarnAtom);

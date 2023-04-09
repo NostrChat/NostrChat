@@ -2,22 +2,24 @@ import {useEffect} from 'react';
 import {useAtom} from 'jotai';
 import {RouteComponentProps, useNavigate} from '@reach/router';
 import {Helmet} from 'react-helmet';
+import isEqual from 'lodash.isequal';
 import AppWrapper from 'views/components/app-wrapper';
 import AppContent from 'views/components/app-content';
 import AppMenu from 'views/components/app-menu';
 import ChatInput from 'views/components/chat-input';
 import ChatView from 'views/components/chat-view';
 import DmHeader from 'views/direct-message/components/dm-header';
+import ThreadChatView from 'views/components/thread-chat-view';
 import useTranslation from 'hooks/use-translation';
 import useLiveDirectMessages from 'hooks/use-live-direct-messages';
 import {
     directContactsAtom,
     directMessageAtom,
-    directMessagesAtom,
     keysAtom,
     muteListAtom,
     ravenAtom,
-    ravenReadyAtom
+    ravenReadyAtom,
+    threadRootAtom
 } from 'store';
 
 
@@ -26,8 +28,8 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     const navigate = useNavigate();
     const [t] = useTranslation();
     const [directMessage, setDirectMessage] = useAtom(directMessageAtom);
-    const [directMessages, setDirectMessages] = useAtom(directMessagesAtom);
     const [directContacts] = useAtom(directContactsAtom);
+    const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [muteList] = useAtom(muteListAtom);
     const [raven] = useAtom(ravenAtom);
@@ -56,27 +58,6 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     }, [props, directContacts]);
 
     useEffect(() => {
-        if (directMessage) {
-            // decrypt messages one by one.
-            const decrypted = directMessages.filter(m => m.peer === directMessage).find(x => !x.decrypted);
-            if (decrypted) {
-                window.nostr?.nip04.decrypt(decrypted.peer, decrypted.content).then(content => {
-                    setDirectMessages(directMessages.map(m => {
-                        if (m.id === decrypted.id) {
-                            return {
-                                ...m,
-                                content,
-                                decrypted: true
-                            }
-                        }
-                        return m;
-                    }));
-                })
-            }
-        }
-    }, [directMessages, directMessage]);
-
-    useEffect(() => {
         if ('pub' in props) {
             const {pub} = props;
             const contact = directContacts.find(x => x.npub === pub);
@@ -85,7 +66,14 @@ const DirectMessagePage = (props: RouteComponentProps) => {
             }
         }
 
-    }, [props, muteList])
+    }, [props, muteList]);
+
+    useEffect(() => {
+        const msg = messages.find(x => x.id === threadRoot?.id);
+        if (threadRoot && msg && !isEqual(msg, threadRoot)) {
+            setThreadRoot(msg);
+        }
+    }, [messages, threadRoot]);
 
     if (!('pub' in props) || !keys) {
         return null;
@@ -99,13 +87,16 @@ const DirectMessagePage = (props: RouteComponentProps) => {
         <Helmet><title>{t(`NostrChat - ${directMessage}`)}</title></Helmet>
         <AppWrapper>
             <AppMenu/>
-            <AppContent>
+            <AppContent divide={!!threadRoot}>
                 <DmHeader/>
                 <ChatView separator={directMessage} messages={messages}/>
                 <ChatInput separator={directMessage} senderFn={(message: string) => {
-                    raven?.sendDirectMessage(directMessage, message);
+                    return raven!.sendDirectMessage(directMessage, message);
                 }}/>
             </AppContent>
+            {threadRoot && <ThreadChatView senderFn={(message: string) => {
+               return raven!.sendDirectMessage(directMessage, message, threadRoot.id);
+            }}/>}
         </AppWrapper>
     </>;
 }

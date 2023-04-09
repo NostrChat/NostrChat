@@ -8,7 +8,7 @@ import {appMenuAtom} from 'store';
 
 const AppMenuBase = (props: { children: React.ReactNode, children2?: React.ReactNode }) => {
     const theme = useTheme();
-    const [, isMd] = useMediaBreakPoint();
+    const {isMd} = useMediaBreakPoint();
     const [appMenu, setAppMenu] = useAtom(appMenuAtom);
     const location = useLocation();
 
