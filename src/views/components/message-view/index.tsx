@@ -26,10 +26,10 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const navigate = useNavigate();
     const [profiles] = useAtom(profilesAtom);
     const profile = profiles.find(x => x.creator === message.creator);
-    const [, setThreadRoot] = useAtom(threadRootAtom);
+    const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
     const [t] = useTranslation();
     const [, showPopover] = usePopover();
-    const {isMd, isLg} = useMediaBreakPoint();
+    const {isMd} = useMediaBreakPoint();
     const renderer = useContentRenderer();
     const holderEl = useRef<HTMLDivElement | null>(null);
     const [menu, setMenu] = useState<boolean>(false);
@@ -170,7 +170,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                     <Box sx={{mr: '10px', color: theme.palette.primary.main, fontWeight: 'bold'}}>
                         {message.children.length === 1 ? t('1 reply') : t('{{n}} replies', {n: message.children.length})}
                     </Box>
-                    {isLg && (
+                    {(isMd && !threadRoot) && (
                         <>
                             <Box sx={{mr: '10px'}}>
                                 {t('Last reply {{n}}', {n: lastReply!})}
