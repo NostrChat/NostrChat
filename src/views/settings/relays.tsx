@@ -40,7 +40,7 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
     const [t] = useTranslation();
     const [, showMessage] = useToast();
     const [, showModal] = useModal();
-    const [isSm] = useMediaBreakPoint();
+    const {isSm} = useMediaBreakPoint();
     const [raven] = useAtom(ravenAtom);
     const [prevData, setPrevData] = useState<RelayDict>({});
     const [data, setData] = useState<RelayDict>({});

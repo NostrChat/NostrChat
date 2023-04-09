@@ -23,7 +23,7 @@ import Github from 'svg/github';
 
 const LoginPage = (_: RouteComponentProps) => {
     const theme = useTheme();
-    const [isSm,] = useMediaBreakPoint();
+    const {isSm} = useMediaBreakPoint();
     const [t,] = useTranslation();
     const [, showModal] = useModal();
     const [, setKeys] = useAtom(keysAtom);
@@ -98,7 +98,7 @@ const LoginPage = (_: RouteComponentProps) => {
                     width: isSm ? '526px' : '100%',
                     height: isSm ? '132px' : null,
                     m: '20px 0 10px 0'
-                }} />
+                }}/>
                 <Divider sx={{m: '28px 0'}}/>
                 <Box sx={{color: 'text.secondary', mb: '28px'}}>{t('Sign in to get started')}</Box>
                 <Box sx={{

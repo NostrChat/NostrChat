@@ -12,7 +12,7 @@ import ChevronLeft from 'svg/chevron-left';
 const AppContentHeaderBase = (props: { children: React.ReactNode }) => {
     const theme = useTheme();
     const [appMenu, setAppMenu] = useAtom(appMenuAtom);
-    const [, isMd] = useMediaBreakPoint();
+    const {isMd} = useMediaBreakPoint();
 
     const isSmallScreen = !isMd;
 

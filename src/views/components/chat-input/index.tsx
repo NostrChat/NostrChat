@@ -11,7 +11,7 @@ import {focusElem} from 'util/dom';
 const ChatInput = (props: { separator: string, senderFn: (message: string) => void }) => {
     const {senderFn, separator} = props;
     const theme = useTheme();
-    const [, isMd] = useMediaBreakPoint();
+    const {isMd} = useMediaBreakPoint();
     const inputRef = useRef<HTMLDivElement | null>(null);
     const storageKey = `${separator}_msg`;
     let saveTimer: any = null;

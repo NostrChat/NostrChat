@@ -15,7 +15,7 @@ import Close from 'svg/close';
 
 
 const ThreadChatView = (props: { senderFn: (message: string) => void }) => {
-    const [, isMd] = useMediaBreakPoint();
+    const {isMd} = useMediaBreakPoint();
     const theme = useTheme();
     const [t] = useTranslation();
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);

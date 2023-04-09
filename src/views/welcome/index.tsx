@@ -13,7 +13,7 @@ import MetadataForm from 'views/components/metadata-form';
 import {keysAtom, profileAtom, ravenAtom} from 'store';
 
 const WelcomePage = (_: RouteComponentProps) => {
-    const [isSm,] = useMediaBreakPoint();
+    const {isSm} = useMediaBreakPoint();
     const [t,] = useTranslation();
     const navigate = useNavigate();
     const [profile] = useAtom(profileAtom);
