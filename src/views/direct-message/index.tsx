@@ -91,11 +91,11 @@ const DirectMessagePage = (props: RouteComponentProps) => {
                 <DmHeader/>
                 <ChatView separator={directMessage} messages={messages}/>
                 <ChatInput separator={directMessage} senderFn={(message: string) => {
-                    raven?.sendDirectMessage(directMessage, message);
+                    return raven!.sendDirectMessage(directMessage, message);
                 }}/>
             </AppContent>
             {threadRoot && <ThreadChatView senderFn={(message: string) => {
-                raven?.sendDirectMessage(directMessage, message, threadRoot.id);
+               return raven!.sendDirectMessage(directMessage, message, threadRoot.id);
             }}/>}
         </AppWrapper>
     </>;

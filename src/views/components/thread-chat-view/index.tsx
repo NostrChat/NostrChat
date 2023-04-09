@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import {useAtom} from 'jotai';
 import Divider from '@mui/material/Divider';
 import {darken, lighten} from '@mui/material';
@@ -14,13 +14,18 @@ import {threadRootAtom} from 'store';
 import Close from 'svg/close';
 
 
-const ThreadChatView = (props: { senderFn: (message: string) => void }) => {
+const ThreadChatView = (props: { senderFn: (message: string) => Promise<any> }) => {
     const {isMd} = useMediaBreakPoint();
     const theme = useTheme();
     const [t] = useTranslation();
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
+    const ref = useRef<HTMLDivElement | null>(null);
 
     if (!threadRoot) return null;
+
+    const scrollToBottom = () => {
+        ref.current!.scroll({top: ref.current!.scrollHeight, behavior: 'auto'});
+    }
 
     return <Box sx={{
         width: isMd ? 'calc((100% - 270px) / 2)' : '100%',
@@ -63,7 +68,7 @@ const ThreadChatView = (props: { senderFn: (message: string) => void }) => {
                 m: '6px 0'
             }}>{t('{{n}} replies', {n: threadRoot.children.length})}</Divider>)}
         </Box>
-        <Box sx={{
+        <Box ref={ref} sx={{
             flexGrow: 1,
             overflowY: 'auto',
             overflowX: 'hidden',
@@ -72,7 +77,13 @@ const ThreadChatView = (props: { senderFn: (message: string) => void }) => {
                 return <MessageView key={msg.id} message={msg} dateFormat='fromNow' compactView={false} inThreadView/>
             })}
         </Box>
-        <ChatInput separator={threadRoot.id} senderFn={props.senderFn}/>
+        <ChatInput separator={threadRoot.id} senderFn={(message) => {
+            return props.senderFn(message).then(() => {
+                setTimeout(() => {
+                    scrollToBottom();
+                }, 500);
+            });
+        }}/>
     </Box>
 }
 

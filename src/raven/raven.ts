@@ -382,10 +382,14 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     return;
                 }
 
-                this.pool.publish(this.writeRelays, event);
-                // TODO: .on('ok') doesn't work!!!
+                const pub = this.pool.publish(this.writeRelays, event);
+                pub.on('ok', () => {
+                    resolve(event);
+                });
 
-                resolve(event);
+                pub.on('failed', () => {
+                    reject("Couldn't sign event!");
+                })
             }).catch(() => {
                 reject("Couldn't sign event!");
             })

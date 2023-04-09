@@ -122,13 +122,13 @@ const ChannelPage = (props: RouteComponentProps) => {
                 <ChannelHeader/>
                 <ChatView separator={channel.id} messages={messages} loading={loading}/>
                 <ChatInput separator={channel.id} senderFn={(message: string) => {
-                    raven?.sendPublicMessage(channel, message).catch(e => {
+                    return raven!.sendPublicMessage(channel, message).catch(e => {
                         showMessage(e, 'error');
                     });
                 }}/>
             </AppContent>
             {threadRoot && <ThreadChatView senderFn={(message: string) => {
-                raven?.sendPublicMessage(channel, message, [threadRoot.creator], threadRoot.id).catch(e => {
+                return raven!.sendPublicMessage(channel, message, [threadRoot.creator], threadRoot.id).catch(e => {
                     showMessage(e, 'error');
                 });
             }}/>}

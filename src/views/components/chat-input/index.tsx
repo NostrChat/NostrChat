@@ -8,7 +8,7 @@ import useMediaBreakPoint from 'hooks/use-media-break-point';
 import Send from 'svg/send';
 import {focusElem} from 'util/dom';
 
-const ChatInput = (props: { separator: string, senderFn: (message: string) => void }) => {
+const ChatInput = (props: { separator: string, senderFn: (message: string) => Promise<any> }) => {
     const {senderFn, separator} = props;
     const theme = useTheme();
     const {isMd} = useMediaBreakPoint();
