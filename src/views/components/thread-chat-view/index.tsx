@@ -15,7 +15,7 @@ import Close from 'svg/close';
 
 
 const ThreadChatView = (props: { senderFn: (message: string) => void }) => {
-    const [, , isLg] = useMediaBreakPoint();
+    const [, isMd] = useMediaBreakPoint();
     const theme = useTheme();
     const [t] = useTranslation();
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
@@ -23,8 +23,8 @@ const ThreadChatView = (props: { senderFn: (message: string) => void }) => {
     if (!threadRoot) return null;
 
     return <Box sx={{
-        width: isLg ? 'calc((100% - 270px) / 2)' : '100%',
-        ...(() => isLg ? {} : {
+        width: isMd ? 'calc((100% - 270px) / 2)' : '100%',
+        ...(() => isMd ? {} : {
             position: 'absolute',
             left: '0',
             top: '0',

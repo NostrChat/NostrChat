@@ -29,7 +29,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const [, setThreadRoot] = useAtom(threadRootAtom);
     const [t] = useTranslation();
     const [, showPopover] = usePopover();
-    const [isSm, isMd] = useMediaBreakPoint();
+    const [, isMd, isLg] = useMediaBreakPoint();
     const renderer = useContentRenderer();
     const holderEl = useRef<HTMLDivElement | null>(null);
     const [menu, setMenu] = useState<boolean>(false);
@@ -170,7 +170,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                     <Box sx={{mr: '10px', color: theme.palette.primary.main, fontWeight: 'bold'}}>
                         {message.children.length === 1 ? t('1 reply') : t('{{n}} replies', {n: message.children.length})}
                     </Box>
-                    {isSm && (
+                    {isLg && (
                         <>
                             <Box sx={{mr: '10px'}}>
                                 {t('Last reply {{n}}', {n: lastReply!})}
