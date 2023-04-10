@@ -23,7 +23,7 @@ const DmHeader = () => {
             mr: '10px',
             flexShrink: 0
         }}>
-            <Avatar src={profile?.picture} seed={directMessage} size={50} type="user"/>
+            <Avatar src={profile?.picture} seed={directMessage} size={50} />
         </Box>
         <Box sx={{flexGrow: 1, minWidth: 0}}>
             <Box sx={{

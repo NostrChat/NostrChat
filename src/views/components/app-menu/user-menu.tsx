@@ -44,7 +44,7 @@ const UserMenu = () => {
             }
         }} onClick={clicked}>
             <Box sx={{mr: '8px', display: 'flex'}}>
-                <Avatar src={profile?.picture} seed={keys.pub} size={42} type='user' rounded/>
+                <Avatar src={profile?.picture} seed={keys.pub} size={42} rounded/>
             </Box>
             {(() => {
 
