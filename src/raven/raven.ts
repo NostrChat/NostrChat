@@ -170,7 +170,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 }))
             ];
 
-            chunk(filters, 20).forEach(c => {
+            chunk(filters, 10).forEach(c => {
                 this.fetch(c);
             });
 
