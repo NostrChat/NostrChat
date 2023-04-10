@@ -21,7 +21,11 @@ const UserMenu = () => {
     }
 
     const clicked = () => {
-        navigate('/settings/profile').then();
+        if(profile?.name){
+            navigate('/settings').then();
+        } else {
+            navigate('/settings/profile').then();
+        }
     }
 
     return <Box sx={{
