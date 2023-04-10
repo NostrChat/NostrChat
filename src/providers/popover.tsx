@@ -7,6 +7,7 @@ const PopoverProvider = (props: { children: React.ReactNode }) => {
 
     const hide = () => {
         setPopover(null);
+        popover?.onClose?.();
     }
 
     return <>
@@ -23,7 +24,7 @@ const PopoverProvider = (props: { children: React.ReactNode }) => {
                 sx={{ml: '10px'}}
                 PaperProps={{
                     sx: {
-                        overflowY:'hidden'
+                        overflowY: 'hidden'
                     }
                 }}
             >{popover.body}</Popover>
