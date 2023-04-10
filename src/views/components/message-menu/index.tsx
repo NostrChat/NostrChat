@@ -54,10 +54,11 @@ const MessageMenu = (props: { message: Message, inThreadView?: boolean }) => {
     if (buttons.length === 0) return null;
 
     return <Box sx={{
-        padding: '6px',
+        padding: '4px 6px',
         borderRadius: theme.shape.borderRadius,
         background: theme.palette.background.paper,
-        display: 'flex'
+        border: `1px solid ${theme.palette.divider}`,
+        display: 'flex',
     }}>
         {buttons.map((b, i) => <Box
             sx={{display: 'flex', alignItems: 'center', mr: i === buttons.length - 1 ? null : '6px'}}
