@@ -19,16 +19,16 @@ const ListItem = (props: { label: React.ReactNode, href: string, selected: boole
         zIndex: 0,
         color: theme.palette.text.primary,
         textDecoration: 'none',
+        pl: '10px',
         ':before': {
             content: "''",
             position: 'absolute',
             top: '12px',
-            left: '-16px',
+            left: '0',
             width: '4px',
             height: '16px',
+            borderRadius:  theme.shape.borderRadius,
             background: theme.palette.primary.main,
-            borderTopRightRadius: theme.shape.borderRadius,
-            borderBottomRightRadius: theme.shape.borderRadius,
             display: props.selected ? null : 'none'
         },
         ':hover': {
