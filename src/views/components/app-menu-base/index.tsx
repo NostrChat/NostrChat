@@ -5,8 +5,9 @@ import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import {appMenuAtom} from 'store';
+import UserMenu from '../app-menu/user-menu';
 
-const AppMenuBase = (props: { children: React.ReactNode, children2?: React.ReactNode }) => {
+const AppMenuBase = (props: { children: React.ReactNode }) => {
     const theme = useTheme();
     const {isMd} = useMediaBreakPoint();
     const [appMenu, setAppMenu] = useAtom(appMenuAtom);
@@ -32,7 +33,7 @@ const AppMenuBase = (props: { children: React.ReactNode, children2?: React.React
         flexGrow: 0,
         borderRight: `1px solid ${theme.palette.divider}`,
         display: 'flex',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
     }}>
         <Box sx={{
             width: '100%',
@@ -40,23 +41,14 @@ const AppMenuBase = (props: { children: React.ReactNode, children2?: React.React
             display: 'flex',
             flexDirection: 'column',
         }}>
+            <UserMenu/>
             <Box sx={{
-                flexGrow: 1,
-                flexShrink: 0,
+                height: 'calc(100% - 88px)',
+                overflowY: 'auto',
+                overflowX: 'hidden',
             }}>
                 {props.children}
             </Box>
-            {props.children2 && (
-                <Box sx={{
-                    flexGrow: 0,
-                    flexShrink: 0,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    padding: '12px'
-                }}>
-                    {props.children2}
-                </Box>
-            )}
         </Box>
     </Box>
 }
