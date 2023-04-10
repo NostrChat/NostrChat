@@ -2,10 +2,12 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import GifPicker from 'components/gif-picker';
 import usePopover from 'hooks/use-popover';
+import useToolStyle from 'views/components/chat-input/tools/style';
 import GifIcon from 'svg/gif';
 
 const Gif = (props: { onSelect: (selected: string) => void }) => {
     const [, showPopover] = usePopover();
+    const toolSx = useToolStyle();
 
     const emojiClicked = (event: React.MouseEvent<HTMLDivElement>) => {
         showPopover({
@@ -19,10 +21,7 @@ const Gif = (props: { onSelect: (selected: string) => void }) => {
         });
     }
 
-    return <Box onClick={emojiClicked} sx={{
-        display: 'inline-flex',
-        alignItems: 'center'
-    }}>
+    return <Box onClick={emojiClicked} sx={toolSx}>
         <GifIcon height={20}/>
     </Box>;
 }
