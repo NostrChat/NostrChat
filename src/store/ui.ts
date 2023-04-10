@@ -10,7 +10,7 @@ export interface Toast {
 
 export type Modal = { body: JSX.Element, fullScreen?: boolean, maxWidth?: Breakpoint } | null;
 
-export type Popover = { body: JSX.Element, anchorEl: HTMLDivElement } | null;
+export type Popover = { body: JSX.Element, anchorEl: HTMLDivElement, onClose?: () => void } | null;
 
 const initialTheme = (): PaletteMode => {
     const s = localStorage.getItem('app_theme');

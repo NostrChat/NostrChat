@@ -10,7 +10,7 @@ const useToolStyle = () => {
         cursor: 'pointer',
         mr: '6px',
         borderRadius: theme.shape.borderRadius,
-        ':hover': {
+        ':hover,&.hover': {
             background: theme.palette.divider,
         }
     };
