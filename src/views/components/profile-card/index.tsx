@@ -46,9 +46,11 @@ const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => voi
                 background: theme.palette.background.paper
             }}>
                 <Tooltip title={t('Mute')}>
-                    <MuteBtn pubkey={pubkey}>
-                        <IconButton><EyeOff height={14}/></IconButton>
-                    </MuteBtn>
+                    <Box>
+                        <MuteBtn pubkey={pubkey}>
+                            <IconButton><EyeOff height={14}/></IconButton>
+                        </MuteBtn>
+                    </Box>
                 </Tooltip>
             </Box>)}
             <Box sx={{
