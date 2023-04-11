@@ -18,6 +18,7 @@ const Gif = (props: { onSelect: (selected: string) => void }) => {
                     props.onSelect(gif);
                 }, 200)
                 showPopover(null);
+                setHover(false);
             }}/>,
             anchorEl: event.currentTarget,
             onClose: () => {

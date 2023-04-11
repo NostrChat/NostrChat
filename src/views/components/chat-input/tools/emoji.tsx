@@ -15,9 +15,10 @@ const Emoji = (props: { onSelect: (selected: string) => void }) => {
         showPopover({
             body: <EmojiPicker onSelect={(emoji) => {
                 setTimeout(() => {
-                    props.onSelect(emoji)
+                    props.onSelect(emoji);
                 }, 200)
                 showPopover(null);
+                setHover(false);
             }}/>,
             anchorEl: event.currentTarget,
             onClose: () => {
