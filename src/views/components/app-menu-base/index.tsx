@@ -52,7 +52,7 @@ const AppMenuBase = (props: { children: React.ReactNode }) => {
             }}>
                 {props.children}
             </Box>
-            <Box sx={{height: '50px', display: 'flex', fontSize: '0.8em', color: theme.palette.text.disabled}}>
+            <Box sx={{height: '50px', pt: '10px', flexShrink:0, display: 'flex', fontSize: '0.8em', color: theme.palette.text.disabled}}>
                 <Box sx={{mr: '20px'}}>{`NostrChat v${pack.version}`}</Box>
                 <Box component="a" href="https://github.com/NostrChat/NostrChat" target="_blank" rel="noreferrer"
                      sx={{ color: theme.palette.text.secondary}}>
