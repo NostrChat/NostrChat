@@ -6,6 +6,7 @@ import {useTheme} from '@mui/material/styles';
 import {nip19} from 'nostr-tools';
 
 import Avatar from 'views/components/avatar';
+import useStyles from 'hooks/use-styles';
 import {keysAtom, profileAtom} from 'store';
 import {truncateMiddle} from 'util/truncate';
 
@@ -13,6 +14,7 @@ import {truncateMiddle} from 'util/truncate';
 const UserMenu = () => {
     const [profile] = useAtom(profileAtom);
     const theme = useTheme();
+    const styles = useStyles();
     const [keys] = useAtom(keysAtom);
     const navigate = useNavigate();
 
@@ -25,9 +27,10 @@ const UserMenu = () => {
     }
 
     return <Box sx={{
-        height: '88px',
+        height: styles.headerHeight,
         display: 'flex',
         alignItems: 'center',
+        flexShrink: 0
     }}>
         <Box sx={{
             display: 'flex',
@@ -44,7 +47,7 @@ const UserMenu = () => {
             }
         }} onClick={clicked}>
             <Box sx={{mr: '8px', display: 'flex'}}>
-                <Avatar src={profile?.picture} seed={keys.pub} size={42} type='user' rounded/>
+                <Avatar src={profile?.picture} seed={keys.pub} size={42} rounded/>
             </Box>
             {(() => {
 

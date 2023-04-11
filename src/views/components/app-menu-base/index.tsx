@@ -3,12 +3,17 @@ import {useAtom} from 'jotai';
 import {useLocation} from '@reach/router';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
+import UserMenu from 'views/components/app-menu/user-menu';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
+import useStyles from 'hooks/use-styles';
 import {appMenuAtom} from 'store';
-import UserMenu from '../app-menu/user-menu';
+import Github from 'svg/github';
+import pack from '../../../../package.json';
+
 
 const AppMenuBase = (props: { children: React.ReactNode }) => {
     const theme = useTheme();
+    const styles = useStyles();
     const {isMd} = useMediaBreakPoint();
     const [appMenu, setAppMenu] = useAtom(appMenuAtom);
     const location = useLocation();
@@ -27,7 +32,7 @@ const AppMenuBase = (props: { children: React.ReactNode }) => {
 
     return <Box sx={{
         height: '100%',
-        width: '270px',
+        width: styles.sideBarWidth,
         p: '0 16px',
         flexShrink: 0,
         flexGrow: 0,
@@ -43,11 +48,25 @@ const AppMenuBase = (props: { children: React.ReactNode }) => {
         }}>
             <UserMenu/>
             <Box sx={{
-                height: 'calc(100% - 88px)',
-                overflowY: 'auto',
-                overflowX: 'hidden',
+                height: `calc(100% - calc(${styles.headerHeight} + ${styles.sideBarFooterHeight}))`,
+                flexShrink: 0,
+                ...styles.scrollY
             }}>
                 {props.children}
+            </Box>
+            <Box sx={{
+                height: styles.sideBarFooterHeight,
+                pt: '10px',
+                flexShrink: 0,
+                display: 'flex',
+                fontSize: '0.8em',
+                color: theme.palette.text.disabled
+            }}>
+                <Box sx={{mr: '20px'}}>{`NostrChat v${pack.version}`}</Box>
+                <Box component="a" href="https://github.com/NostrChat/NostrChat" target="_blank" rel="noreferrer"
+                     sx={{color: theme.palette.text.secondary}}>
+                    <Github height={20} style={{marginRight: '4px'}}/>
+                </Box>
             </Box>
         </Box>
     </Box>

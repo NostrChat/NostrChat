@@ -101,7 +101,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
         }}>
             {compactView ? null :
                 <Box sx={{cursor: 'pointer'}} onClick={profileClicked}>
-                    <Avatar src={profile?.picture} seed={message.creator} size={40} type="user"/>
+                    <Avatar src={profile?.picture} seed={message.creator} size={40} />
                 </Box>}
         </Box>
         <Box sx={{flexGrow: 1, ml: '12px'}}>
@@ -164,7 +164,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                             display: 'flex',
                             alignItems: 'center',
                         }}>
-                            <Avatar src={profile?.picture} seed={c} size={20} type='user'/>
+                            <Avatar src={profile?.picture} seed={c} size={20} />
                         </Box>
                     })}
                     <Box sx={{mr: '10px', color: theme.palette.primary.main, fontWeight: 'bold'}}>

@@ -2,17 +2,17 @@ import Box from '@mui/material/Box';
 import {useNavigate} from '@reach/router';
 import useTranslation from 'hooks/use-translation';
 import AppContentHeaderBase from 'views/components/app-content-header-base';
+import useStyle from 'hooks/use-styles';
 
 const SettingsHeader = (props: { section?: string }) => {
     const [t] = useTranslation();
     const navigate = useNavigate();
+    const styles = useStyle();
 
     return <AppContentHeaderBase>
         <Box sx={{
             fontFamily: 'Faktum, sans-serif',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis'
+            ...styles.ellipsis
         }}>
             {(() => {
                 if (props.section) {

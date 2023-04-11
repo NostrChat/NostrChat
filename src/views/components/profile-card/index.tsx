@@ -59,7 +59,7 @@ const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => voi
                 top: 0,
                 zIndex: 1
             }}>
-                <Avatar src={profile?.picture} seed={pubkey} size={200} type="user"/>
+                <Avatar src={profile?.picture} seed={pubkey} size={200} />
             </Box>
         </Box>
         {profileName && (<Box sx={{mb: '10px', fontWeight: 600}}>{profileName}</Box>)}

@@ -4,12 +4,14 @@ import {useTheme} from '@mui/material/styles';
 import Avatar from 'views/components/avatar';
 import AppContentHeaderBase from 'views/components/app-content-header-base';
 import Menu from 'views/direct-message/components/dm-header/menu';
+import useStyle from 'hooks/use-styles';
 import {directMessageAtom, profilesAtom} from 'store';
 
 const DmHeader = () => {
     const theme = useTheme();
     const [directMessage,] = useAtom(directMessageAtom);
     const [profiles] = useAtom(profilesAtom);
+    const styles = useStyle();
 
     if (!directMessage) {
         return null;
@@ -23,14 +25,12 @@ const DmHeader = () => {
             mr: '10px',
             flexShrink: 0
         }}>
-            <Avatar src={profile?.picture} seed={directMessage} size={50} type="user"/>
+            <Avatar src={profile?.picture} seed={directMessage} size={50} />
         </Box>
         <Box sx={{flexGrow: 1, minWidth: 0}}>
             <Box sx={{
                 fontFamily: 'Faktum, sans-serif',
-                overflow: 'hidden',
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis'
+                ...styles.ellipsis
             }}>
                 {profile?.name}
             </Box>
@@ -38,9 +38,7 @@ const DmHeader = () => {
                 <Box sx={{
                     color: theme.palette.primary.dark,
                     fontSize: '96%',
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap',
-                    textOverflow: 'ellipsis'
+                    ...styles.ellipsis
                 }}>
                     {profile.about}
                 </Box>

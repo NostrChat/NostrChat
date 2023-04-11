@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import ChannelMenu from 'views/channel/components/channel-header/channel-menu';
 import AppContentHeaderBase from 'views/components/app-content-header-base';
+import useStyle from 'hooks/use-styles';
 import {channelAtom, keysAtom} from 'store';
 import {GLOBAL_CHAT} from 'const';
 
@@ -11,6 +12,7 @@ const ChannelHeader = () => {
     const [keys] = useAtom(keysAtom);
     const [channel] = useAtom(channelAtom);
     const theme = useTheme();
+    const styles = useStyle();
 
     if (!channel || !keys) {
         return null;
@@ -36,9 +38,7 @@ const ChannelHeader = () => {
         <Box sx={{flexGrow: 1, minWidth: 0}}>
             <Box sx={{
                 fontFamily: 'Faktum, sans-serif',
-                overflow: 'hidden',
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis'
+                ...styles.ellipsis
             }}>
                 {channel.name}
             </Box>
@@ -46,9 +46,7 @@ const ChannelHeader = () => {
                 <Box sx={{
                     color: theme.palette.primary.dark,
                     fontSize: '96%',
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap',
-                    textOverflow: 'ellipsis'
+                    ...styles.ellipsis
                 }}>
                     {channel.about}
                 </Box>

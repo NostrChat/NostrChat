@@ -21,15 +21,14 @@ const useRenderContent = () => {
                     });
                 }}>
                     {(() => {
-                        if (href === content) {
-                            if (/(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/.test(href)) {
-                                return <Box component="img" src={href} sx={{
-                                    maxWidth: '300px',
-                                    maxHeight: '300px'
-                                }} onLoad={() => {
-                                    window.dispatchEvent(new Event('chat-media-loaded', {bubbles: true}))
-                                }}/>
-                            }
+                        if (/(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/.test(href)) {
+                            return <Box component="img" src={href} sx={{
+                                maxWidth: '300px',
+                                maxHeight: '300px',
+                                display: 'block'
+                            }} onLoad={() => {
+                                window.dispatchEvent(new Event('chat-media-loaded', {bubbles: true}))
+                            }}/>
                         }
 
                         return truncateMiddle(args.content, 60, '...');
