@@ -69,11 +69,9 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
     useEffect(() => {
         // After loading new messages, scrolls to the first one of them.
         if (loading) {
-            ref.current!.style.overflowY = 'hidden';
             setFirstMessageEl(ref.current!.querySelector('.message') as HTMLDivElement);
         } else {
             if (firstMessageEl) {
-                ref.current!.style.overflowY = 'auto';
                 if (firstMessageEl.previousSibling) {
                     (firstMessageEl.previousSibling as HTMLDivElement).scrollIntoView(true);
                 }

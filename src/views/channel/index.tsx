@@ -76,9 +76,7 @@ const ChannelPage = (props: RouteComponentProps) => {
 
     useEffect(() => {
         const fetchPrev = () => {
-            if (!hasMore) {
-                return;
-            }
+            if (!hasMore || loading) return;
             setLoading(true);
             raven?.fetchPrevMessages(channel!.id, messages[0].created).then((num) => {
                 if (num < (MESSAGE_PER_PAGE - ACCEPTABLE_LESS_PAGE_MESSAGES)) {
@@ -93,7 +91,7 @@ const ChannelPage = (props: RouteComponentProps) => {
         return () => {
             window.removeEventListener('chat-view-top', fetchPrev);
         }
-    }, [messages, channel, hasMore]);
+    }, [messages, channel, hasMore, loading]);
 
     useEffect(() => {
         const msg = messages.find(x => x.id === threadRoot?.id);
