@@ -3,15 +3,17 @@ import {useAtom} from 'jotai';
 import {useLocation} from '@reach/router';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
-import useMediaBreakPoint from 'hooks/use-media-break-point';
-import {appMenuAtom} from 'store';
 import UserMenu from 'views/components/app-menu/user-menu';
+import useMediaBreakPoint from 'hooks/use-media-break-point';
+import useStyles from 'hooks/use-styles';
+import {appMenuAtom} from 'store';
 import Github from 'svg/github';
 import pack from '../../../../package.json';
 
 
 const AppMenuBase = (props: { children: React.ReactNode }) => {
     const theme = useTheme();
+    const styles = useStyles();
     const {isMd} = useMediaBreakPoint();
     const [appMenu, setAppMenu] = useAtom(appMenuAtom);
     const location = useLocation();
@@ -30,7 +32,7 @@ const AppMenuBase = (props: { children: React.ReactNode }) => {
 
     return <Box sx={{
         height: '100%',
-        width: '270px',
+        width: styles.sideBarWidth,
         p: '0 16px',
         flexShrink: 0,
         flexGrow: 0,

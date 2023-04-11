@@ -10,6 +10,7 @@ import MessageView from 'views/components/message-view';
 import ChatInput from 'views/components/chat-input';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
+import useStyles from 'hooks/use-styles';
 import {threadRootAtom} from 'store';
 import Close from 'svg/close';
 
@@ -17,6 +18,7 @@ import Close from 'svg/close';
 const ThreadChatView = (props: { senderFn: (message: string) => Promise<any> }) => {
     const {isMd} = useMediaBreakPoint();
     const theme = useTheme();
+    const styles = useStyles();
     const [t] = useTranslation();
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
     const ref = useRef<HTMLDivElement | null>(null);
@@ -28,7 +30,7 @@ const ThreadChatView = (props: { senderFn: (message: string) => Promise<any> }) 
     }
 
     return <Box sx={{
-        width: isMd ? 'calc((100% - 270px) / 2)' : '100%',
+        width: isMd ? `calc((100% - ${styles.sideBarWidth}) / 2)` : '100%',
         ...(() => isMd ? {} : {
             position: 'absolute',
             left: '0',

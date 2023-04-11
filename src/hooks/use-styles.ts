@@ -19,7 +19,8 @@ const useStyles = () => {
             ':hover,&.hover': {
                 background: theme.palette.divider,
             }
-        }
+        },
+        sideBarWidth: '270px'
     }
 }
 
