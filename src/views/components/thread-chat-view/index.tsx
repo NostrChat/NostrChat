@@ -49,7 +49,7 @@ const ThreadChatView = (props: { senderFn: (message: string) => Promise<any> }) 
             flexShrink: 0,
         }}>
             <Box sx={{
-                height: '88px',
+                height: styles.headerHeight,
                 display: 'flex',
                 justifyContent: 'space-between',
                 borderBottom: `1px solid ${theme.palette.divider}`,

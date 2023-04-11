@@ -5,12 +5,14 @@ import IconButton from '@mui/material/IconButton';
 import {useTheme} from '@mui/material/styles';
 
 import useMediaBreakPoint from 'hooks/use-media-break-point';
+import useStyles from 'hooks/use-styles';
 import {appMenuAtom} from 'store';
 import ChevronRight from 'svg/chevron-right';
 import ChevronLeft from 'svg/chevron-left';
 
 const AppContentHeaderBase = (props: { children: React.ReactNode }) => {
     const theme = useTheme();
+    const styles = useStyles();
     const [appMenu, setAppMenu] = useAtom(appMenuAtom);
     const {isMd} = useMediaBreakPoint();
 
@@ -18,7 +20,7 @@ const AppContentHeaderBase = (props: { children: React.ReactNode }) => {
 
     return <Box>
         <Box sx={{
-            height: '88px',
+            height: styles.headerHeight,
             display: 'flex',
             flexGrow: 0,
             flexShrink: 0,

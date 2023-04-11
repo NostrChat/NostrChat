@@ -20,7 +20,8 @@ const useStyles = () => {
                 background: theme.palette.divider,
             }
         },
-        sideBarWidth: '270px'
+        sideBarWidth: '270px',
+        headerHeight: '88px'
     }
 }
 
