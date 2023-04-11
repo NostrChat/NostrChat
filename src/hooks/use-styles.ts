@@ -21,6 +21,7 @@ const useStyles = () => {
             }
         },
         sideBarWidth: '270px',
+        sideBarFooterHeight: '50px',
         headerHeight: '88px'
     }
 }
