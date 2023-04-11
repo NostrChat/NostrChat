@@ -5,7 +5,10 @@ import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import {appMenuAtom} from 'store';
-import UserMenu from '../app-menu/user-menu';
+import UserMenu from 'views/components/app-menu/user-menu';
+import pack from '../../../../package.json';
+import Github from '../../../svg/github';
+
 
 const AppMenuBase = (props: { children: React.ReactNode }) => {
     const theme = useTheme();
@@ -43,11 +46,18 @@ const AppMenuBase = (props: { children: React.ReactNode }) => {
         }}>
             <UserMenu/>
             <Box sx={{
-                height: 'calc(100% - 88px)',
+                height: 'calc(100% - 88px)', // 88px usermenu + 50px bottom
                 overflowY: 'auto',
                 overflowX: 'hidden',
             }}>
                 {props.children}
+            </Box>
+            <Box sx={{height: '50px', display: 'flex', fontSize: '0.8em', color: theme.palette.text.disabled}}>
+                <Box sx={{mr: '20px'}}>{`NostrChat v${pack.version}`}</Box>
+                <Box component="a" href="https://github.com/NostrChat/NostrChat" target="_blank" rel="noreferrer"
+                     sx={{ color: theme.palette.text.secondary}}>
+                    <Github height={20} style={{marginRight: '4px'}}/>
+                </Box>
             </Box>
         </Box>
     </Box>
