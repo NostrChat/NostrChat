@@ -6,8 +6,8 @@ import {useTheme} from '@mui/material/styles';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import {appMenuAtom} from 'store';
 import UserMenu from 'views/components/app-menu/user-menu';
+import Github from 'svg/github';
 import pack from '../../../../package.json';
-import Github from '../../../svg/github';
 
 
 const AppMenuBase = (props: { children: React.ReactNode }) => {
