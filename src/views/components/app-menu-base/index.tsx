@@ -46,7 +46,7 @@ const AppMenuBase = (props: { children: React.ReactNode }) => {
         }}>
             <UserMenu/>
             <Box sx={{
-                height: 'calc(100% - 88px)', // 88px usermenu + 50px bottom
+                height: 'calc(100% - 138px)', // 88px usermenu + 50px bottom
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 flexShrink: 0
