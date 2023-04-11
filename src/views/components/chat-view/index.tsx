@@ -30,7 +30,11 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
         if (ref.current && isBottom) {
             scrollToBottom();
         }
-    }, [separator, messages]);
+    }, [messages]);
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [separator]);
 
     useEffect(() => {
         let scrollTimer: any;
