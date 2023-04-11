@@ -49,13 +49,21 @@ const AppMenuBase = (props: { children: React.ReactNode }) => {
                 height: 'calc(100% - 88px)', // 88px usermenu + 50px bottom
                 overflowY: 'auto',
                 overflowX: 'hidden',
+                flexShrink: 0
             }}>
                 {props.children}
             </Box>
-            <Box sx={{height: '50px', pt: '10px', flexShrink:0, display: 'flex', fontSize: '0.8em', color: theme.palette.text.disabled}}>
+            <Box sx={{
+                height: '50px',
+                pt: '10px',
+                flexShrink: 0,
+                display: 'flex',
+                fontSize: '0.8em',
+                color: theme.palette.text.disabled
+            }}>
                 <Box sx={{mr: '20px'}}>{`NostrChat v${pack.version}`}</Box>
                 <Box component="a" href="https://github.com/NostrChat/NostrChat" target="_blank" rel="noreferrer"
-                     sx={{ color: theme.palette.text.secondary}}>
+                     sx={{color: theme.palette.text.secondary}}>
                     <Github height={20} style={{marginRight: '4px'}}/>
                 </Box>
             </Box>

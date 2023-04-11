@@ -28,6 +28,7 @@ const UserMenu = () => {
         height: '88px',
         display: 'flex',
         alignItems: 'center',
+        flexShrink: 0
     }}>
         <Box sx={{
             display: 'flex',
