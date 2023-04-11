@@ -55,6 +55,7 @@ type EventHandlerMap = {
 
 class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     private pool: SimplePool;
+    private poolL: SimplePool;
 
     private readonly priv: string | 'nip07';
     private readonly pub: string;
@@ -79,6 +80,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         this.pub = pub;
 
         this.pool = new SimplePool();
+        this.poolL = new SimplePool({eoseSubTimeout: 1000});
 
         this.init().then();
     }
@@ -184,7 +186,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             '#e': [channel],
             until,
             limit: MESSAGE_PER_PAGE
-        }]).then(events => {
+        }], true).then(events => {
             events.forEach((ev) => {
                 this.pushToEventBuffer(ev)
             });
@@ -209,9 +211,9 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return sub;
     }
 
-    private fetchP(filters: Filter[]): Promise<Event[]> {
+    private fetchP(filters: Filter[], lowLatencyPool: boolean = false): Promise<Event[]> {
         return new Promise((resolve) => {
-            const sub = this.pool.sub(this.readRelays, filters);
+            const sub = (lowLatencyPool ? this.poolL : this.pool).sub(this.readRelays, filters);
             const events: Event[] = [];
 
             sub.on('event', (event) => {
