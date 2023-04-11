@@ -4,6 +4,7 @@ import {styled} from '@mui/material';
 import {useTheme} from '@mui/material/styles';
 import {Grid, SearchBar as DefaultSearchBar, SearchContext, SearchContextManager} from '@giphy/react-components'
 import {IGif} from '@giphy/js-types'
+import useStyles from 'hooks/use-styles';
 
 const GIPHY_KEY = process.env.REACT_APP_GIPHY_KEY!;
 
@@ -38,6 +39,7 @@ export const SearchBar = styled(DefaultSearchBar)`
 
 const Giphy = (props: { onSelect: (selected: string) => void }) => {
     const {fetchGifs, searchKey} = useContext(SearchContext);
+    const styles = useStyles();
 
     const onClick = (e: IGif) => {
         props.onSelect(e.images.fixed_height.url);
@@ -50,8 +52,7 @@ const Giphy = (props: { onSelect: (selected: string) => void }) => {
 
         <Box sx={{
             height: '260px',
-            overflowY: 'auto',
-            overflowX: 'hidden'
+            ...styles.scrollY
         }}>
             <Grid
                 tabIndex={1}

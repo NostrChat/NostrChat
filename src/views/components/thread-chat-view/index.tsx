@@ -72,8 +72,7 @@ const ThreadChatView = (props: { senderFn: (message: string) => Promise<any> }) 
         </Box>
         <Box ref={ref} sx={{
             flexGrow: 1,
-            overflowY: 'auto',
-            overflowX: 'hidden',
+            ...styles.scrollY,
         }}>
             {threadRoot.children?.map(msg => {
                 return <MessageView key={msg.id} message={msg} dateFormat='fromNow' compactView={false} inThreadView/>

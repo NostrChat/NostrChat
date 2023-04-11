@@ -49,9 +49,8 @@ const AppMenuBase = (props: { children: React.ReactNode }) => {
             <UserMenu/>
             <Box sx={{
                 height: `calc(100% - calc(${styles.headerHeight} + ${styles.sideBarFooterHeight}))`,
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                flexShrink: 0
+                flexShrink: 0,
+                ...styles.scrollY
             }}>
                 {props.children}
             </Box>

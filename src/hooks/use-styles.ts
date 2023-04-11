@@ -9,7 +9,7 @@ const useStyles = () => {
             whiteSpace: 'nowrap',
             textOverflow: 'ellipsis'
         },
-        chatInputToolSx : {
+        chatInputToolSx: {
             display: 'flex',
             alignItems: 'center',
             padding: '6px',
@@ -19,6 +19,10 @@ const useStyles = () => {
             ':hover,&.hover': {
                 background: theme.palette.divider,
             }
+        },
+        scrollY: {
+            overflowY: 'auto',
+            overflowX: 'hidden'
         },
         sideBarWidth: '270px',
         sideBarFooterHeight: '50px',

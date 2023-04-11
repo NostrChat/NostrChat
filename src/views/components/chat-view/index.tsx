@@ -5,6 +5,7 @@ import {useTheme} from '@mui/material/styles';
 import {useAtom} from 'jotai';
 
 import MessageView from 'views/components/message-view';
+import useStyles from 'hooks/use-styles';
 import {formatMessageDate, formatMessageTime} from 'helper';
 import {Message} from 'types';
 import {SCROLL_DETECT_THRESHOLD} from 'const';
@@ -14,6 +15,7 @@ import {notEmpty} from 'util/misc';
 const ChatView = (props: { messages: Message[], separator: string, loading?: boolean }) => {
     const {separator, messages, loading} = props;
     const theme = useTheme();
+    const styles = useStyles();
     const ref = useRef<HTMLDivElement | null>(null);
     const [isBottom, setIsBottom] = useState(true);
     const [firstMessageEl, setFirstMessageEl] = useState<HTMLDivElement | null>(null);
@@ -94,9 +96,8 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
     }, [messages, scrollTop]);
 
     return <Box ref={ref} sx={{
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        mt: 'auto'
+        mt: 'auto',
+        ...styles.scrollY,
     }}>
         {messages.map((msg, i) => {
             const prevMsg = messages[i - 1];
