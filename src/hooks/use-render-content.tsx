@@ -14,25 +14,31 @@ const useRenderContent = () => {
         const renderLink = (args: IntermediateRepresentation) => {
             const {href} = args.attributes;
             if (href.indexOf('https://') === 0) {
-                return <Link href={href} target="_blank" rel="noreferrer" onClick={(e) => {
-                    e.preventDefault();
-                    showModal({
-                        body: <ExternalLinkDialog link={href}/>
-                    });
-                }}>
-                    {(() => {
-                        if (/(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/.test(href)) {
-                            return <Box component="img" src={href} sx={{
+
+                if (/(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/.test(href)) {
+                    return <Box>
+                        <Link href={href} target="_blank" rel="noreferrer" onClick={(e) => {
+                            e.preventDefault();
+                            showModal({
+                                body: <ExternalLinkDialog link={href}/>
+                            });
+                        }}>
+                            <Box component="img" src={href} sx={{
                                 maxWidth: '300px',
                                 maxHeight: '300px',
                             }} onLoad={() => {
                                 window.dispatchEvent(new Event('chat-media-loaded', {bubbles: true}))
                             }}/>
-                        }
+                        </Link>
+                    </Box>
+                }
 
-                        return truncateMiddle(args.content, 60, '...');
-                    })()}
-                </Link>;
+                return <Link href={href} target="_blank" rel="noreferrer" onClick={(e) => {
+                    e.preventDefault();
+                    showModal({
+                        body: <ExternalLinkDialog link={href}/>
+                    });
+                }}>{truncateMiddle(args.content, 60, '...')}</Link>;
             }
 
             return <>{args.content}</>;
