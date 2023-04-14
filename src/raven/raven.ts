@@ -285,7 +285,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }], false);
     }
 
-    listenMessages = (ids: string[]) => {
+    public listenMessages = (ids: string[]) => {
         if (this.messageListenerSub) {
             this.messageListenerSub.unsub();
         }
@@ -366,6 +366,12 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         const list = [...userIds.map(id => ['p', id])];
         const content = await (this.priv === 'nip07' ? window.nostr!.nip04.encrypt(this.pub, JSON.stringify(list)) : nip04.encrypt(this.priv, this.pub, JSON.stringify(list)));
         return this.publish(NewKinds.MuteList, [], content);
+    }
+
+    public async sendReaction(message: string, pubkey: string, reaction: string) {
+        const relay = await this.findHealthyRelay(this.pool.seenOn(message));
+        const tags = [['e', message, relay, 'root'], ['p', pubkey]];
+        return this.publish(Kind.Reaction, tags, reaction);
     }
 
     private publish(kind: number, tags: Array<any>[], content: string): Promise<Event> {

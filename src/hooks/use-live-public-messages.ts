@@ -5,15 +5,19 @@ import {
     publicMessagesAtom,
     channelMessageHidesAtom,
     channelUserMutesAtom,
-    muteListAtom
+    muteListAtom,
+    keysAtom
 } from 'store';
 
 const useLivePublicMessages = (channelId?: string) => {
     const [messages] = useAtom(publicMessagesAtom);
     const [eventDeletions] = useAtom(eventDeletionsAtom);
     const [channelMessageHides] = useAtom(channelMessageHidesAtom);
-    const [channelUserMutes] = useAtom(channelUserMutesAtom);
+    const [_channelUserMutes] = useAtom(channelUserMutesAtom);
     const [muteList] = useAtom(muteListAtom);
+    const [keys] = useAtom(keysAtom);
+
+    const channelUserMutes = _channelUserMutes.filter(x => x.pubkey !== keys?.pub); // accidentally muted myself -_-
 
     const clean = useMemo(() => messages
         .filter(c => eventDeletions.find(x => x.eventId === c.id) === undefined)
