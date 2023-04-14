@@ -6,7 +6,8 @@ import {
     channelMessageHidesAtom,
     channelUserMutesAtom,
     muteListAtom,
-    keysAtom
+    keysAtom,
+    reactionsAtom
 } from 'store';
 
 const useLivePublicMessages = (channelId?: string) => {
@@ -16,8 +17,10 @@ const useLivePublicMessages = (channelId?: string) => {
     const [_channelUserMutes] = useAtom(channelUserMutesAtom);
     const [muteList] = useAtom(muteListAtom);
     const [keys] = useAtom(keysAtom);
+    const [reactions] = useAtom(reactionsAtom);
 
-    const channelUserMutes = _channelUserMutes.filter(x => x.pubkey !== keys?.pub); // accidentally muted myself -_-
+    // accidentally muted myself -_-
+    const channelUserMutes = useMemo(() => _channelUserMutes.filter(x => x.pubkey !== keys?.pub), [_channelUserMutes, keys]);
 
     const clean = useMemo(() => messages
         .filter(c => eventDeletions.find(x => x.eventId === c.id) === undefined)
@@ -28,7 +31,8 @@ const useLivePublicMessages = (channelId?: string) => {
 
     return useMemo(() => clean
         .filter(c => c.root === channelId)
-        .map(c => ({...c, children: clean.filter(x => x.root === c.id)})), [clean, channelId]);
+        .map(c => ({...c, children: clean.filter(x => x.root === c.id)}))
+        .map(c => ({...c, reactions: reactions.filter(r => r.message === c.id)})), [clean, reactions, channelId]);
 }
 
 export default useLivePublicMessages;

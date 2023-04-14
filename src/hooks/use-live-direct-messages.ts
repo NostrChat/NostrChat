@@ -1,11 +1,12 @@
 import {useMemo} from 'react';
 import {useAtom} from 'jotai';
-import {directMessagesAtom, eventDeletionsAtom, muteListAtom} from 'store';
+import {directMessagesAtom, eventDeletionsAtom, muteListAtom, reactionsAtom} from 'store';
 
 const useLiveDirectMessages = (peer?: string) => {
     const [directMessages] = useAtom(directMessagesAtom);
     const [eventDeletions] = useAtom(eventDeletionsAtom);
     const [muteList] = useAtom(muteListAtom);
+    const [reactions] = useAtom(reactionsAtom);
 
     const clean = useMemo(() => directMessages
         .filter(x => x.peer === peer)
@@ -15,7 +16,8 @@ const useLiveDirectMessages = (peer?: string) => {
 
     return useMemo(() => clean
         .map(c => ({...c, children: clean.filter(x => x.root === c.id)}))
-        .filter(x => !x.root), [clean]);
+        .map(c => ({...c, reactions: reactions.filter(r => r.message === c.id)}))
+        .filter(x => !x.root), [clean, reactions]);
 }
 
 export default useLiveDirectMessages;
