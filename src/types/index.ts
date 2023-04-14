@@ -35,4 +35,4 @@ export type RelayDict = Record<string, { read: boolean; write: boolean }>;
 
 export type MuteList = { pubkeys: string[], encrypted: string };
 
-export type Reaction = { id: string, message: string, peer: string, content: string, creator: string };
+export type Reaction = { id: string, message: string, peer: string, content: string, creator: string, created: number };

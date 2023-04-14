@@ -187,10 +187,18 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                     return null;
                 }
 
-                const reactions:Record<string, []> = {};
-                message.reactions.forEach(r =>{
-
+                const reactionsDict: Record<string, string[]> = {};
+                message.reactions.forEach(r => {
+                    if (reactionsDict[r.content]) {
+                        if (!reactionsDict[r.content].includes(r.creator)) {
+                            reactionsDict[r.content].push(r.creator);
+                        }
+                    } else {
+                        reactionsDict[r.content] = [r.creator];
+                    }
                 });
+
+                console.log(reactionsDict)
 
                 return message.reactions.map(r => r.content)
             })()}

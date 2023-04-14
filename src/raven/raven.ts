@@ -604,6 +604,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     peer,
                     content: ev.content,
                     creator: ev.pubkey,
+                    created: ev.created_at,
                 }
             }
         ).filter(notEmpty);

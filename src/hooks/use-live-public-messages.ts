@@ -7,8 +7,8 @@ import {
     channelUserMutesAtom,
     muteListAtom,
     keysAtom,
-    reactionsAtom
 } from 'store';
+import useLiveReactions from 'hooks/use-live-reactions';
 
 const useLivePublicMessages = (channelId?: string) => {
     const [messages] = useAtom(publicMessagesAtom);
@@ -17,7 +17,7 @@ const useLivePublicMessages = (channelId?: string) => {
     const [_channelUserMutes] = useAtom(channelUserMutesAtom);
     const [muteList] = useAtom(muteListAtom);
     const [keys] = useAtom(keysAtom);
-    const [reactions] = useAtom(reactionsAtom);
+    const reactions = useLiveReactions();
 
     // accidentally muted myself -_-
     const channelUserMutes = useMemo(() => _channelUserMutes.filter(x => x.pubkey !== keys?.pub), [_channelUserMutes, keys]);
