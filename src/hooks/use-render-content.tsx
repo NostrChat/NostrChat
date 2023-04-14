@@ -14,26 +14,31 @@ const useRenderContent = () => {
         const renderLink = (args: IntermediateRepresentation) => {
             const {href} = args.attributes;
             if (href.indexOf('https://') === 0) {
+
+                if (/(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/.test(href)) {
+                    return <Box>
+                        <Link href={href} target="_blank" rel="noreferrer" onClick={(e) => {
+                            e.preventDefault();
+                            showModal({
+                                body: <ExternalLinkDialog link={href}/>
+                            });
+                        }}>
+                            <Box component="img" src={href} sx={{
+                                maxWidth: '300px',
+                                maxHeight: '300px',
+                            }} onLoad={() => {
+                                window.dispatchEvent(new Event('chat-media-loaded', {bubbles: true}))
+                            }}/>
+                        </Link>
+                    </Box>
+                }
+
                 return <Link href={href} target="_blank" rel="noreferrer" onClick={(e) => {
                     e.preventDefault();
                     showModal({
                         body: <ExternalLinkDialog link={href}/>
                     });
-                }}>
-                    {(() => {
-                        if (/(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/.test(href)) {
-                            return <Box component="img" src={href} sx={{
-                                maxWidth: '300px',
-                                maxHeight: '300px',
-                                display: 'block'
-                            }} onLoad={() => {
-                                window.dispatchEvent(new Event('chat-media-loaded', {bubbles: true}))
-                            }}/>
-                        }
-
-                        return truncateMiddle(args.content, 60, '...');
-                    })()}
-                </Link>;
+                }}>{truncateMiddle(args.content, 60, '...')}</Link>;
             }
 
             return <>{args.content}</>;

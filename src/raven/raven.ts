@@ -107,7 +107,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }];
 
         this.fetchP(filters).then((resp) => {
-            const deletions = resp.filter(x => x.kind === Kind.EventDeletion).map(x => Raven.findTagValue(x, 'e'));
+            const deletions = resp.filter(x => x.kind === Kind.EventDeletion).map(x => Raven.findTagValue(x, 'e')).filter(notEmpty);
             const events = resp.sort((a, b) => b.created_at - a.created_at);
 
             const profile = events.find(x => x.kind === Kind.Metadata);
@@ -129,8 +129,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     return Raven.findTagValue(x, 'e');
                 }
 
-                return undefined;
-            }).filter(x => !deletions.includes(x)).filter(notEmpty));
+                return null;
+            }).filter(notEmpty).filter(x => !deletions.includes(x)).filter(notEmpty));
 
             if (!channels.includes(GLOBAL_CHAT.id)) {
                 channels.push(GLOBAL_CHAT.id)
@@ -139,11 +139,11 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             const directContacts = uniq(events.map(x => {
                 if (x.kind === Kind.EncryptedDirectMessage) {
                     const receiver = Raven.findTagValue(x, 'p');
-                    if (!receiver) return undefined;
+                    if (!receiver) return null;
                     return receiver === this.pub ? x.pubkey : receiver;
                 }
 
-                return undefined;
+                return null;
             })).filter(notEmpty);
 
             const filters: Filter[] = [
@@ -489,8 +489,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }
 
         const publicMessages: PublicMessage[] = this.eventQueue.filter(x => x.kind === Kind.ChannelMessage).map(ev => {
-                const eTags = Raven.filterTagValue(ev, 'e');
-                const root = eTags.find(x => x[3] === 'root')?.[1];
+                const root = Raven.findNip10MarkerValue(ev, 'root');
                 const mentions = Raven.filterTagValue(ev, 'p').map(x => x?.[1]).filter(notEmpty);
                 if (!root) return null;
                 return ev.content ? {
@@ -510,8 +509,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         Promise.all(this.eventQueue.filter(x => x.kind === Kind.EncryptedDirectMessage).map(ev => {
             const receiver = Raven.findTagValue(ev, 'p');
             if (!receiver) return null;
-            const eTags = Raven.filterTagValue(ev, 'e');
-            const root = eTags.find(x => x[3] === 'root')?.[1];
+            const root = Raven.findNip10MarkerValue(ev, 'root');
 
             const peer = receiver === this.pub ? ev.pubkey : receiver;
             const msg = {
@@ -618,6 +616,11 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     static filterTagValue(ev: Event, tag: 'e' | 'p') {
         return ev.tags.filter(([t]) => t === tag)
+    }
+
+    static findNip10MarkerValue(ev: Event, marker: 'reply' | 'root' | 'mention') {
+        const eTags = Raven.filterTagValue(ev, 'e');
+        return eTags.find(x => x[3] === marker)?.[1];
     }
 }
 
