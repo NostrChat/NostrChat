@@ -5,21 +5,45 @@ import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import {useTheme} from '@mui/material/styles';
 import {useAtom} from 'jotai';
-import {keysAtom, ravenAtom, threadRootAtom} from 'store';
+import {activeMessageAtom, keysAtom, ravenAtom, threadRootAtom} from 'store';
 import useModal from 'hooks/use-modal';
 import ConfirmDialog from 'components/confirm-dialog';
+import EmojiPicker from 'components/emoji-picker';
 import useTranslation from 'hooks/use-translation';
+import usePopover from 'hooks/use-popover';
 import EyeOff from 'svg/eye-off';
 import MessageReplyText from 'svg/message-reply-text';
+import Emoticon from 'svg/emoticon';
 
 const MessageMenu = (props: { message: Message, inThreadView?: boolean }) => {
     const {message, inThreadView} = props;
     const theme = useTheme();
     const [keys] = useAtom(keysAtom);
     const [raven] = useAtom(ravenAtom);
+    const [, setActiveMessage] = useAtom(activeMessageAtom);
     const [, setThreadRoot] = useAtom(threadRootAtom);
     const [, showModal] = useModal();
     const [t] = useTranslation();
+    const [, showPopover] = usePopover();
+
+    const emoji = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setActiveMessage(message.id);
+        showPopover({
+            body: <Box sx={{width: '298px'}}>
+                <EmojiPicker onSelect={(emoji) => {
+                    setActiveMessage(null);
+                    showPopover(null);
+                }}/>
+            </Box>,
+            toRight: true,
+            toBottom: true,
+            anchorEl: event.currentTarget,
+            onClose: () => {
+                setActiveMessage(message.id);
+                setActiveMessage(null);
+            }
+        });
+    }
 
     const openThread = () => {
         setThreadRoot(message);
@@ -33,7 +57,11 @@ const MessageMenu = (props: { message: Message, inThreadView?: boolean }) => {
         });
     }
 
-    const buttons = [];
+    const buttons = [<Tooltip title={t('Reaction')}>
+            <IconButton size="small" onClick={emoji}>
+                <Emoticon height={20}/>
+            </IconButton>
+        </Tooltip>];
 
     if (!inThreadView) {
         buttons.push(<Tooltip title={t('Reply in thread')}>

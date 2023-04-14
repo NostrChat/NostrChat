@@ -14,12 +14,17 @@ const PopoverProvider = (props: { children: React.ReactNode }) => {
         {props.children}
         {popover && (
             <Popover
+                transitionDuration={0}
                 open={true}
                 anchorEl={popover.anchorEl}
                 onClose={hide}
                 anchorOrigin={{
-                    vertical: 'top',
+                    vertical: popover.toBottom ? 'bottom' : 'top',
                     horizontal: 'right',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: popover.toRight ? 'right' : 'left',
                 }}
                 sx={{ml: '10px'}}
                 PaperProps={{

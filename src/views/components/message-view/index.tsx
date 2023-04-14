@@ -14,7 +14,7 @@ import useTranslation from 'hooks/use-translation';
 import Avatar from 'views/components/avatar';
 import ProfileCard from 'views/components/profile-card';
 import MessageMenu from 'views/components/message-menu';
-import {profilesAtom, threadRootAtom} from 'store';
+import {activeMessageAtom, profilesAtom, threadRootAtom} from 'store';
 import {Message,} from 'types';
 import {formatMessageTime, formatMessageFromNow, formatMessageDateTime} from 'helper';
 import ChevronRight from 'svg/chevron-right';
@@ -27,6 +27,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const [profiles] = useAtom(profilesAtom);
     const profile = profiles.find(x => x.creator === message.creator);
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
+    const [activeMessage] = useAtom(activeMessageAtom);
     const [t] = useTranslation();
     const [, showPopover] = usePopover();
     const {isMd} = useMediaBreakPoint();
@@ -78,6 +79,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
             display: 'flex',
             p: `${!compactView ? '15px' : '3px'} ${ps} 0 ${ps}`,
             position: 'relative',
+            background: activeMessage === message.id ? theme.palette.divider : null,
             ':hover': {
                 background: theme.palette.divider
             }
@@ -88,7 +90,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
         onMouseLeave={() => {
             setMenu(false);
         }}>
-        {menu && (<Box sx={{
+        {(menu || activeMessage === message.id) && (<Box sx={{
             position: 'absolute',
             right: '10px',
             top: '-10px'
@@ -101,7 +103,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
         }}>
             {compactView ? null :
                 <Box sx={{cursor: 'pointer'}} onClick={profileClicked}>
-                    <Avatar src={profile?.picture} seed={message.creator} size={40} />
+                    <Avatar src={profile?.picture} seed={message.creator} size={40}/>
                 </Box>}
         </Box>
         <Box sx={{flexGrow: 1, ml: '12px'}}>
@@ -164,7 +166,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                             display: 'flex',
                             alignItems: 'center',
                         }}>
-                            <Avatar src={profile?.picture} seed={c} size={20} />
+                            <Avatar src={profile?.picture} seed={c} size={20}/>
                         </Box>
                     })}
                     <Box sx={{mr: '10px', color: theme.palette.primary.main, fontWeight: 'bold'}}>
