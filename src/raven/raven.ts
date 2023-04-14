@@ -607,7 +607,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 }
             }
         ).filter(notEmpty);
-        if (publicMessages.length > 0) {
+        if (reactions.length > 0) {
             this.emit(RavenEvents.Reaction, reactions);
         }
 

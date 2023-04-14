@@ -182,6 +182,18 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                     )}
                 </Box>
             )}
+            {(() => {
+                if (!message.reactions) {
+                    return null;
+                }
+
+                const reactions:Record<string, []> = {};
+                message.reactions.forEach(r =>{
+
+                });
+
+                return message.reactions.map(r => r.content)
+            })()}
         </Box>
     </Box>;
 }
