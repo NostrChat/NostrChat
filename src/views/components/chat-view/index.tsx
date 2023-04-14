@@ -90,14 +90,19 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
         const ids = Array.from(document.querySelectorAll('.message[data-visible=true]')).map(el => el.getAttribute('data-id')).filter(notEmpty);
         if (ids.length === 0) return;
 
-        const interval = setInterval(() => {
+        let interval: any;
+        const timer = setTimeout(() => {
             raven?.listenMessages(ids);
-        }, 10000);
+            interval = setInterval(() => {
+                raven?.listenMessages(ids);
+            }, 10000);
+        }, 500);
 
         return () => {
+            clearTimeout(timer);
             clearInterval(interval);
         }
-    }, [messages, scrollTop]);
+    }, [raven, messages, scrollTop]);
 
     return <Box ref={ref} sx={{
         mt: 'auto',
