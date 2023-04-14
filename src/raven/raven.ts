@@ -12,6 +12,7 @@ import {
     MuteList,
     Profile,
     PublicMessage,
+    Reaction,
 } from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
@@ -36,7 +37,8 @@ export enum RavenEvents {
     DirectMessage = 'direct_message',
     ChannelMessageHide = 'channel_message_hide',
     ChannelUserMute = 'channel_user_mute',
-    MuteList = 'mute_list'
+    MuteList = 'mute_list',
+    Reaction = 'reaction'
 }
 
 type EventHandlerMap = {
@@ -50,6 +52,7 @@ type EventHandlerMap = {
     [RavenEvents.ChannelMessageHide]: (data: ChannelMessageHide[]) => void;
     [RavenEvents.ChannelUserMute]: (data: ChannelUserMute[]) => void;
     [RavenEvents.MuteList]: (data: MuteList) => void;
+    [RavenEvents.Reaction]: (data: Reaction[]) => void;
 };
 
 
@@ -589,6 +592,23 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     encrypted: muteListEv.content.trim()
                 });
             }
+        }
+
+        const reactions: Reaction[] = this.eventQueue.filter(x => x.kind === Kind.Reaction).map(ev => {
+                const message = Raven.findNip10MarkerValue(ev, 'root');
+                const peer = Raven.findTagValue(ev, 'p');
+                if (!message || !peer || !ev.content) return null;
+                return {
+                    id: ev.id,
+                    message,
+                    peer,
+                    content: ev.content,
+                    creator: ev.pubkey,
+                }
+            }
+        ).filter(notEmpty);
+        if (publicMessages.length > 0) {
+            this.emit(RavenEvents.Reaction, reactions);
         }
 
         this.eventQueue = [];
