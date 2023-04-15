@@ -14,6 +14,7 @@ import useTranslation from 'hooks/use-translation';
 import Avatar from 'views/components/avatar';
 import ProfileCard from 'views/components/profile-card';
 import MessageMenu from 'views/components/message-menu';
+import MessageReactions from 'views/components/message-view/reactions';
 import {activeMessageAtom, profilesAtom, threadRootAtom} from 'store';
 import {Message,} from 'types';
 import {formatMessageTime, formatMessageFromNow, formatMessageDateTime} from 'helper';
@@ -182,26 +183,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                     )}
                 </Box>
             )}
-            {(() => {
-                if (!message.reactions) {
-                    return null;
-                }
-
-                const reactionsDict: Record<string, string[]> = {};
-                message.reactions.forEach(r => {
-                    if (reactionsDict[r.content]) {
-                        if (!reactionsDict[r.content].includes(r.creator)) {
-                            reactionsDict[r.content].push(r.creator);
-                        }
-                    } else {
-                        reactionsDict[r.content] = [r.creator];
-                    }
-                });
-
-                console.log(reactionsDict)
-
-                return message.reactions.map(r => r.content)
-            })()}
+            <MessageReactions message={message} />
         </Box>
     </Box>;
 }
