@@ -14,7 +14,7 @@ import useTranslation from 'hooks/use-translation';
 import Avatar from 'views/components/avatar';
 import ProfileCard from 'views/components/profile-card';
 import MessageMenu from 'views/components/message-menu';
-import MessageReactions from 'views/components/message-view/reactions';
+import MessageReactions from 'views/components/message-reactions';
 import {activeMessageAtom, profilesAtom, threadRootAtom} from 'store';
 import {Message,} from 'types';
 import {formatMessageTime, formatMessageFromNow, formatMessageDateTime} from 'helper';
