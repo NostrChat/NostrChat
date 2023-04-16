@@ -1,11 +1,11 @@
 import {useMemo} from 'react';
 import Box from '@mui/material/Box';
 import uniq from 'lodash.uniq';
+import toArray from 'lodash.toarray';
 import {useAtom} from 'jotai';
 import {keysAtom} from 'store';
 import ReactionBtn from 'views/components/message-reactions/reaction-btn';
 import {Message, ReactionCombined} from 'types';
-
 
 const MessageReactions = (props: { message: Message }) => {
     const {message} = props;
@@ -16,7 +16,10 @@ const MessageReactions = (props: { message: Message }) => {
 
         const symbols: Record<string, number> = {};
         message.reactions.sort((a, b) => a.created - b.created).forEach(r => {
-            symbols[r.content] = 1;
+            // best way to check correct (visible) length of a string that contains emojis since Intl.Segmenter doesn't work with Firefox
+            if (toArray(r.content).length === 1) {
+                symbols[r.content] = 1;
+            }
         });
 
         return Object.keys(symbols).map((symbol) => {
