@@ -288,19 +288,29 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }], false);
     }
 
-    public listenMessages = (ids: string[]) => {
+    public listenMessages = (messageIds: string[], relIds: string[]) => {
         if (this.messageListenerSub) {
             this.messageListenerSub.unsub();
         }
 
-        this.messageListenerSub = this.fetch([{
-            kinds: [
-                Kind.EventDeletion,
-                Kind.ChannelMessage,
-                Kind.Reaction
-            ],
-            '#e': ids,
-        }], false);
+        const filters: Filter[] = [
+            {
+                kinds: [
+                    Kind.EventDeletion,
+                    Kind.ChannelMessage,
+                    Kind.Reaction
+                ],
+                '#e': messageIds,
+            },
+            ...chunk(relIds, 10).map(c => ({
+                    kinds: [
+                        Kind.EventDeletion,
+                    ],
+                    '#e': c,
+                }
+            ))
+        ];
+        this.messageListenerSub = this.fetch(filters, false);
     }
 
     private async findHealthyRelay(relays: string[]) {

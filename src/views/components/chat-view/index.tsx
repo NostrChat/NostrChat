@@ -9,7 +9,7 @@ import useStyles from 'hooks/use-styles';
 import {formatMessageDate, formatMessageTime} from 'helper';
 import {Message} from 'types';
 import {SCROLL_DETECT_THRESHOLD} from 'const';
-import {ravenAtom} from 'store';
+import {keysAtom, ravenAtom} from 'store';
 import {notEmpty} from 'util/misc';
 
 const ChatView = (props: { messages: Message[], separator: string, loading?: boolean }) => {
@@ -21,6 +21,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
     const [firstMessageEl, setFirstMessageEl] = useState<HTMLDivElement | null>(null);
     const [scrollTop, setScrollTop] = useState<number>(0);
     const [raven] = useAtom(ravenAtom);
+    const [keys] = useAtom(keysAtom);
 
     const scrollToBottom = () => {
         ref.current!.scroll({top: ref.current!.scrollHeight, behavior: 'auto'});
@@ -87,14 +88,21 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
     }, [loading]);
 
     useEffect(() => {
-        const ids = Array.from(document.querySelectorAll('.message[data-visible=true]')).map(el => el.getAttribute('data-id')).filter(notEmpty);
-        if (ids.length === 0) return;
+        // Listen messages visible in the screen for threads and reactions.
+        const messageIds = Array.from(document.querySelectorAll('.message[data-visible=true]')).map(el => el.getAttribute('data-id')).filter(notEmpty);
+        if (messageIds.length === 0) return;
+
+        // Watching reactions' event ids to get updated if others users delete their reactions.
+        // It's enough to watch reactions in last 10 minutes.
+        // Otherwise, it can be impossible to get response from relays if there is a lot of reactions related to the message.
+        const now = Math.floor(Date.now() / 1000)
+        const relIds = messageIds.map(m => messages.find(x => x.id === m)?.reactions?.filter(x => x.creator !== keys?.pub).filter(l => now - l.created <= 600).map(l => l.id) || []).flat();
 
         let interval: any;
         const timer = setTimeout(() => {
-            raven?.listenMessages(ids);
+            raven?.listenMessages(messageIds, relIds);
             interval = setInterval(() => {
-                raven?.listenMessages(ids);
+                raven?.listenMessages(messageIds, relIds);
             }, 10000);
         }, 500);
 
