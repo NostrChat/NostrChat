@@ -9,7 +9,7 @@ import {
     ChannelMessageHide,
     ChannelUserMute,
     MuteList,
-    Message
+    Message, Reaction
 } from 'types';
 import {GLOBAL_CHAT} from 'const';
 
@@ -32,5 +32,7 @@ export const channelMessageHidesAtom = atom<ChannelMessageHide[]>([]);
 export const channelUserMutesAtom = atom<ChannelUserMute[]>([]);
 export const muteListAtom = atom<MuteList>({pubkeys: [], encrypted: ''});
 export const threadRootAtom = atom<Message | null>(null);
+export const reactionsAtom = atom<Reaction[]>([]);
 export const commonTsAtom = atom<number>(0);
 export const backupWarnAtom = atom<boolean>(false);
+export const activeMessageAtom = atom<string | null>(null);

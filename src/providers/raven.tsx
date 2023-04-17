@@ -17,7 +17,9 @@ import {
     ravenReadyAtom,
     channelMessageHidesAtom,
     channelUserMutesAtom,
-    muteListAtom, directMessageAtom
+    muteListAtom,
+    directMessageAtom,
+    reactionsAtom
 } from 'store';
 import {initRaven, RavenEvents} from 'raven/raven';
 import {
@@ -29,7 +31,7 @@ import {
     PublicMessage,
     ChannelMessageHide,
     ChannelUserMute,
-    MuteList
+    MuteList, Reaction
 } from 'types';
 import {createLogger} from 'logger';
 
@@ -51,6 +53,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
     const [channelMessageHides, setChannelMessageHides] = useAtom(channelMessageHidesAtom);
     const [channelUserMutes, setChannelUserMutes] = useAtom(channelUserMutesAtom);
     const [muteList, setMuteList] = useAtom(muteListAtom);
+    const [reactions, setReactions] = useAtom(reactionsAtom);
     const [, setDirectContacts] = useAtom(directContactsAtom);
     const [since, setSince] = useState<number>(0)
 
@@ -269,6 +272,23 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
             })
         }
     }, [muteList, keys]);
+
+    // reaction handler
+    const handleReaction = (data: Reaction[]) => {
+        logger.info('handleReaction', data);
+        const append = data.filter(x => reactions.find(y => y.id === x.id) === undefined);
+        raven?.loadProfiles(append.map(x => x.creator));
+        setReactions([...reactions, ...append]);
+    }
+
+    useEffect(() => {
+        raven?.removeListener(RavenEvents.Reaction, handleReaction);
+        raven?.addListener(RavenEvents.Reaction, handleReaction);
+
+        return () => {
+            raven?.removeListener(RavenEvents.Reaction, handleReaction);
+        }
+    }, [raven, reactions]);
 
     // decrypt direct messages one by one to avoid show nip7 wallet dialog many times.
     useEffect(() => {

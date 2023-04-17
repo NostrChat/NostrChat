@@ -21,9 +21,9 @@ export type ChannelUpdate = { channelId: string } & Channel;
 
 export type EventDeletion = { eventId: string, why: string };
 
-export type PublicMessage = { id: string, root: string, content: string, creator: string, created: number, children?: PublicMessage[], mentions: string[] };
+export type PublicMessage = { id: string, root: string, content: string, creator: string, created: number, children?: PublicMessage[], reactions?: Reaction[], mentions: string[] };
 
-export type DirectMessage = { id: string, root?: string, content: string, peer: string, creator: string, created: number, children?: DirectMessage[], decrypted: boolean };
+export type DirectMessage = { id: string, root?: string, content: string, peer: string, creator: string, created: number, children?: DirectMessage[], reactions?: Reaction[], decrypted: boolean };
 
 export type Message = PublicMessage | DirectMessage;
 
@@ -34,3 +34,7 @@ export type ChannelUserMute = { pubkey: string, reason: string };
 export type RelayDict = Record<string, { read: boolean; write: boolean }>;
 
 export type MuteList = { pubkeys: string[], encrypted: string };
+
+export type Reaction = { id: string, message: string, peer: string, content: string, creator: string, created: number };
+
+export type ReactionCombined = { symbol: string, authors: string[], count: number, userReaction: Reaction | undefined };

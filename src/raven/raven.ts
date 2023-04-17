@@ -12,6 +12,7 @@ import {
     MuteList,
     Profile,
     PublicMessage,
+    Reaction,
 } from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
@@ -36,7 +37,8 @@ export enum RavenEvents {
     DirectMessage = 'direct_message',
     ChannelMessageHide = 'channel_message_hide',
     ChannelUserMute = 'channel_user_mute',
-    MuteList = 'mute_list'
+    MuteList = 'mute_list',
+    Reaction = 'reaction'
 }
 
 type EventHandlerMap = {
@@ -50,6 +52,7 @@ type EventHandlerMap = {
     [RavenEvents.ChannelMessageHide]: (data: ChannelMessageHide[]) => void;
     [RavenEvents.ChannelUserMute]: (data: ChannelUserMute[]) => void;
     [RavenEvents.MuteList]: (data: MuteList) => void;
+    [RavenEvents.Reaction]: (data: Reaction[]) => void;
 };
 
 
@@ -285,19 +288,29 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }], false);
     }
 
-    listenMessages = (ids: string[]) => {
+    public listenMessages = (messageIds: string[], relIds: string[]) => {
         if (this.messageListenerSub) {
             this.messageListenerSub.unsub();
         }
 
-        this.messageListenerSub = this.fetch([{
-            kinds: [
-                Kind.EventDeletion,
-                Kind.ChannelMessage,
-                Kind.Reaction
-            ],
-            '#e': ids,
-        }], false);
+        const filters: Filter[] = [
+            {
+                kinds: [
+                    Kind.EventDeletion,
+                    Kind.ChannelMessage,
+                    Kind.Reaction
+                ],
+                '#e': messageIds,
+            },
+            ...chunk(relIds, 10).map(c => ({
+                    kinds: [
+                        Kind.EventDeletion,
+                    ],
+                    '#e': c,
+                }
+            ))
+        ];
+        this.messageListenerSub = this.fetch(filters, false);
     }
 
     private async findHealthyRelay(relays: string[]) {
@@ -366,6 +379,12 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         const list = [...userIds.map(id => ['p', id])];
         const content = await (this.priv === 'nip07' ? window.nostr!.nip04.encrypt(this.pub, JSON.stringify(list)) : nip04.encrypt(this.priv, this.pub, JSON.stringify(list)));
         return this.publish(NewKinds.MuteList, [], content);
+    }
+
+    public async sendReaction(message: string, pubkey: string, reaction: string) {
+        const relay = await this.findHealthyRelay(this.pool.seenOn(message));
+        const tags = [['e', message, relay, 'root'], ['p', pubkey]];
+        return this.publish(Kind.Reaction, tags, reaction);
     }
 
     private publish(kind: number, tags: Array<any>[], content: string): Promise<Event> {
@@ -583,6 +602,24 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     encrypted: muteListEv.content.trim()
                 });
             }
+        }
+
+        const reactions: Reaction[] = this.eventQueue.filter(x => x.kind === Kind.Reaction).map(ev => {
+                const message = Raven.findNip10MarkerValue(ev, 'root');
+                const peer = Raven.findTagValue(ev, 'p');
+                if (!message || !peer || !ev.content) return null;
+                return {
+                    id: ev.id,
+                    message,
+                    peer,
+                    content: ev.content,
+                    creator: ev.pubkey,
+                    created: ev.created_at,
+                }
+            }
+        ).filter(notEmpty);
+        if (reactions.length > 0) {
+            this.emit(RavenEvents.Reaction, reactions);
         }
 
         this.eventQueue = [];
