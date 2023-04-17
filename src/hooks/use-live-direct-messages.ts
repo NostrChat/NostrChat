@@ -13,12 +13,12 @@ const useLiveDirectMessages = (peer?: string) => {
         .filter(x => x.peer === peer)
         .filter(c => eventDeletions.find(x => x.eventId === c.id) === undefined)
         .filter(c => muteList.pubkeys.find(x => x === c.creator) === undefined)
-        .sort((a, b) => a.created - b.created), [directMessages, peer, eventDeletions, muteList])
+        .map(c => ({...c, reactions: reactions.filter(r => r.message === c.id)}))
+        .sort((a, b) => a.created - b.created), [directMessages, peer, eventDeletions, muteList, reactions]);
 
     return useMemo(() => clean
         .map(c => ({...c, children: clean.filter(x => x.root === c.id)}))
-        .map(c => ({...c, reactions: reactions.filter(r => r.message === c.id)}))
-        .filter(x => !x.root), [clean, reactions]);
+        .filter(x => !x.root), [clean]);
 }
 
 export default useLiveDirectMessages;

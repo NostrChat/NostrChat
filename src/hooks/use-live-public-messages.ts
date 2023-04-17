@@ -27,12 +27,12 @@ const useLivePublicMessages = (channelId?: string) => {
         .filter(c => channelMessageHides.find(x => x.id === c.id) === undefined)
         .filter(c => channelUserMutes.find(x => x.pubkey === c.creator) === undefined)
         .filter(c => muteList.pubkeys.find(x => x === c.creator) === undefined)
-        .sort((a, b) => a.created - b.created), [messages, eventDeletions, channelMessageHides, channelUserMutes, muteList]);
+        .map(c => ({...c, reactions: reactions.filter(r => r.message === c.id)}))
+        .sort((a, b) => a.created - b.created), [messages, eventDeletions, channelMessageHides, channelUserMutes, muteList, reactions]);
 
     return useMemo(() => clean
         .filter(c => c.root === channelId)
-        .map(c => ({...c, children: clean.filter(x => x.root === c.id)}))
-        .map(c => ({...c, reactions: reactions.filter(r => r.message === c.id)})), [clean, reactions, channelId]);
+        .map(c => ({...c, children: clean.filter(x => x.root === c.id)})), [clean, channelId]);
 }
 
 export default useLivePublicMessages;
