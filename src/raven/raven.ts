@@ -58,7 +58,6 @@ type EventHandlerMap = {
 
 class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     private pool: SimplePool;
-    private poolL: SimplePool;
 
     private readonly priv: string | 'nip07';
     private readonly pub: string;
@@ -83,7 +82,6 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         this.pub = pub;
 
         this.pool = new SimplePool();
-        this.poolL = new SimplePool({eoseSubTimeout: 1000});
 
         this.init().then();
     }
@@ -189,7 +187,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             '#e': [channel],
             until,
             limit: MESSAGE_PER_PAGE
-        }], true).then(events => {
+        }], 1000).then(events => {
             events.forEach((ev) => {
                 this.pushToEventBuffer(ev)
             });
@@ -198,20 +196,34 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         })
     }
 
-    private fetch(filters: Filter[], lowLatencyPool: boolean = false): Promise<Event[]> {
+    private fetch(filters: Filter[], quitMs: number = 0): Promise<Event[]> {
         return new Promise((resolve) => {
-            const sub = (lowLatencyPool ? this.poolL : this.pool).sub(this.readRelays, filters);
+            const sub = this.pool.sub(this.readRelays, filters);
             const events: Event[] = [];
+
+            const quit = () => {
+                sub.unsub();
+                resolve(events);
+            }
+
+            let timer: any = quitMs > 0 ? setTimeout(quit, quitMs) : null;
 
             sub.on('event', (event) => {
                 events.push(event);
+
+                if (quitMs > 0) {
+                    clearTimeout(timer);
+                    timer = setTimeout(quit, quitMs);
+                }
             });
 
-            sub.on('eose', () => {
-                sub.unsub();
-                resolve(events);
-            });
-        })
+            if (quitMs === 0) {
+                sub.on('eose', () => {
+                    sub.unsub();
+                    resolve(events);
+                });
+            }
+        });
     }
 
     private sub(filters: Filter[], unsub: boolean = true) {
