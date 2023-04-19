@@ -109,7 +109,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             '#p': [this.pub]
         }];
 
-        this.fetchP(filters).then((resp) => {
+        this.fetch(filters).then((resp) => {
             const deletions = resp.filter(x => x.kind === Kind.EventDeletion).map(x => Raven.findTagValue(x, 'e')).filter(notEmpty);
             const events = resp.sort((a, b) => b.created_at - a.created_at);
 
@@ -176,7 +176,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             ];
 
             chunk(filters, 10).forEach(c => {
-                this.fetch(c);
+                this.sub(c);
             });
 
             this.emit(RavenEvents.Ready);
@@ -184,7 +184,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public fetchPrevMessages(channel: string, until: number) {
-        return this.fetchP([{
+        return this.fetch([{
             kinds: [Kind.ChannelMessage],
             '#e': [channel],
             until,
@@ -198,23 +198,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         })
     }
 
-    private fetch(filters: Filter[], unsub: boolean = true) {
-        const sub = this.pool.sub(this.readRelays, filters);
-
-        sub.on('event', (event) => {
-            this.pushToEventBuffer(event);
-        });
-
-        sub.on('eose', () => {
-            if (unsub) {
-                sub.unsub();
-            }
-        });
-
-        return sub;
-    }
-
-    private fetchP(filters: Filter[], lowLatencyPool: boolean = false): Promise<Event[]> {
+    private fetch(filters: Filter[], lowLatencyPool: boolean = false): Promise<Event[]> {
         return new Promise((resolve) => {
             const sub = (lowLatencyPool ? this.poolL : this.pool).sub(this.readRelays, filters);
             const events: Event[] = [];
@@ -228,6 +212,22 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 resolve(events);
             });
         })
+    }
+
+    private sub(filters: Filter[], unsub: boolean = true) {
+        const sub = this.pool.sub(this.readRelays, filters);
+
+        sub.on('event', (event) => {
+            this.pushToEventBuffer(event);
+        });
+
+        sub.on('eose', () => {
+            if (unsub) {
+                sub.unsub();
+            }
+        });
+
+        return sub;
     }
 
     public loadChannel(id: string) {
@@ -247,7 +247,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             }
         ];
 
-        this.fetch(filters);
+        this.sub(filters);
     }
 
     public loadProfiles(pubs: string[]) {
@@ -258,7 +258,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         authors.forEach(a => this.nameCache[a] = Date.now());
 
         chunk(authors, 20).forEach(a => {
-            this.fetch([{
+            this.sub([{
                 kinds: [Kind.Metadata],
                 authors: a,
             }])
@@ -270,7 +270,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             this.listenerSub.unsub();
         }
 
-        this.listenerSub = this.fetch([{
+        this.listenerSub = this.sub([{
             authors: [this.pub],
             since
         }, {
@@ -310,7 +310,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 }
             ))
         ];
-        this.messageListenerSub = this.fetch(filters, false);
+        this.messageListenerSub = this.sub(filters, false);
     }
 
     private async findHealthyRelay(relays: string[]) {
