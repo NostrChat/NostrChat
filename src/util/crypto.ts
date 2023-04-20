@@ -3,7 +3,7 @@ import * as secp256k1 from '@noble/secp256k1';
 
 export const privateKeyFromSeed = (seed: string) => {
     const root = HDKey.fromMasterSeed(Buffer.from(seed, 'hex'));
-    const privateKey = root.derive(`m/44'/1237'/0'/0/0`).privateKey;
+    const privateKey = root.derive("m/44'/1237'/0'/0/0").privateKey;
     if (!privateKey) {
         throw new Error('could not derive private key')
     }
@@ -16,5 +16,8 @@ export const sha256 = async (text: string) => {
     const hashBuffer = await window.crypto.subtle.digest('SHA-256', textAsBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
+export const isSha256 = (s: string) => {
+    return /^[a-f0-9]{64}$/gi.test(s);
 }
