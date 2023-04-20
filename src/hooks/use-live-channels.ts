@@ -1,3 +1,4 @@
+import {useMemo} from 'react';
 import {useAtom} from 'jotai';
 import {channelsAtom, channelUpdatesAtom, eventDeletionsAtom, publicMessagesAtom} from 'store';
 
@@ -7,7 +8,7 @@ const useLiveChannels = () => {
     const [eventDeletions] = useAtom(eventDeletionsAtom);
     const [publicMessages] = useAtom(publicMessagesAtom);
 
-    return channels.map(c => {
+    return useMemo(() => channels.map(c => {
         const updated = channelUpdates.filter(x => x.channelId === c.id).sort((a, b) => b.created - a.created)[0];
         if (updated) {
             return Object.assign(c, {
@@ -22,8 +23,7 @@ const useLiveChannels = () => {
         const aLastMessage = publicMessages.filter(x => x.root === a.id).sort((a, b) => b.created - a.created)[0]?.created;
         const bLastMessage = publicMessages.filter(x => x.root === b.id).sort((a, b) => b.created - a.created)[0]?.created;
         return (bLastMessage || 0) - (aLastMessage || 0);
-    })
-
+    }), [channels, channelUpdates, eventDeletions, publicMessages]);
 }
 
 export default useLiveChannels;
