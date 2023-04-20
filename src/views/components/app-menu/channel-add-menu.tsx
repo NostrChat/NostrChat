@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import {useNavigate} from '@reach/router';
 
 import CreateChannel from 'views/components/dialogs/create-channel';
 import JoinChannel from 'views/components/dialogs/join-channel';
@@ -14,6 +15,7 @@ const ChannelAddMenu = () => {
     const open = Boolean(anchorEl);
     const [t] = useTranslation();
     const [, showModal] = useModal();
+    const navigate = useNavigate();
 
     const openMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -35,8 +37,9 @@ const ChannelAddMenu = () => {
 
     const join = () => {
         showModal({
-            body: <JoinChannel onSuccess={() => {
+            body: <JoinChannel onSuccess={(id: string) => {
                 showModal(null);
+                navigate(`/channel/${id}`).then();
             }}/>
         })
 

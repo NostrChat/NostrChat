@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-import {useAtom} from 'jotai';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Box from '@mui/material/Box';
@@ -9,17 +8,15 @@ import Button from '@mui/material/Button';
 import CloseModal from 'components/close-modal';
 import useModal from 'hooks/use-modal';
 import useTranslation from 'hooks/use-translation';
-import {commonTsAtom, ravenAtom} from 'store';
+import {isSha256} from 'util/crypto';
 
 
-const JoinChannel = (props: { onSuccess: () => void }) => {
+const JoinChannel = (props: { onSuccess: (id: string) => void }) => {
     const {onSuccess} = props;
     const [, showModal] = useModal();
     const [t] = useTranslation();
     const [id, setID] = useState('');
     const [error, setError] = useState('');
-    const [raven] = useAtom(ravenAtom);
-    const [, setCommonTs] = useAtom(commonTsAtom);
 
     const handleClose = () => {
         showModal(null);
@@ -31,14 +28,11 @@ const JoinChannel = (props: { onSuccess: () => void }) => {
 
     const submit = () => {
         setError('');
-        if (!/^[a-f0-9]{64}$/gi.test(id)) {
+        if (!isSha256(id)) {
             setError('Invalid id');
             return;
         }
-
-        setCommonTs(Date.now());
-        raven?.loadChannel(id);
-        onSuccess();
+        onSuccess(id);
     }
 
     return (
@@ -49,7 +43,7 @@ const JoinChannel = (props: { onSuccess: () => void }) => {
                     <TextField label={t('Channel id')} value={id} onChange={idChanged} fullWidth autoFocus
                                error={!!error} helperText={error || ' '}/>
                     <Box sx={{display: 'flex', justifyContent: 'flex-end'}}>
-                        <Button variant="contained" onClick={submit}>Join</Button>
+                        <Button variant="contained" onClick={submit}>{t('Go')}</Button>
                     </Box>
                 </Box>
             </DialogContent>

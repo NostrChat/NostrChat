@@ -57,10 +57,8 @@ const ChannelPage = (props: RouteComponentProps) => {
     useEffect(() => {
         if ('channel' in props) {
             const {channel: cid} = props;
-            const c = channels.find(x => x.id === cid);
-            if (c) {
-                setChannel(c);
-            }
+            const c = channels.find(x => x.id === cid) || null;
+            setChannel(c);
         }
     }, [props, channels]);
 
@@ -116,7 +114,11 @@ const ChannelPage = (props: RouteComponentProps) => {
         return () => {
             clearTimeout(timer);
         }
-    }, [raven, ravenReady, channels, props]);
+    }, [raven, ravenReady, channels, channel, props]);
+
+    useEffect(() => {
+        setChannelLoaded(null);
+    }, [channel]);
 
     useEffect(() => {
         if (channelLoaded && !channel) {
