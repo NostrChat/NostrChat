@@ -11,8 +11,8 @@ import {Channel} from 'types';
 import {truncate} from 'util/truncate';
 
 
-const ChannelInfo = (props: { channel: Channel }) => {
-    const {channel} = props;
+const ChannelInfo = (props: { channel: Channel, onCancel: () => void }) => {
+    const {channel, onCancel} = props;
     const theme = useTheme();
     const [t] = useTranslation();
     const [raven] = useAtom(ravenAtom);
@@ -52,7 +52,8 @@ const ChannelInfo = (props: { channel: Channel }) => {
                             }}>{truncate(channel.about, 360)}</Box>
                         </>
                     )}
-                    <Button variant="contained" onClick={join}>{t('Join')}</Button>
+                    <Box sx={{mb: '20px'}}><Button variant="contained" onClick={join}>{t('Join')}</Button></Box>
+                    <Box><Button onClick={onCancel}>{t('No thanks')}</Button></Box>
                 </Box>
             </DialogContent>
         </>
