@@ -34,6 +34,5 @@ export const channelUserMutesAtom = atom<ChannelUserMute[]>([]);
 export const muteListAtom = atom<MuteList>({pubkeys: [], encrypted: ''});
 export const threadRootAtom = atom<Message | null>(null);
 export const reactionsAtom = atom<Reaction[]>([]);
-export const commonTsAtom = atom<number>(0);
 export const backupWarnAtom = atom<boolean>(false);
 export const activeMessageAtom = atom<string | null>(null);

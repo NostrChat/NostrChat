@@ -18,10 +18,8 @@ import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import useToast from 'hooks/use-toast';
-import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom, channelToJoinAtom} from 'store';
-import {RavenEvents} from 'raven/raven';
+import {channelAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom, channelToJoinAtom} from 'store';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
-import {Channel} from 'types';
 
 
 const ChannelPage = (props: RouteComponentProps) => {
@@ -37,7 +35,6 @@ const ChannelPage = (props: RouteComponentProps) => {
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [raven] = useAtom(ravenAtom);
-    const [commonTs] = useAtom(commonTsAtom);
     const [channelToJoin, setChannelToJoin] = useAtom(channelToJoinAtom);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
@@ -66,21 +63,6 @@ const ChannelPage = (props: RouteComponentProps) => {
             setChannel(c || null);
         }
     }, [props, channels]);
-
-    useEffect(() => {
-        const handleChannelCreation = (data: Channel[]) => {
-            if (data.length === 1 && data[0].created <= commonTs + 10) {
-                navigate(`/channel/${data[0].id}`).then();
-            }
-        }
-
-        raven?.removeListener(RavenEvents.ChannelCreation, handleChannelCreation);
-        raven?.addListener(RavenEvents.ChannelCreation, handleChannelCreation);
-
-        return () => {
-            raven?.removeListener(RavenEvents.ChannelCreation, handleChannelCreation);
-        }
-    }, [channels, commonTs, raven]);
 
     useEffect(() => {
         const fetchPrev = () => {
