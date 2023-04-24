@@ -27,8 +27,9 @@ const ChannelAddMenu = () => {
 
     const create = () => {
         showModal({
-            body: <CreateChannel onSuccess={() => {
+            body: <CreateChannel onSuccess={(id) => {
                 showModal(null);
+                navigate(`/channel/${id}`).then();
             }}/>
         })
 

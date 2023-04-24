@@ -9,15 +9,14 @@ import useModal from 'hooks/use-modal';
 import useToast from 'hooks/use-toast';
 import useTranslation from 'hooks/use-translation';
 import MetadataForm from 'views/components/metadata-form';
-import {commonTsAtom, ravenAtom} from 'store';
+import {ravenAtom} from 'store';
 
-const CreateChannel = (props: { onSuccess: () => void }) => {
+const CreateChannel = (props: { onSuccess: (id: string) => void }) => {
     const {onSuccess} = props;
     const [, showModal] = useModal();
     const [, showMessage] = useToast();
     const [t] = useTranslation();
     const [raven] = useAtom(ravenAtom);
-    const [, setCommonTs] = useAtom(commonTsAtom)
 
     const handleClose = () => {
         showModal(null);
@@ -33,9 +32,8 @@ const CreateChannel = (props: { onSuccess: () => void }) => {
                         about: 'Description',
                         picture: 'Channel picture'
                     }} onSubmit={(data) => {
-                        setCommonTs(Date.now());
-                        raven?.createChannel(data).then(() => {
-                            onSuccess();
+                        raven?.createChannel(data).then((ev) => {
+                            onSuccess(ev.id);
                         }).catch((e) => {
                             showMessage(e, 'error');
                         });
