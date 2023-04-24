@@ -12,6 +12,7 @@ import ChannelHeader from 'views/channel/components/channel-header';
 import ChatInput from 'views/components/chat-input';
 import ChatView from 'views/components/chat-view';
 import ThreadChatView from 'views/components/thread-chat-view';
+import ChannelInfo from 'views/channel/components/channel-info';
 import useTranslation from 'hooks/use-translation';
 import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
@@ -104,12 +105,12 @@ const ChannelPage = (props: RouteComponentProps) => {
     }, [messages, threadRoot]);
 
     useEffect(() => {
-        if (ravenReady && !channel && ('channel' in props) && !channelToJoin) {
+        if (ravenReady && !channel && ('channel' in props)) {
             raven?.fetchChannel(props.channel as string).then(channel => {
                 if (channel) setChannelToJoin(channel);
             });
         }
-    }, [ravenReady, channel, props, channelToJoin]);
+    }, [ravenReady, channel, props]);
 
     if (!('channel' in props) || !keys) return null;
 
@@ -131,7 +132,12 @@ const ChannelPage = (props: RouteComponentProps) => {
                         justifyContent: 'center',
                         width: '100%',
                         height: '100%'
-                    }}>{t('Channel not found')}</Box>
+                    }}>{channelToJoin ?
+                        <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
+                            <ChannelInfo channel={channelToJoin} onJoin={() => {
+                                setChannelToJoin(null);
+                            }}/> </Box> :
+                        t('Channel not found')}</Box>
                 </AppContent>
             </AppWrapper>
         </>
