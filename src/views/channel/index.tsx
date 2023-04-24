@@ -19,7 +19,7 @@ import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import useToast from 'hooks/use-toast';
 import useModal from 'hooks/use-modal';
-import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom} from 'store';
+import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom, channelToJoinAtom} from 'store';
 import {RavenEvents} from 'raven/raven';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {Channel} from 'types';
@@ -40,9 +40,9 @@ const ChannelPage = (props: RouteComponentProps) => {
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [raven] = useAtom(ravenAtom);
     const [commonTs] = useAtom(commonTsAtom);
+    const [channelToJoin, setChannelToJoin] = useAtom(channelToJoinAtom);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-    const [channelLoaded, setChannelLoaded] = useState<Channel | null>(null);
 
     useEffect(() => {
         if (!('channel' in props)) {
@@ -107,9 +107,9 @@ const ChannelPage = (props: RouteComponentProps) => {
 
     useEffect(() => {
         let timer: any = null;
-        if (('channel' in props && isSha256(props.channel as string) && ravenReady) && !channel && !channelLoaded) {
+        if (('channel' in props && isSha256(props.channel as string) && ravenReady) && !channel && !channelToJoin) {
             timer = setTimeout(() => {
-                raven?.fetchChannel(props.channel as string).then(setChannelLoaded);
+                raven?.fetchChannel(props.channel as string).then(setChannelToJoin);
             }, 1000);
         }
 
@@ -118,22 +118,26 @@ const ChannelPage = (props: RouteComponentProps) => {
         }
     }, [raven, ravenReady, channels, channel, props]);
 
-    useEffect(() => {
-        setChannelLoaded(null);
-    }, [channel]);
 
     useEffect(() => {
-        if (channelLoaded && !channel) {
+        if (channelToJoin) {
             showModal({
-                body: <ChannelInfo channel={channelLoaded} onCancel={() => {
-                    navigate('/').then();
-                    showModal(null);
-                }}/>
+                body: <ChannelInfo
+                    channel={channelToJoin}
+                    onSuccess={() => {
+                        setChannelToJoin(null);
+                        raven?.loadChannel(channelToJoin.id);
+                    }}
+                    onCancel={() => {
+                        setChannelToJoin(null);
+                        navigate('/').then();
+                        showModal(null);
+                    }}/>
             })
-        } else if (channel) {
+        } else {
             showModal(null);
         }
-    }, [channelLoaded, channel]);
+    }, [channelToJoin]);
 
     if (!keys) {
         return null;

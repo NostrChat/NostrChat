@@ -22,6 +22,7 @@ export const profilesAtom = atom<Profile[]>([]);
 export const profileAtom = atom<Profile | null>(null);
 export const channelsAtom = atom<Channel[]>([GLOBAL_CHAT]);
 export const channelAtom = atom<Channel | null>(null);
+export const channelToJoinAtom = atom<Channel | null>(null);
 export const channelUpdatesAtom = atom<ChannelUpdate[]>([]);
 export const eventDeletionsAtom = atom<EventDeletion[]>([]);
 export const publicMessagesAtom = atom<PublicMessage[]>([]);

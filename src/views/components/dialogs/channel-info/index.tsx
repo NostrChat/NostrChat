@@ -1,25 +1,18 @@
 import React from 'react';
-import {useAtom} from 'jotai';
 import DialogContent from '@mui/material/DialogContent';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import {useTheme} from '@mui/material/styles';
 import Divider from '@mui/material/Divider';
 import useTranslation from 'hooks/use-translation';
-import {ravenAtom} from 'store';
 import {Channel} from 'types';
 import {truncate} from 'util/truncate';
 
 
-const ChannelInfo = (props: { channel: Channel, onCancel: () => void }) => {
-    const {channel, onCancel} = props;
+const ChannelInfo = (props: { channel: Channel, onSuccess: () => void, onCancel: () => void }) => {
+    const {channel, onSuccess, onCancel} = props;
     const theme = useTheme();
     const [t] = useTranslation();
-    const [raven] = useAtom(ravenAtom);
-
-    const join = () => {
-        raven?.loadChannel(channel.id);
-    }
 
     const hasPicture = channel.picture.startsWith('https://');
 
@@ -52,7 +45,7 @@ const ChannelInfo = (props: { channel: Channel, onCancel: () => void }) => {
                             }}>{truncate(channel.about, 360)}</Box>
                         </>
                     )}
-                    <Box sx={{mb: '20px'}}><Button variant="contained" onClick={join}>{t('Join')}</Button></Box>
+                    <Box sx={{mb: '20px'}}><Button variant="contained" onClick={onSuccess}>{t('Join')}</Button></Box>
                     <Box><Button onClick={onCancel}>{t('No thanks')}</Button></Box>
                 </Box>
             </DialogContent>
