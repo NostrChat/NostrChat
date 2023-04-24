@@ -41,6 +41,7 @@ const ChannelPage = (props: RouteComponentProps) => {
     const [channelToJoin, setChannelToJoin] = useAtom(channelToJoinAtom);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+    const [notFound, setNotFound] = useState(false);
 
     useEffect(() => {
         if (!('channel' in props)) {
@@ -111,9 +112,20 @@ const ChannelPage = (props: RouteComponentProps) => {
 
     useEffect(() => {
         if (ravenReady && !channel && ('channel' in props) && !channelToJoin) {
+            const timer = setTimeout(() => {
+                setNotFound(true);
+            }, 5000);
+
             raven?.fetchChannel(props.channel as string).then(channel => {
-                if (channel) setChannelToJoin(channel);
+                if (channel) {
+                    setChannelToJoin(channel);
+                    clearTimeout(timer);
+                }
             });
+
+            return () => {
+                clearTimeout(timer);
+            }
         }
     }, [ravenReady, channel, props, channelToJoin]);
 
@@ -137,12 +149,23 @@ const ChannelPage = (props: RouteComponentProps) => {
                         justifyContent: 'center',
                         width: '100%',
                         height: '100%'
-                    }}>{channelToJoin ?
-                        <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
-                            <ChannelInfo channel={channelToJoin} onJoin={() => {
-                                setChannelToJoin(null);
-                            }}/> </Box> :
-                        t('Channel not found')}</Box>
+                    }}>
+                        {(() => {
+                            if (channelToJoin) {
+                                return <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
+                                    <ChannelInfo channel={channelToJoin} onJoin={() => {
+                                        setChannelToJoin(null);
+                                    }}/>
+                                </Box>;
+                            }
+
+                            if (notFound) return t('Channel not found');
+
+                            return <>
+                                <CircularProgress size={20} sx={{mr: '8px'}}/> {t('Looking for the channel...')}
+                            </>;
+                        })()}
+                    </Box>
                 </AppContent>
             </AppWrapper>
         </>
