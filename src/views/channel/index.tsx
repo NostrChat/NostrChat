@@ -63,9 +63,7 @@ const ChannelPage = (props: RouteComponentProps) => {
         if ('channel' in props) {
             const {channel: cid} = props;
             const c = channels.find(x => x.id === cid);
-            if (c) {
-                setChannel(c);
-            }
+            setChannel(c || null);
         }
     }, [props, channels]);
 
