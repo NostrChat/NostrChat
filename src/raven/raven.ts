@@ -87,7 +87,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     private async init() {
-        const filters: Filter[] = [{
+
+        const filters1: Filter[] = [{
             kinds: [Kind.Metadata, Kind.EventDeletion, Kind.ChannelCreation],
             authors: [this.pub],
         }, {
@@ -107,78 +108,75 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             '#p': [this.pub]
         }];
 
-        this.fetch(filters).then((resp) => {
-            const deletions = resp.filter(x => x.kind === Kind.EventDeletion).map(x => Raven.findTagValue(x, 'e')).filter(notEmpty);
-            const events = resp.sort((a, b) => b.created_at - a.created_at);
+        const resp = await this.fetch(filters1);
+        const deletions = resp.filter(x => x.kind === Kind.EventDeletion).map(x => Raven.findTagValue(x, 'e')).filter(notEmpty);
+        const events = resp.sort((a, b) => b.created_at - a.created_at);
 
-            const profile = events.find(x => x.kind === Kind.Metadata);
-            if (profile) this.pushToEventBuffer(profile);
+        const profile = events.find(x => x.kind === Kind.Metadata);
+        if (profile) this.pushToEventBuffer(profile);
 
-            const muteList = events.find(x => x.kind.toString() === NewKinds.MuteList.toString());
-            if (muteList) this.pushToEventBuffer(muteList);
+        const muteList = events.find(x => x.kind.toString() === NewKinds.MuteList.toString());
+        if (muteList) this.pushToEventBuffer(muteList);
 
-            for (const e of events.filter(x => [Kind.ChannelHideMessage, Kind.ChannelMuteUser].includes(x.kind))) {
-                this.pushToEventBuffer(e);
+        for (const e of events.filter(x => [Kind.ChannelHideMessage, Kind.ChannelMuteUser].includes(x.kind))) {
+            this.pushToEventBuffer(e);
+        }
+
+        const channels = uniq(events.map(x => {
+            if (x.kind === Kind.ChannelCreation) {
+                return x.id;
             }
 
-            const channels = uniq(events.map(x => {
-                if (x.kind === Kind.ChannelCreation) {
-                    return x.id;
-                }
-
-                if (x.kind === Kind.ChannelMessage) {
-                    return Raven.findTagValue(x, 'e');
-                }
-
-                return null;
-            }).filter(notEmpty).filter(x => !deletions.includes(x)).filter(notEmpty));
-
-            if (!channels.includes(GLOBAL_CHAT.id)) {
-                channels.push(GLOBAL_CHAT.id)
+            if (x.kind === Kind.ChannelMessage) {
+                return Raven.findTagValue(x, 'e');
             }
 
-            const directContacts = uniq(events.map(x => {
-                if (x.kind === Kind.EncryptedDirectMessage) {
-                    const receiver = Raven.findTagValue(x, 'p');
-                    if (!receiver) return null;
-                    return receiver === this.pub ? x.pubkey : receiver;
-                }
+            return null;
+        }).filter(notEmpty).filter(x => !deletions.includes(x)).filter(notEmpty));
 
-                return null;
-            })).filter(notEmpty);
+        if (!channels.includes(GLOBAL_CHAT.id)) {
+            channels.push(GLOBAL_CHAT.id)
+        }
 
-            const filters: Filter[] = [
-                {
-                    kinds: [Kind.ChannelCreation],
-                    ids: channels
-                },
-                ...channels.map(c => ({
-                    kinds: [Kind.ChannelMetadata, Kind.EventDeletion],
-                    '#e': [c],
-                })),
-                ...channels.map(c => ({
-                    kinds: [Kind.ChannelMessage],
-                    '#e': [c],
-                    limit: MESSAGE_PER_PAGE
-                })),
-                ...directContacts.map(x => ({
-                    kinds: [Kind.EncryptedDirectMessage],
-                    '#p': [this.pub],
-                    authors: [x]
-                })),
-                ...directContacts.map(x => ({
-                    kinds: [Kind.EncryptedDirectMessage],
-                    '#p': [x],
-                    authors: [this.pub]
-                }))
-            ];
+        const directContacts = uniq(events.map(x => {
+            if (x.kind === Kind.EncryptedDirectMessage) {
+                const receiver = Raven.findTagValue(x, 'p');
+                if (!receiver) return null;
+                return receiver === this.pub ? x.pubkey : receiver;
+            }
 
-            chunk(filters, 10).forEach(c => {
-                this.sub(c);
-            });
+            return null;
+        })).filter(notEmpty);
 
-            this.emit(RavenEvents.Ready);
-        });
+        const filters2: Filter[] = [
+            {
+                kinds: [Kind.ChannelCreation],
+                ids: channels
+            },
+            ...channels.map(c => ({
+                kinds: [Kind.ChannelMetadata, Kind.EventDeletion],
+                '#e': [c],
+            })),
+            ...channels.map(c => ({
+                kinds: [Kind.ChannelMessage],
+                '#e': [c],
+                limit: MESSAGE_PER_PAGE
+            })),
+            ...directContacts.map(x => ({
+                kinds: [Kind.EncryptedDirectMessage],
+                '#p': [this.pub],
+                authors: [x]
+            })),
+            ...directContacts.map(x => ({
+                kinds: [Kind.EncryptedDirectMessage],
+                '#p': [x],
+                authors: [this.pub]
+            }))
+        ];
+
+        const promises = chunk(filters2, 10).map(f => this.fetch(f).then(events => events.forEach(ev => this.pushToEventBuffer(ev))));
+        await Promise.all(promises);
+        this.emit(RavenEvents.Ready);
     }
 
     public fetchPrevMessages(channel: string, until: number) {
@@ -194,6 +192,37 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
             return events.length;
         })
+    }
+
+    public async fetchChannel(id: string): Promise<Channel | null> {
+        const filters: Filter[] = [
+            {
+                kinds: [Kind.ChannelCreation, Kind.ChannelMetadata, Kind.EventDeletion],
+                ids: [id]
+            }
+        ];
+
+        const events = await this.fetch(filters);
+        if (events.length === 0) return null; // Not found
+
+        const creation = events.find(x => x.kind === Kind.ChannelCreation);
+        if (!creation) return null; // Not found
+
+        if (events.find(x => x.kind === Kind.EventDeletion && x.pubkey === creation.pubkey)) return null;  // Deleted
+
+        const update = events.filter(x => x.kind === Kind.ChannelMetadata && x.pubkey === creation.pubkey).sort((a, b) => b.created_at - a.created_at)[0] // Find latest metadata update
+
+        const ev = update || creation;
+
+        const content = Raven.parseJson(ev.content);
+        if (!content) return null;  // Invalid content
+
+        return {
+            id: ev.id,
+            creator: ev.pubkey,
+            created: ev.created_at,
+            ...Raven.normalizeMetadata(content)
+        }
     }
 
     private fetch(filters: Filter[], quitMs: number = 0): Promise<Event[]> {

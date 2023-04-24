@@ -1,8 +1,10 @@
 import {useEffect, useState} from 'react';
 import {useAtom} from 'jotai';
-import {RouteComponentProps, useNavigate} from '@reach/router';
+import {RouteComponentProps, useLocation, useNavigate} from '@reach/router';
 import {Helmet} from 'react-helmet';
 import isEqual from 'lodash.isequal';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import AppWrapper from 'views/components/app-wrapper';
 import AppContent from 'views/components/app-content';
 import AppMenu from 'views/components/app-menu';
@@ -10,20 +12,20 @@ import ChannelHeader from 'views/channel/components/channel-header';
 import ChatInput from 'views/components/chat-input';
 import ChatView from 'views/components/chat-view';
 import ThreadChatView from 'views/components/thread-chat-view';
+import ChannelInfo from 'views/channel/components/channel-info';
 import useTranslation from 'hooks/use-translation';
 import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import useToast from 'hooks/use-toast';
-import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom} from 'store';
-import {RavenEvents} from 'raven/raven';
+import {channelAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom, channelToJoinAtom} from 'store';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
-import {Channel} from 'types';
 
 
 const ChannelPage = (props: RouteComponentProps) => {
     const [keys] = useAtom(keysAtom);
     const navigate = useNavigate();
+    const location = useLocation();
     const [t] = useTranslation();
     const [, showMessage] = useToast();
     const channels = useLiveChannels();
@@ -33,9 +35,10 @@ const ChannelPage = (props: RouteComponentProps) => {
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [raven] = useAtom(ravenAtom);
-    const [commonTs] = useAtom(commonTsAtom);
+    const [channelToJoin, setChannelToJoin] = useAtom(channelToJoinAtom);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+    const [notFound, setNotFound] = useState(false);
 
     useEffect(() => {
         if (!('channel' in props)) {
@@ -50,29 +53,16 @@ const ChannelPage = (props: RouteComponentProps) => {
     }, [keys]);
 
     useEffect(() => {
+        setChannelToJoin(null);
+    }, [location]);
+
+    useEffect(() => {
         if ('channel' in props) {
             const {channel: cid} = props;
             const c = channels.find(x => x.id === cid);
-            if (c) {
-                setChannel(c);
-            }
+            setChannel(c || null);
         }
     }, [props, channels]);
-
-    useEffect(() => {
-        const handleChannelCreation = (data: Channel[]) => {
-            if (data.length === 1 && data[0].created <= commonTs + 10) {
-                navigate(`/channel/${data[0].id}`).then();
-            }
-        }
-
-        raven?.removeListener(RavenEvents.ChannelCreation, handleChannelCreation);
-        raven?.addListener(RavenEvents.ChannelCreation, handleChannelCreation);
-
-        return () => {
-            raven?.removeListener(RavenEvents.ChannelCreation, handleChannelCreation);
-        }
-    }, [channels, commonTs, raven]);
 
     useEffect(() => {
         const fetchPrev = () => {
@@ -100,16 +90,65 @@ const ChannelPage = (props: RouteComponentProps) => {
         }
     }, [messages, threadRoot]);
 
-    if (!keys) {
-        return null;
+    useEffect(() => {
+        if (ravenReady && !channel && ('channel' in props) && !channelToJoin) {
+            const timer = setTimeout(() => {
+                setNotFound(true);
+            }, 5000);
+
+            raven?.fetchChannel(props.channel as string).then(channel => {
+                if (channel) {
+                    setChannelToJoin(channel);
+                    clearTimeout(timer);
+                }
+            });
+
+            return () => {
+                clearTimeout(timer);
+            }
+        }
+    }, [ravenReady, channel, props, channelToJoin]);
+
+    if (!('channel' in props) || !keys) return null;
+
+    if (!ravenReady) {
+        return <Box sx={{display: 'flex', alignItems: 'center'}}>
+            <CircularProgress size={20} sx={{mr: '8px'}}/> {t('Loading...')}
+        </Box>;
     }
 
-    if (!('channel' in props) || !keys) {
-        return null;
-    }
+    if (!channel) {
+        return <>
+            <Helmet><title>{t('NostrChat')}</title></Helmet>
+            <AppWrapper>
+                <AppMenu/>
+                <AppContent>
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                        height: '100%'
+                    }}>
+                        {(() => {
+                            if (channelToJoin) {
+                                return <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
+                                    <ChannelInfo channel={channelToJoin} onJoin={() => {
+                                        setChannelToJoin(null);
+                                    }}/>
+                                </Box>;
+                            }
 
-    if (!channel || !ravenReady) {
-        return <>Loading...</>
+                            if (notFound) return t('Channel not found');
+
+                            return <>
+                                <CircularProgress size={20} sx={{mr: '8px'}}/> {t('Looking for the channel...')}
+                            </>;
+                        })()}
+                    </Box>
+                </AppContent>
+            </AppWrapper>
+        </>
     }
 
     return <>

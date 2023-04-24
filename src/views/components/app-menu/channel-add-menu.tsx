@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import {useNavigate} from '@reach/router';
 
 import CreateChannel from 'views/components/dialogs/create-channel';
 import JoinChannel from 'views/components/dialogs/join-channel';
@@ -11,6 +12,7 @@ import Plus from 'svg/plus';
 
 const ChannelAddMenu = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const navigate = useNavigate();
     const open = Boolean(anchorEl);
     const [t] = useTranslation();
     const [, showModal] = useModal();
@@ -25,8 +27,9 @@ const ChannelAddMenu = () => {
 
     const create = () => {
         showModal({
-            body: <CreateChannel onSuccess={() => {
+            body: <CreateChannel onSuccess={(id) => {
                 showModal(null);
+                navigate(`/channel/${id}`).then();
             }}/>
         })
 
@@ -35,8 +38,9 @@ const ChannelAddMenu = () => {
 
     const join = () => {
         showModal({
-            body: <JoinChannel onSuccess={() => {
+            body: <JoinChannel onSuccess={(id) => {
                 showModal(null);
+                navigate(`/channel/${id}`).then();
             }}/>
         })
 
