@@ -3,6 +3,8 @@ import {useAtom} from 'jotai';
 import {RouteComponentProps, useNavigate} from '@reach/router';
 import {Helmet} from 'react-helmet';
 import isEqual from 'lodash.isequal';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import AppWrapper from 'views/components/app-wrapper';
 import AppContent from 'views/components/app-content';
 import AppMenu from 'views/components/app-menu';
@@ -108,8 +110,28 @@ const ChannelPage = (props: RouteComponentProps) => {
         return null;
     }
 
-    if (!channel || !ravenReady) {
-        return <>Loading...</>
+    if (!ravenReady) {
+        return <Box sx={{display: 'flex', alignItems: 'center'}}>
+            <CircularProgress size={20} sx={{mr: '8px'}}/> {t('Loading...')}
+        </Box>;
+    }
+
+    if (!channel) {
+        return <>
+            <Helmet><title>{t('NostrChat')}</title></Helmet>
+            <AppWrapper>
+                <AppMenu/>
+                <AppContent>
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                        height: '100%'
+                    }}>{t('Channel not found')}</Box>
+                </AppContent>
+            </AppWrapper>
+        </>
     }
 
     return <>
