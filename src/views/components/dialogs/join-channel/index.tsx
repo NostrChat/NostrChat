@@ -10,6 +10,7 @@ import CloseModal from 'components/close-modal';
 import useModal from 'hooks/use-modal';
 import useTranslation from 'hooks/use-translation';
 import {commonTsAtom, ravenAtom} from 'store';
+import {isSha256} from 'util/crypto';
 
 
 const JoinChannel = (props: { onSuccess: () => void }) => {
@@ -31,7 +32,7 @@ const JoinChannel = (props: { onSuccess: () => void }) => {
 
     const submit = () => {
         setError('');
-        if (!/^[a-f0-9]{64}$/gi.test(id)) {
+        if (!isSha256(id)) {
             setError('Invalid id');
             return;
         }
