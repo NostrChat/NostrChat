@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {useAtom} from 'jotai';
-import {RouteComponentProps, useNavigate} from '@reach/router';
+import {RouteComponentProps, useLocation, useNavigate} from '@reach/router';
 import {Helmet} from 'react-helmet';
 import isEqual from 'lodash.isequal';
 import Box from '@mui/material/Box';
@@ -27,6 +27,7 @@ import {Channel} from 'types';
 const ChannelPage = (props: RouteComponentProps) => {
     const [keys] = useAtom(keysAtom);
     const navigate = useNavigate();
+    const location = useLocation();
     const [t] = useTranslation();
     const [, showMessage] = useToast();
     const channels = useLiveChannels();
@@ -52,6 +53,10 @@ const ChannelPage = (props: RouteComponentProps) => {
             navigate('/login').then();
         }
     }, [keys]);
+
+    useEffect(() => {
+        setChannelToJoin(null);
+    }, [location]);
 
     useEffect(() => {
         if ('channel' in props) {
@@ -105,12 +110,12 @@ const ChannelPage = (props: RouteComponentProps) => {
     }, [messages, threadRoot]);
 
     useEffect(() => {
-        if (ravenReady && !channel && ('channel' in props)) {
+        if (ravenReady && !channel && ('channel' in props) && !channelToJoin) {
             raven?.fetchChannel(props.channel as string).then(channel => {
                 if (channel) setChannelToJoin(channel);
             });
         }
-    }, [ravenReady, channel, props]);
+    }, [ravenReady, channel, props, channelToJoin]);
 
     if (!('channel' in props) || !keys) return null;
 
