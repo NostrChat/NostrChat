@@ -17,7 +17,7 @@ import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import useToast from 'hooks/use-toast';
-import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom} from 'store';
+import {channelAtom, commonTsAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom, channelToJoinAtom} from 'store';
 import {RavenEvents} from 'raven/raven';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {Channel} from 'types';
@@ -36,6 +36,7 @@ const ChannelPage = (props: RouteComponentProps) => {
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [raven] = useAtom(ravenAtom);
     const [commonTs] = useAtom(commonTsAtom);
+    const [channelToJoin, setChannelToJoin] = useAtom(channelToJoinAtom);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
 
@@ -101,6 +102,14 @@ const ChannelPage = (props: RouteComponentProps) => {
             setThreadRoot(msg);
         }
     }, [messages, threadRoot]);
+
+    useEffect(() => {
+        if (ravenReady && !channel && ('channel' in props) && !channelToJoin) {
+            raven?.fetchChannel(props.channel as string).then(channel => {
+                if (channel) setChannelToJoin(channel);
+            });
+        }
+    }, [ravenReady, channel, props, channelToJoin]);
 
     if (!('channel' in props) || !keys) return null;
 

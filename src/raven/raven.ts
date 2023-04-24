@@ -194,6 +194,37 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         })
     }
 
+    public async fetchChannel(id: string): Promise<Channel | null> {
+        const filters: Filter[] = [
+            {
+                kinds: [Kind.ChannelCreation, Kind.ChannelMetadata, Kind.EventDeletion],
+                ids: [id]
+            }
+        ];
+
+        const events = await this.fetch(filters);
+        if (events.length === 0) return null; // Not found
+
+        const creation = events.find(x => x.kind === Kind.ChannelCreation);
+        if (!creation) return null; // Not found
+
+        if (events.find(x => x.kind === Kind.EventDeletion && x.pubkey === creation.pubkey)) return null;  // Deleted
+
+        const update = events.filter(x => x.kind === Kind.ChannelMetadata && x.pubkey === creation.pubkey).sort((a, b) => b.created_at - a.created_at)[0] // Find latest metadata update
+
+        const ev = update || creation;
+
+        const content = Raven.parseJson(ev.content);
+        if (!content) return null;  // Invalid content
+
+        return {
+            id: ev.id,
+            creator: ev.pubkey,
+            created: ev.created_at,
+            ...Raven.normalizeMetadata(content)
+        }
+    }
+
     private fetch(filters: Filter[], quitMs: number = 0): Promise<Event[]> {
         return new Promise((resolve) => {
             const sub = this.pool.sub(this.readRelays, filters);
