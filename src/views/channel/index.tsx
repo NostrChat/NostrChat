@@ -102,13 +102,7 @@ const ChannelPage = (props: RouteComponentProps) => {
         }
     }, [messages, threadRoot]);
 
-    if (!keys) {
-        return null;
-    }
-
-    if (!('channel' in props) || !keys) {
-        return null;
-    }
+    if (!('channel' in props) || !keys) return null;
 
     if (!ravenReady) {
         return <Box sx={{display: 'flex', alignItems: 'center'}}>
