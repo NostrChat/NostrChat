@@ -1,12 +1,10 @@
 import React from 'react';
-import {useAtom} from 'jotai';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import {useTheme} from '@mui/material/styles';
 import useTranslation from 'hooks/use-translation';
-import {ravenAtom} from 'store';
 import {Channel} from 'types';
 import {truncate} from 'util/truncate';
 
@@ -15,14 +13,10 @@ const ChannelInfo = (props: { channel: Channel, onJoin: () => void }) => {
     const {channel, onJoin} = props;
     const theme = useTheme();
     const [t] = useTranslation();
-    const [raven] = useAtom(ravenAtom);
 
     const hasPicture = channel.picture.startsWith('https://');
 
-    const join = () => {
-        raven?.loadChannel(channel.id);
-        onJoin();
-    }
+    const join = () => onJoin();
 
     return <Paper sx={{textAlign: 'center', p: '20px'}}>
         {hasPicture && (
