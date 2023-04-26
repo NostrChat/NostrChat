@@ -9,11 +9,14 @@ import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
 import Raven from 'raven/raven';
 import {Channel} from 'types';
+import {useAtom} from 'jotai';
+import {channelToJoinAtom} from 'store';
 
 const ChannelPublicPage = (props: RouteComponentProps) => {
     const [t] = useTranslation();
     const navigate = useNavigate();
     const [, showModal] = useModal();
+    const [, setChannelToJoin] = useAtom(channelToJoinAtom);
     const [channel, setChannel] = useState<Channel | null>(null);
     const [notFound, setNotFound] = useState(false);
     const raven = useMemo(() => new Raven('', ''), []);
@@ -37,7 +40,10 @@ const ChannelPublicPage = (props: RouteComponentProps) => {
         }
     }, [raven, props]);
 
-    const onLogin = () => showModal(null);
+    const onLogin = () => {
+        showModal(null);
+        if (channel) setChannelToJoin(channel);
+    }
 
     const onJoin = () => {
         showModal({
