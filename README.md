@@ -45,7 +45,7 @@ NostrChat will open in your browser.
 - Mute user & Hide message ✅
 - Reply in Thread ✅
 - Muting ✅
-- Reactions
+- Reactions ✅
 - Channel invitations
 - User profiles
 - Channel & DM unread indicator
