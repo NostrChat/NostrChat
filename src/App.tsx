@@ -4,7 +4,6 @@ import {useAtom} from 'jotai';
 
 import Home from 'views/home';
 import Login from 'views/login';
-import Welcome from 'views/welcome';
 import Channel from 'views/channel';
 import ChannelPublic from 'views/channel-public';
 import DirectMessage from 'views/direct-message';
@@ -28,7 +27,6 @@ function App() {
     }}>
         <Home path='/'/>
         <Login path='/login'/>
-        <Welcome path='/welcome'/>
         <Channel path='/channel'/>
         {keys ? <Channel path='/channel/:channel'/> : <ChannelPublic path='/channel/:channel'/>}
         <DirectMessage path='/dm/:pub'/>
