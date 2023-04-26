@@ -1,4 +1,5 @@
 import React from 'react';
+import {useAtom} from 'jotai';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
@@ -6,6 +7,7 @@ import Paper from '@mui/material/Paper';
 import {useTheme} from '@mui/material/styles';
 import useTranslation from 'hooks/use-translation';
 import {Channel} from 'types';
+import {keysAtom} from 'store';
 import {truncate} from 'util/truncate';
 
 
@@ -13,6 +15,7 @@ const ChannelInfo = (props: { channel: Channel, onJoin: () => void }) => {
     const {channel, onJoin} = props;
     const theme = useTheme();
     const [t] = useTranslation();
+    const [keys] = useAtom(keysAtom);
 
     const hasPicture = channel.picture.startsWith('https://');
 
@@ -44,7 +47,7 @@ const ChannelInfo = (props: { channel: Channel, onJoin: () => void }) => {
                 }}>{truncate(channel.about, 360)}</Box>
             </>
         )}
-        <Box><Button variant="contained" onClick={join}>{t('Join')}</Button></Box>
+        <Box><Button variant="contained" onClick={join}>{keys ? t('Join') : t('Login to Join')}</Button></Box>
     </Paper>
 }
 

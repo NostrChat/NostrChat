@@ -4,11 +4,11 @@ import {Helmet} from 'react-helmet';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import ChannelInfo from 'views/channel/components/channel-info';
+import LoginDialog from 'views/components/dialogs/login';
 import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
 import Raven from 'raven/raven';
 import {Channel} from 'types';
-import LoginDialog from '../components/dialogs/login';
 
 const ChannelPublicPage = (props: RouteComponentProps) => {
     const [t] = useTranslation();
@@ -37,9 +37,7 @@ const ChannelPublicPage = (props: RouteComponentProps) => {
         }
     }, [raven, props]);
 
-    const onLogin = () => {
-
-    }
+    const onLogin = () => showModal(null);
 
     const onJoin = () => {
         showModal({
