@@ -9,7 +9,7 @@ import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
 import useToast from 'hooks/use-toast';
 import useLiveChannel from 'hooks/use-live-channel';
-import EditChannel from 'views/components/dialogs/edit-channel';
+import EditChannel from 'views/channel/components/dialogs/edit-channel';
 import Invite from 'views/channel/components/dialogs/invite';
 import ConfirmDialog from 'components/confirm-dialog';
 import {keysAtom, ravenAtom} from 'store';
