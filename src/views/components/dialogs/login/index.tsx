@@ -6,8 +6,8 @@ import CloseModal from 'components/close-modal';
 import Login from 'views/components/login';
 import useModal from 'hooks/use-modal';
 
-const LoginDialog = (props: { onLogin: () => void }) => {
-    const {onLogin} = props;
+const LoginDialog = (props: {  onDone: () => void }) => {
+    const {onDone} = props;
     const [, showModal] = useModal();
 
     const handleClose = () => showModal(null);
@@ -16,7 +16,7 @@ const LoginDialog = (props: { onLogin: () => void }) => {
         <>
             <DialogTitle><CloseModal onClick={handleClose}/></DialogTitle>
             <DialogContent>
-                <Login onLogin={onLogin}/>
+                <Login onDone={onDone} />
             </DialogContent>
         </>
     );

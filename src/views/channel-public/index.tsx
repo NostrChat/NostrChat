@@ -40,14 +40,14 @@ const ChannelPublicPage = (props: RouteComponentProps) => {
         }
     }, [raven, props]);
 
-    const onLogin = () => {
+    const onDone = () => {
         showModal(null);
         if (channel) setChannelToJoin(channel);
     }
 
     const onJoin = () => {
         showModal({
-            body: <LoginDialog onLogin={onLogin}/>
+            body: <LoginDialog onDone={onDone}/>
         });
     }
 
