@@ -95,7 +95,7 @@ const Login = (props: { onDone: () => void }) => {
                     <Box sx={{color: 'text.secondary', mb: '28px'}}>{t('Setup your profile')}</Box>
                     <MetadataForm
                         skipButton={<Button onClick={onDone}>{t('Skip')}</Button>}
-                        submitBtnLabel={t('Next')}
+                        submitBtnLabel={t('Finish')}
                         onSubmit={(data) => {
                             raven?.updateProfile(data);
                         }}/>
