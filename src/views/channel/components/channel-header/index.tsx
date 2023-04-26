@@ -5,7 +5,6 @@ import ChannelMenu from 'views/channel/components/channel-header/channel-menu';
 import AppContentHeaderBase from 'views/components/app-content-header-base';
 import useStyle from 'hooks/use-styles';
 import {channelAtom, keysAtom} from 'store';
-import {GLOBAL_CHAT} from 'const';
 
 
 const ChannelHeader = () => {
@@ -18,7 +17,6 @@ const ChannelHeader = () => {
         return null;
     }
 
-    const canEdit = keys.pub === channel.creator && channel.id !== GLOBAL_CHAT.id;
     const hasPicture = channel.picture.startsWith('https://');
 
     return <AppContentHeaderBase>
@@ -52,7 +50,7 @@ const ChannelHeader = () => {
                 </Box>
             )}
         </Box>
-        {canEdit && (<Box sx={{
+        <Box sx={{
             width: '50px',
             display: 'flex',
             alignItems: 'center',
@@ -60,7 +58,7 @@ const ChannelHeader = () => {
             flexShrink: 0
         }}>
             <ChannelMenu/>
-        </Box>)}
+        </Box>
     </AppContentHeaderBase>
 }
 

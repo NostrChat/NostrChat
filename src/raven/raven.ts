@@ -83,7 +83,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
         this.pool = new SimplePool();
 
-        this.init().then();
+        if (priv && pub) this.init().then();
     }
 
     private async init() {

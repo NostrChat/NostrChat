@@ -53,7 +53,7 @@ const ChannelPage = (props: RouteComponentProps) => {
     }, [keys]);
 
     useEffect(() => {
-        setChannelToJoin(null);
+        return () => setChannelToJoin(null);
     }, [location]);
 
     useEffect(() => {
@@ -134,6 +134,7 @@ const ChannelPage = (props: RouteComponentProps) => {
                             if (channelToJoin) {
                                 return <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
                                     <ChannelInfo channel={channelToJoin} onJoin={() => {
+                                        raven?.loadChannel(channelToJoin.id);
                                         setChannelToJoin(null);
                                     }}/>
                                 </Box>;
