@@ -83,10 +83,32 @@ const DirectMessagePage = (props: RouteComponentProps) => {
 
     if (!('pub' in props) || !keys) return null;
 
-    if (!directMessage || !ravenReady) {
+    if (!ravenReady) {
         return <Box sx={{display: 'flex', alignItems: 'center'}}>
             <CircularProgress size={20} sx={{mr: '8px'}}/> {t('Loading...')}
         </Box>;
+    }
+
+    if (!directMessage) {
+        return <>
+            <Helmet><title>{t('NostrChat')}</title></Helmet>
+            <AppWrapper>
+                <AppMenu/>
+                <AppContent>
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                        height: '100%'
+                    }}>
+                        {(() => {
+                            return null;
+                        })()}
+                    </Box>
+                </AppContent>
+            </AppWrapper>
+        </>
     }
 
     return <>
