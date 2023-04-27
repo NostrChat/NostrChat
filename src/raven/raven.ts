@@ -225,7 +225,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }
     }
 
-    public async fetchProfile(pub: string): Promise<Metadata | null> {
+    public async fetchProfile(pub: string): Promise<Profile | null> {
         const filters: Filter[] = [{
             kinds: [Kind.Metadata],
             authors: [pub],
@@ -237,7 +237,12 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         const content = Raven.parseJson(ev.content);
         if (!content) return null;  // Invalid content
 
-        return Raven.normalizeMetadata(content);
+        return {
+            id: ev.id,
+            creator: ev.pubkey,
+            created: ev.created_at,
+            ...Raven.normalizeMetadata(content)
+        }
     }
 
     private fetch(filters: Filter[], quitMs: number = 0): Promise<Event[]> {
