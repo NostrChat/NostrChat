@@ -45,8 +45,17 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     const messages = useLiveDirectMessages(directMessage || undefined);
     const [notFound, setNotFound] = useState(false);
 
-    const npub = useMemo(() => ('npub' in props) ? props.npub : null, [props]);
-    const pub = useMemo(() => npub ? nip19.decode(npub as string).data as string : null, [npub]);
+    const [npub, pub] = useMemo((): [string | null, string | null] => {
+        if ('npub' in props) {
+            const npub = props.npub as string;
+            try {
+                return [npub, nip19.decode(npub).data as string]
+            } catch (e) {
+            }
+        }
+        return [null, null];
+
+    }, [props]);
 
     useEffect(() => {
         if (!npub) navigate('/').then();
