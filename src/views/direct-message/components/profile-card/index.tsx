@@ -7,13 +7,13 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import {useTheme} from '@mui/material/styles';
 import CopyToClipboard from 'components/copy-clipboard';
+import DmInput from 'views/components/dm-input';
 import useTranslation from 'hooks/use-translation';
 import useStyles from 'hooks/use-styles';
 import KeyVariant from 'svg/key-variant';
 import {Profile} from 'types';
 import {keysAtom} from 'store';
 import {truncate} from 'util/truncate';
-
 
 const ProfileCard = (props: { profile: Profile, pub: string, onDM: () => void }) => {
     const {profile, pub, onDM} = props;
@@ -25,8 +25,6 @@ const ProfileCard = (props: { profile: Profile, pub: string, onDM: () => void })
     const npub = useMemo(() => nip19.npubEncode(pub), [pub]);
     const hasPicture = profile.picture.startsWith('https://');
     const isMe = keys?.pub === pub;
-
-    const dm = () => onDM();
 
     return <Paper sx={{textAlign: 'center', p: '20px'}}>
         {hasPicture && (
@@ -74,7 +72,11 @@ const ProfileCard = (props: { profile: Profile, pub: string, onDM: () => void })
                 }}>{npub}</Box>
             </Box>
         </CopyToClipboard>
-        <Box><Button variant="contained" onClick={dm}>{keys ? t('Join') : t('Login to Join')}</Button></Box>
+        {(() => {
+            if (isMe) return null;
+            if (!keys) return <Button variant="contained" onClick={onDM}>{t('Login to send DM')}</Button>;
+            return <DmInput pubkey={pub} onDM={onDM}/>;
+        })()}
     </Paper>
 }
 
