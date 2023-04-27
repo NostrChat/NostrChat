@@ -1,4 +1,4 @@
-import {useEffect} from 'react';
+import {useEffect, useMemo} from 'react';
 import {useAtom} from 'jotai';
 import {RouteComponentProps, useNavigate} from '@reach/router';
 import {Helmet} from 'react-helmet';
@@ -17,6 +17,7 @@ import {
     directMessageAtom,
     keysAtom,
     muteListAtom,
+    profilesAtom,
     ravenAtom,
     ravenReadyAtom,
     threadRootAtom
@@ -33,6 +34,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [muteList] = useAtom(muteListAtom);
     const [raven] = useAtom(ravenAtom);
+    const [profiles] = useAtom(profilesAtom);
     const messages = useLiveDirectMessages(directMessage || undefined);
 
     useEffect(() => {
@@ -75,6 +77,8 @@ const DirectMessagePage = (props: RouteComponentProps) => {
         }
     }, [messages, threadRoot]);
 
+    const profile = useMemo(() => profiles.find(x => x.creator === directMessage), [profiles, directMessage]);
+
     if (!('pub' in props) || !keys) {
         return null;
     }
@@ -84,7 +88,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     }
 
     return <>
-        <Helmet><title>{t(`NostrChat - ${directMessage}`)}</title></Helmet>
+        <Helmet><title>{t(`NostrChat - ${profile ? profile.name : directMessage}`)}</title></Helmet>
         <AppWrapper>
             <AppMenu/>
             <AppContent divide={!!threadRoot}>
@@ -95,7 +99,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
                 }}/>
             </AppContent>
             {threadRoot && <ThreadChatView senderFn={(message: string) => {
-               return raven!.sendDirectMessage(directMessage, message, threadRoot.id);
+                return raven!.sendDirectMessage(directMessage, message, threadRoot.id);
             }}/>}
         </AppWrapper>
     </>;
