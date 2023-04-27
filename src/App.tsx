@@ -29,7 +29,7 @@ function App() {
         <Login path='/login'/>
         <Channel path='/channel'/>
         {keys ? <Channel path='/channel/:channel'/> : <ChannelPublic path='/channel/:channel'/>}
-        <DirectMessage path='/dm/:pub'/>
+        <DirectMessage path='/dm/:npub'/>
         <Settings path='/settings'/>
         <SettingsProfile path='/settings/profile'/>
         <SettingsProfile path='/settings/profile'/>

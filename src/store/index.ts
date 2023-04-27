@@ -31,6 +31,7 @@ export const publicMessagesAtom = atom<PublicMessage[]>([]);
 export const directMessagesAtom = atom<DirectMessage[]>([]);
 export const directContactsAtom = atom<DirectContact[] | []>([]);
 export const directMessageAtom = atom<string | null>(null);
+export const profileToDmAtom = atom<Profile | null>(null);
 export const channelMessageHidesAtom = atom<ChannelMessageHide[]>([]);
 export const channelUserMutesAtom = atom<ChannelUserMute[]>([]);
 export const muteListAtom = atom<MuteList>({pubkeys: [], encrypted: ''});

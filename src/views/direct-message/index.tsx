@@ -1,8 +1,9 @@
-import {useEffect, useMemo} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {useAtom} from 'jotai';
-import {RouteComponentProps, useNavigate} from '@reach/router';
+import {RouteComponentProps, useLocation, useNavigate} from '@reach/router';
 import {Helmet} from 'react-helmet';
 import isEqual from 'lodash.isequal';
+import {nip19} from 'nostr-tools';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import AppWrapper from 'views/components/app-wrapper';
@@ -20,6 +21,7 @@ import {
     keysAtom,
     muteListAtom,
     profilesAtom,
+    profileToDmAtom,
     ravenAtom,
     ravenReadyAtom,
     threadRootAtom
@@ -30,6 +32,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     const [keys] = useAtom(keysAtom);
     const navigate = useNavigate();
     const [t] = useTranslation();
+    const location = useLocation();
     const [directMessage, setDirectMessage] = useAtom(directMessageAtom);
     const [directContacts] = useAtom(directContactsAtom);
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
@@ -37,40 +40,38 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     const [muteList] = useAtom(muteListAtom);
     const [raven] = useAtom(ravenAtom);
     const [profiles] = useAtom(profilesAtom);
+    const [profileToDm, setProfileToDm] = useAtom(profileToDmAtom);
     const messages = useLiveDirectMessages(directMessage || undefined);
+    const [notFound, setNotFound] = useState(false);
+
+    const npub = useMemo(() => ('npub' in props) ? props.npub : null, [props]);
+    const pub = useMemo(() => npub ? nip19.decode(npub as string).data as string : null, [npub]);
 
     useEffect(() => {
-        if (!('pub' in props)) {
-            navigate('/').then();
-        }
-    }, [props]);
+        if (!npub) navigate('/').then();
+    }, [npub]);
 
     useEffect(() => {
-        if (!keys) {
-            navigate('/login').then();
-        }
+        if (!keys) navigate('/login').then();
     }, [keys]);
 
     useEffect(() => {
-        if ('pub' in props) {
-            const {pub} = props;
-            const c = directContacts.find(x => x.npub === pub);
-            if (c) {
-                setDirectMessage(c.pub);
-            }
-        }
-    }, [props, directContacts]);
+        return () => setProfileToDm(null);
+    }, [location]);
 
     useEffect(() => {
-        if ('pub' in props) {
-            const {pub} = props;
-            const contact = directContacts.find(x => x.npub === pub);
-            if (muteList.pubkeys.find(x => x === contact?.pub)) {
-                navigate('/').then();
-            }
-        }
+        if (!npub) return;
+        const c = directContacts.find(x => x.npub === npub);
+        setDirectMessage(c?.pub || null);
+    }, [npub, directContacts]);
 
-    }, [props, muteList]);
+    useEffect(() => {
+        if (!npub) return;
+        const contact = directContacts.find(x => x.npub === npub);
+        if (muteList.pubkeys.find(x => x === contact?.pub)) {
+            navigate('/').then();
+        }
+    }, [npub, muteList]);
 
     useEffect(() => {
         const msg = messages.find(x => x.id === threadRoot?.id);
@@ -79,9 +80,28 @@ const DirectMessagePage = (props: RouteComponentProps) => {
         }
     }, [messages, threadRoot]);
 
+    useEffect(() => {
+        if (ravenReady && !directMessage && pub && !profileToDm) {
+            const timer = setTimeout(() => {
+                setNotFound(true);
+            }, 5000);
+
+            raven?.fetchProfile(pub).then(profile => {
+                if (profile) {
+                    setProfileToDm(profile);
+                    clearTimeout(timer);
+                }
+            });
+
+            return () => {
+                clearTimeout(timer);
+            }
+        }
+    }, [ravenReady, directMessage, props, profileToDm]);
+
     const profile = useMemo(() => profiles.find(x => x.creator === directMessage), [profiles, directMessage]);
 
-    if (!('pub' in props) || !keys) return null;
+    if (!npub || !pub || !keys) return null;
 
     if (!ravenReady) {
         return <Box sx={{display: 'flex', alignItems: 'center'}}>
