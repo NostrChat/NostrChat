@@ -26,6 +26,7 @@ import {
     ravenReadyAtom,
     threadRootAtom
 } from 'store';
+import ProfileCard from '../components/profile-card';
 
 
 const DirectMessagePage = (props: RouteComponentProps) => {
@@ -123,7 +124,18 @@ const DirectMessagePage = (props: RouteComponentProps) => {
                         height: '100%'
                     }}>
                         {(() => {
-                            return null;
+                            if (profileToDm) {
+                                return <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
+                                    <ProfileCard profile={profileToDm} pubkey={pub} onDM={() => {
+                                    }}/>
+                                </Box>
+                            }
+
+                            if (notFound) return t('Profile not found');
+
+                            return <>
+                                <CircularProgress size={20} sx={{mr: '8px'}}/> {t('Looking for the profile...')}
+                            </>;
                         })()}
                     </Box>
                 </AppContent>
