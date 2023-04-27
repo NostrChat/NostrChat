@@ -11,10 +11,11 @@ import AppContent from 'views/components/app-content';
 import AppMenu from 'views/components/app-menu';
 import ChatInput from 'views/components/chat-input';
 import ChatView from 'views/components/chat-view';
-import ProfileCardMini from 'views/components/profile-card-mini';
+import ProfileCard from 'views/direct-message/components/profile-card';
 import DmHeader from 'views/direct-message/components/dm-header';
 import ThreadChatView from 'views/components/thread-chat-view';
 import useTranslation from 'hooks/use-translation';
+import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useLiveDirectMessages from 'hooks/use-live-direct-messages';
 import {
     directContactsAtom,
@@ -33,6 +34,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     const [keys] = useAtom(keysAtom);
     const navigate = useNavigate();
     const [t] = useTranslation();
+    const {isSm} = useMediaBreakPoint();
     const location = useLocation();
     const [directMessage, setDirectMessage] = useAtom(directMessageAtom);
     const [directContacts] = useAtom(directContactsAtom);
@@ -134,8 +136,8 @@ const DirectMessagePage = (props: RouteComponentProps) => {
                     }}>
                         {(() => {
                             if (profileToDm) {
-                                return <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
-                                    <ProfileCardMini profile={profileToDm} pubkey={pub} onDM={() => {
+                                return <Box sx={{maxWidth: isSm ? '500px' : '300px', ml: '10px', mr: '10px'}}>
+                                    <ProfileCard profile={profileToDm} pub={pub} onDM={() => {
                                     }}/>
                                 </Box>
                             }
