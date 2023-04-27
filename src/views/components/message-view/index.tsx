@@ -12,7 +12,7 @@ import usePopover from 'hooks/use-popover';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
 import Avatar from 'views/components/avatar';
-import ProfileCard from 'views/components/profile-card-mini';
+import ProfileCardMini from 'views/components/profile-card-mini';
 import MessageMenu from 'views/components/message-menu';
 import MessageReactions from 'views/components/message-reactions';
 import {activeMessageAtom, profilesAtom, threadRootAtom} from 'store';
@@ -45,7 +45,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const profileClicked = (event: React.MouseEvent<HTMLDivElement>) => {
         showPopover({
             body: <Box sx={{width: '220px', padding: '10px'}}>
-                <ProfileCard profile={profile} pubkey={message.creator} onDM={() => {
+                <ProfileCardMini profile={profile} pubkey={message.creator} onDM={() => {
                     navigate(`/dm/${nip19.npubEncode(message.creator)}`).then();
                 }}/>
             </Box>,

@@ -17,7 +17,7 @@ import {truncate, truncateMiddle} from 'util/truncate';
 import MuteBtn from '../mute-btn';
 
 
-const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => void }) => {
+const ProfileCardMini = (props: { profile?: Profile, pubkey: string, onDM: () => void }) => {
     const {profile, pubkey, onDM} = props;
     const [keys] = useAtom(keysAtom);
     const [raven] = useAtom(ravenAtom);
@@ -114,4 +114,4 @@ const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => voi
     </Box>;
 }
 
-export default ProfileCard;
+export default ProfileCardMini;

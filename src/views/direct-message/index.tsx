@@ -11,6 +11,7 @@ import AppContent from 'views/components/app-content';
 import AppMenu from 'views/components/app-menu';
 import ChatInput from 'views/components/chat-input';
 import ChatView from 'views/components/chat-view';
+import ProfileCardMini from 'views/components/profile-card-mini';
 import DmHeader from 'views/direct-message/components/dm-header';
 import ThreadChatView from 'views/components/thread-chat-view';
 import useTranslation from 'hooks/use-translation';
@@ -26,7 +27,6 @@ import {
     ravenReadyAtom,
     threadRootAtom
 } from 'store';
-import ProfileCard from '../components/profile-card-mini';
 
 
 const DirectMessagePage = (props: RouteComponentProps) => {
@@ -135,7 +135,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
                         {(() => {
                             if (profileToDm) {
                                 return <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
-                                    <ProfileCard profile={profileToDm} pubkey={pub} onDM={() => {
+                                    <ProfileCardMini profile={profileToDm} pubkey={pub} onDM={() => {
                                     }}/>
                                 </Box>
                             }
