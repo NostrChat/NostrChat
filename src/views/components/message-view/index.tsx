@@ -12,7 +12,7 @@ import usePopover from 'hooks/use-popover';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
 import Avatar from 'views/components/avatar';
-import ProfileCard from 'views/components/profile-card';
+import ProfileCard from 'views/components/profile-card-mini';
 import MessageMenu from 'views/components/message-menu';
 import MessageReactions from 'views/components/message-reactions';
 import {activeMessageAtom, profilesAtom, threadRootAtom} from 'store';

@@ -26,7 +26,7 @@ import {
     ravenReadyAtom,
     threadRootAtom
 } from 'store';
-import ProfileCard from '../components/profile-card';
+import ProfileCard from '../components/profile-card-mini';
 
 
 const DirectMessagePage = (props: RouteComponentProps) => {
