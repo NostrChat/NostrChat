@@ -11,7 +11,7 @@ import AppContent from 'views/components/app-content';
 import AppMenu from 'views/components/app-menu';
 import ChatInput from 'views/components/chat-input';
 import ChatView from 'views/components/chat-view';
-import ProfileCard from 'views/direct-message/components/profile-card';
+import ProfileCard from 'views/components/profile-card';
 import DmHeader from 'views/direct-message/components/dm-header';
 import ThreadChatView from 'views/components/thread-chat-view';
 import useTranslation from 'hooks/use-translation';

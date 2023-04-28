@@ -6,7 +6,7 @@ import {nip19} from 'nostr-tools';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import LoginDialog from 'views/components/dialogs/login';
-import ProfileCard from 'views/direct-message/components/profile-card';
+import ProfileCard from 'views/components/profile-card';
 import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
