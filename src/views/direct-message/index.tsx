@@ -72,18 +72,16 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     }, [location]);
 
     useEffect(() => {
-        if (!npub) return;
-        const c = directContacts.find(x => x.npub === npub);
+        const c = directContacts.find(x => x.pub === pub);
         setDirectMessage(c?.pub || null);
-    }, [npub, directContacts]);
+    }, [pub, directContacts]);
 
     useEffect(() => {
-        if (!npub) return;
-        const contact = directContacts.find(x => x.npub === npub);
+        const contact = directContacts.find(x => x.pub === pub);
         if (muteList.pubkeys.find(x => x === contact?.pub)) {
             navigate('/').then();
         }
-    }, [npub, muteList]);
+    }, [pub, muteList]);
 
     useEffect(() => {
         const msg = messages.find(x => x.id === threadRoot?.id);
@@ -94,7 +92,6 @@ const DirectMessagePage = (props: RouteComponentProps) => {
 
     useEffect(() => {
         if (ravenReady && !directMessage && pub && !profileToDm) {
-
             const timer = setTimeout(() => setNotFound(true), 5000);
 
             raven?.fetchProfile(pub).then(profile => {
