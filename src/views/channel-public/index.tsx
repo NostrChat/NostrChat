@@ -4,7 +4,7 @@ import {Helmet} from 'react-helmet';
 import {useAtom} from 'jotai';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import ChannelInfo from 'views/channel/components/channel-info';
+import ChannelInfo from 'views/components/channel-info';
 import LoginDialog from 'views/components/dialogs/login';
 import PublicBrand from 'views/components/public-brand';
 import useTranslation from 'hooks/use-translation';

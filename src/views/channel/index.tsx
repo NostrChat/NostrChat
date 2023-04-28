@@ -12,7 +12,7 @@ import ChannelHeader from 'views/channel/components/channel-header';
 import ChatInput from 'views/components/chat-input';
 import ChatView from 'views/components/chat-view';
 import ThreadChatView from 'views/components/thread-chat-view';
-import ChannelInfo from 'views/channel/components/channel-info';
+import ChannelInfo from 'views/components/channel-info';
 import useTranslation from 'hooks/use-translation';
 import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
