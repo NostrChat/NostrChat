@@ -8,6 +8,7 @@ import Paper from '@mui/material/Paper';
 import {useTheme} from '@mui/material/styles';
 import CopyToClipboard from 'components/copy-clipboard';
 import DmInput from 'views/components/dm-input';
+import Avatar from 'views/components/avatar';
 import useTranslation from 'hooks/use-translation';
 import useStyles from 'hooks/use-styles';
 import KeyVariant from 'svg/key-variant';
@@ -23,21 +24,12 @@ const ProfileCard = (props: { profile: Profile, pub: string, onDM: () => void })
     const styles = useStyles();
 
     const npub = useMemo(() => nip19.npubEncode(pub), [pub]);
-    const hasPicture = profile.picture.startsWith('https://');
     const isMe = keys?.pub === pub;
 
     return <Paper sx={{textAlign: 'center', p: '20px'}}>
-        {hasPicture && (
-            <>
-                <Box sx={{mb: '10px'}}>
-                    <Box component="img" sx={{
-                        width: '140px',
-                        height: '140px',
-                        borderRadius: theme.shape.borderRadius
-                    }} src={profile.picture} alt={profile.name}/>
-                </Box>
-            </>
-        )}
+        <Box sx={{mb: '10px'}}>
+            <Avatar src={profile?.picture} seed={pub} size={140} rounded/>
+        </Box>
         {profile.name && (<Box sx={{
             fontFamily: 'Faktum, sans-serif',
             fontSize: '1.1em',
