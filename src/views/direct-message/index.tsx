@@ -94,9 +94,8 @@ const DirectMessagePage = (props: RouteComponentProps) => {
 
     useEffect(() => {
         if (ravenReady && !directMessage && pub && !profileToDm) {
-            const timer = setTimeout(() => {
-                setNotFound(true);
-            }, 5000);
+
+            const timer = setTimeout(() => setNotFound(true), 5000);
 
             raven?.fetchProfile(pub).then(profile => {
                 if (profile) {
@@ -105,9 +104,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
                 }
             });
 
-            return () => {
-                clearTimeout(timer);
-            }
+            return () => clearTimeout(timer);
         }
     }, [ravenReady, directMessage, props, profileToDm]);
 
@@ -155,7 +152,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     }
 
     return <>
-        <Helmet><title>{t(`NostrChat - ${profile ? profile.name : directMessage}`)}</title></Helmet>
+        <Helmet><title>{t(`NostrChat - ${profile?.name || npub}`)}</title></Helmet>
         <AppWrapper>
             <AppMenu/>
             <AppContent divide={!!threadRoot}>
