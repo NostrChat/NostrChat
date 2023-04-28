@@ -108,7 +108,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
         }
     }, [ravenReady, directMessage, props, profileToDm]);
 
-    const profile = useMemo(() => profiles.find(x => x.creator === directMessage), [profiles, directMessage]);
+    const profile = useMemo(() => profiles.find(x => x.creator === pub), [profiles, pub]);
 
     if (!npub || !pub || !keys) return null;
 
@@ -157,13 +157,13 @@ const DirectMessagePage = (props: RouteComponentProps) => {
             <AppMenu/>
             <AppContent divide={!!threadRoot}>
                 <DmHeader/>
-                <ChatView separator={directMessage} messages={messages}/>
-                <ChatInput separator={directMessage} senderFn={(message: string) => {
-                    return raven!.sendDirectMessage(directMessage, message);
+                <ChatView separator={pub} messages={messages}/>
+                <ChatInput separator={pub} senderFn={(message: string) => {
+                    return raven!.sendDirectMessage(pub, message);
                 }}/>
             </AppContent>
             {threadRoot && <ThreadChatView senderFn={(message: string) => {
-                return raven!.sendDirectMessage(directMessage, message, threadRoot.id);
+                return raven!.sendDirectMessage(pub, message, threadRoot.id);
             }}/>}
         </AppWrapper>
     </>;
