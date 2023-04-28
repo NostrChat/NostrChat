@@ -21,7 +21,7 @@ const useRenderContent = () => {
             if (href.match(channelReg)) {
                 const s = href.split('/');
                 const cid = s[s.length - 1];
-                return <Link href={href} target="_blank" rel="noreferrer" onClick={(e) => {
+                return <Link href={href} onClick={(e) => {
                     e.preventDefault();
                     navigate(`/channel/${cid}`).then();
                 }}>{href}</Link>;
