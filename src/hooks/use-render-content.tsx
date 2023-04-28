@@ -1,20 +1,32 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import Linkify from 'linkify-react';
+import {useNavigate} from '@reach/router';
 import {IntermediateRepresentation} from 'linkifyjs';
 import Link from '@mui/material/Link';
 import useModal from 'hooks/use-modal';
 import ExternalLinkDialog from 'components/external-link-dialog';
-import {truncateMiddle} from 'util/truncate';
+
+const channelRegex = new RegExp(`^${window.location.protocol}//${window.location.host}/channel/[a-f0-9]{64}$`, 'm');
 
 const useRenderContent = () => {
     const [, showModal] = useModal();
+    const navigate = useNavigate();
 
     return (content: string) => {
         const renderLink = (args: IntermediateRepresentation) => {
             const {href} = args.attributes;
-            if (href.indexOf('https://') === 0) {
 
+            if (href.match(channelRegex)) {
+                const s = href.split('/');
+                const cid = s[s.length - 1];
+                return <Link href={href} target="_blank" rel="noreferrer" onClick={(e) => {
+                    e.preventDefault();
+                    navigate(`/channel/${cid}`).then();
+                }}>{href}</Link>;
+            }
+
+            if (href.indexOf('https://') === 0) {
                 if (/(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/.test(href)) {
                     return <Box>
                         <Link href={href} target="_blank" rel="noreferrer" onClick={(e) => {
@@ -38,7 +50,7 @@ const useRenderContent = () => {
                     showModal({
                         body: <ExternalLinkDialog link={href}/>
                     });
-                }}>{truncateMiddle(args.content, 60, '...')}</Link>;
+                }}>{href}</Link>;
             }
 
             return <>{args.content}</>;
