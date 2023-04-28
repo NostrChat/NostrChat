@@ -7,7 +7,8 @@ import Link from '@mui/material/Link';
 import useModal from 'hooks/use-modal';
 import ExternalLinkDialog from 'components/external-link-dialog';
 
-const channelRegex = new RegExp(`^${window.location.protocol}//${window.location.host}/channel/[a-f0-9]{64}$`, 'm');
+const imgReg = /(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/;
+const channelReg = new RegExp(`^${window.location.protocol}//${window.location.host}/channel/[a-f0-9]{64}$`, 'm');
 
 const useRenderContent = () => {
     const [, showModal] = useModal();
@@ -17,7 +18,7 @@ const useRenderContent = () => {
         const renderLink = (args: IntermediateRepresentation) => {
             const {href} = args.attributes;
 
-            if (href.match(channelRegex)) {
+            if (href.match(channelReg)) {
                 const s = href.split('/');
                 const cid = s[s.length - 1];
                 return <Link href={href} target="_blank" rel="noreferrer" onClick={(e) => {
@@ -27,7 +28,7 @@ const useRenderContent = () => {
             }
 
             if (href.indexOf('https://') === 0) {
-                if (/(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/.test(href)) {
+                if (imgReg.test(href)) {
                     return <Box>
                         <Link href={href} target="_blank" rel="noreferrer" onClick={(e) => {
                             e.preventDefault();
