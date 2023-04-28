@@ -9,7 +9,9 @@ import {
     ChannelMessageHide,
     ChannelUserMute,
     MuteList,
-    Message, Reaction
+    Message,
+    Reaction,
+    DirectContact
 } from 'types';
 import {GLOBAL_CHAT} from 'const';
 
@@ -27,8 +29,9 @@ export const channelUpdatesAtom = atom<ChannelUpdate[]>([]);
 export const eventDeletionsAtom = atom<EventDeletion[]>([]);
 export const publicMessagesAtom = atom<PublicMessage[]>([]);
 export const directMessagesAtom = atom<DirectMessage[]>([]);
-export const directContactsAtom = atom<{ pub: string, npub: string }[] | []>([]);
+export const directContactsAtom = atom<DirectContact[] | []>([]);
 export const directMessageAtom = atom<string | null>(null);
+export const profileToDmAtom = atom<Profile | null>(null);
 export const channelMessageHidesAtom = atom<ChannelMessageHide[]>([]);
 export const channelUserMutesAtom = atom<ChannelUserMute[]>([]);
 export const muteListAtom = atom<MuteList>({pubkeys: [], encrypted: ''});

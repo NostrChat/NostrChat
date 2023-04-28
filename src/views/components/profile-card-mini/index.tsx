@@ -1,29 +1,26 @@
 import {useAtom} from 'jotai';
-import React, {useMemo, useState} from 'react';
+import React, {useMemo} from 'react';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
-import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import {nip19} from 'nostr-tools';
 import useTranslation from 'hooks/use-translation';
-import Avatar from 'views/components/avatar';
 import CopyToClipboard from 'components/copy-clipboard';
-import {keysAtom, ravenAtom} from 'store';
+import Avatar from 'views/components/avatar';
+import MuteBtn from 'views/components/mute-btn';
+import DmInput from 'views/components/dm-input';
+import {keysAtom} from 'store';
 import {Profile} from 'types';
 import KeyVariant from 'svg/key-variant';
 import EyeOff from 'svg/eye-off';
 import {truncate, truncateMiddle} from 'util/truncate';
-import MuteBtn from '../mute-btn';
 
-
-const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => void }) => {
+const ProfileCardMini = (props: { profile?: Profile, pubkey: string, onDM: () => void }) => {
     const {profile, pubkey, onDM} = props;
     const [keys] = useAtom(keysAtom);
-    const [raven] = useAtom(ravenAtom);
     const theme = useTheme();
     const [t] = useTranslation();
-    const [message, setMessage] = useState('');
 
     const profileName = useMemo(() => profile?.name ? truncateMiddle(profile.name, 24, ':') : null, [profile]);
     const pub = useMemo(() => nip19.npubEncode(pubkey), [pubkey]);
@@ -59,7 +56,7 @@ const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => voi
                 top: 0,
                 zIndex: 1
             }}>
-                <Avatar src={profile?.picture} seed={pubkey} size={200} />
+                <Avatar src={profile?.picture} seed={pubkey} size={200}/>
             </Box>
         </Box>
         {profileName && (<Box sx={{mb: '10px', fontWeight: 600}}>{profileName}</Box>)}
@@ -89,29 +86,8 @@ const ProfileCard = (props: { profile?: Profile, pubkey: string, onDM: () => voi
                 {truncateMiddle(pub, 24, ':')}
             </Box>
         </CopyToClipboard>
-        {!isMe && (
-            <TextField
-                autoComplete="off"
-                InputProps={{
-                    sx: {fontSize: '1em'}
-                }} size="small"
-                fullWidth
-                placeholder={t('Send direct message')}
-                value={message}
-                onChange={(e) => {
-                    setMessage(e.target.value);
-                }}
-                onKeyUp={(e) => {
-                    if (e.key === 'Enter' && message.trim() !== '') {
-                        raven?.sendDirectMessage(pubkey, message).then(() => {
-                            setMessage('');
-                            onDM();
-                        });
-                    }
-                }}
-            />
-        )}
+        {!isMe && (<DmInput pubkey={pubkey} onDM={onDM}/>)}
     </Box>;
 }
 
-export default ProfileCard;
+export default ProfileCardMini;

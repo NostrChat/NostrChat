@@ -7,6 +7,7 @@ import Login from 'views/login';
 import Channel from 'views/channel';
 import ChannelPublic from 'views/channel-public';
 import DirectMessage from 'views/direct-message';
+import DirectMessagePublic from 'views/direct-message-public';
 import Settings from 'views/settings';
 import SettingsProfile from 'views/settings/profile';
 import SettingsKeys from 'views/settings/keys';
@@ -29,7 +30,7 @@ function App() {
         <Login path='/login'/>
         <Channel path='/channel'/>
         {keys ? <Channel path='/channel/:channel'/> : <ChannelPublic path='/channel/:channel'/>}
-        <DirectMessage path='/dm/:pub'/>
+        {keys ? <DirectMessage path='/dm/:npub'/> : <DirectMessagePublic path='/dm/:npub'/>}
         <Settings path='/settings'/>
         <SettingsProfile path='/settings/profile'/>
         <SettingsProfile path='/settings/profile'/>
