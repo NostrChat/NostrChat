@@ -28,7 +28,7 @@ const ChannelInfo = (props: { channel: Channel, onJoin: () => void }) => {
                     <Box component="img" sx={{
                         width: '140px',
                         height: '140px',
-                        borderRadius: theme.shape.borderRadius
+                        borderRadius: '50%'
                     }} src={channel.picture} alt={channel.name}/>
                 </Box>
             </>
