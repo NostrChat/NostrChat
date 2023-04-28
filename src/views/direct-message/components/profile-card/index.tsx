@@ -66,7 +66,7 @@ const ProfileCard = (props: { profile: Profile, pub: string, onDM: () => void })
         </CopyToClipboard>
         {(() => {
             if (isMe) return null;
-            if (!keys) return <Button variant="contained" onClick={onDM}>{t('Login to send DM')}</Button>;
+            if (!keys) return <Button variant="contained" size="small" onClick={onDM}>{t('Login to send DM')}</Button>;
             return <DmInput pubkey={pub} onDM={onDM}/>;
         })()}
     </Paper>
