@@ -1,6 +1,7 @@
 import {useEffect, useMemo, useState} from 'react';
 import {RouteComponentProps, useNavigate} from '@reach/router';
 import {Helmet} from 'react-helmet';
+import {useAtom} from 'jotai';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import ChannelInfo from 'views/channel/components/channel-info';
@@ -9,8 +10,8 @@ import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
 import Raven from 'raven/raven';
 import {Channel} from 'types';
-import {useAtom} from 'jotai';
 import {channelToJoinAtom} from 'store';
+import {isSha256} from 'util/crypto';
 
 const ChannelPublicPage = (props: RouteComponentProps) => {
     const [t] = useTranslation();
@@ -21,24 +22,25 @@ const ChannelPublicPage = (props: RouteComponentProps) => {
     const [notFound, setNotFound] = useState(false);
     const raven = useMemo(() => new Raven('', ''), []);
 
-    useEffect(() => {
-        if (!('channel' in props)) navigate('/').then();
-    }, [props]);
+    const cid = useMemo(() => ('channel' in props) && isSha256(props.channel as string) ? props.channel as string : null, [props]);
 
     useEffect(() => {
-        if (('channel' in props)) {
-            const timer = setTimeout(() => setNotFound(true), 5000);
+        if (!cid) navigate('/').then();
+    }, [cid]);
 
-            raven.fetchChannel(props.channel as string).then(channel => {
-                if (channel) {
-                    setChannel(channel);
-                    clearTimeout(timer);
-                }
-            });
+    useEffect(() => {
+        if (!cid) return;
+        const timer = setTimeout(() => setNotFound(true), 5000);
 
-            return () => clearTimeout(timer);
-        }
-    }, [raven, props]);
+        raven.fetchChannel(cid).then(channel => {
+            if (channel) {
+                setChannel(channel);
+                clearTimeout(timer);
+            }
+        });
+
+        return () => clearTimeout(timer);
+    }, [raven, cid]);
 
     const onDone = () => {
         showModal(null);
