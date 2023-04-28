@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {useAtom} from 'jotai';
 import {RouteComponentProps, useLocation, useNavigate} from '@reach/router';
 import {Helmet} from 'react-helmet';
@@ -20,6 +20,7 @@ import useLivePublicMessages from 'hooks/use-live-public-messages';
 import useToast from 'hooks/use-toast';
 import {channelAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom, channelToJoinAtom} from 'store';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
+import {isSha256} from 'util/crypto';
 
 
 const ChannelPage = (props: RouteComponentProps) => {
@@ -40,16 +41,14 @@ const ChannelPage = (props: RouteComponentProps) => {
     const [hasMore, setHasMore] = useState(true);
     const [notFound, setNotFound] = useState(false);
 
-    useEffect(() => {
-        if (!('channel' in props)) {
-            navigate(`/channel/${GLOBAL_CHAT.id}`).then();
-        }
-    }, [props]);
+    const cid = useMemo(() => ('channel' in props) && isSha256(props.channel as string) ? props.channel as string : null, [props]);
 
     useEffect(() => {
-        if (!keys) {
-            navigate('/login').then();
-        }
+        if (!cid) navigate(`/channel/${GLOBAL_CHAT.id}`).then();
+    }, [cid]);
+
+    useEffect(() => {
+        if (!keys) navigate('/login').then();
     }, [keys]);
 
     useEffect(() => {
@@ -57,12 +56,9 @@ const ChannelPage = (props: RouteComponentProps) => {
     }, [location]);
 
     useEffect(() => {
-        if ('channel' in props) {
-            const {channel: cid} = props;
-            const c = channels.find(x => x.id === cid);
-            setChannel(c || null);
-        }
-    }, [props, channels]);
+        if (!cid) return;
+        setChannel(channels.find(x => x.id === cid) || null);
+    }, [cid, channels]);
 
     useEffect(() => {
         const fetchPrev = () => {
@@ -72,9 +68,7 @@ const ChannelPage = (props: RouteComponentProps) => {
                 if (num < (MESSAGE_PER_PAGE - ACCEPTABLE_LESS_PAGE_MESSAGES)) {
                     setHasMore(false);
                 }
-            }).finally(() => {
-                setLoading(false);
-            })
+            }).finally(() => setLoading(false));
         }
         window.addEventListener('chat-view-top', fetchPrev);
 
@@ -91,25 +85,21 @@ const ChannelPage = (props: RouteComponentProps) => {
     }, [messages, threadRoot]);
 
     useEffect(() => {
-        if (ravenReady && !channel && ('channel' in props) && !channelToJoin) {
-            const timer = setTimeout(() => {
-                setNotFound(true);
-            }, 5000);
+        if (ravenReady && !channel && cid && !channelToJoin) {
+            const timer = setTimeout(() => setNotFound(true), 5000);
 
-            raven?.fetchChannel(props.channel as string).then(channel => {
+            raven?.fetchChannel(cid).then(channel => {
                 if (channel) {
                     setChannelToJoin(channel);
                     clearTimeout(timer);
                 }
             });
 
-            return () => {
-                clearTimeout(timer);
-            }
+            return () => clearTimeout(timer);
         }
-    }, [ravenReady, channel, props, channelToJoin]);
+    }, [ravenReady, channel, cid, channelToJoin]);
 
-    if (!('channel' in props) || !keys) return null;
+    if (!cid || !keys) return null;
 
     if (!ravenReady) {
         return <Box sx={{display: 'flex', alignItems: 'center'}}>
