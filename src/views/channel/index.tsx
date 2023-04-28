@@ -12,7 +12,7 @@ import ChannelHeader from 'views/channel/components/channel-header';
 import ChatInput from 'views/components/chat-input';
 import ChatView from 'views/components/chat-view';
 import ThreadChatView from 'views/components/thread-chat-view';
-import ChannelInfo from 'views/components/channel-info';
+import ChannelCard from 'views/components/channel-card';
 import useTranslation from 'hooks/use-translation';
 import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
@@ -123,7 +123,7 @@ const ChannelPage = (props: RouteComponentProps) => {
                         {(() => {
                             if (channelToJoin) {
                                 return <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
-                                    <ChannelInfo channel={channelToJoin} onJoin={() => {
+                                    <ChannelCard channel={channelToJoin} onJoin={() => {
                                         raven?.loadChannel(channelToJoin.id);
                                         setChannelToJoin(null);
                                     }}/>

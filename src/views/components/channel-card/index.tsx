@@ -11,7 +11,7 @@ import {keysAtom} from 'store';
 import {truncate} from 'util/truncate';
 
 
-const ChannelInfo = (props: { channel: Channel, onJoin: () => void }) => {
+const ChannelCard = (props: { channel: Channel, onJoin: () => void }) => {
     const {channel, onJoin} = props;
     const theme = useTheme();
     const [t] = useTranslation();
@@ -51,4 +51,4 @@ const ChannelInfo = (props: { channel: Channel, onJoin: () => void }) => {
     </Paper>
 }
 
-export default ChannelInfo;
+export default ChannelCard;

@@ -4,7 +4,7 @@ import {Helmet} from 'react-helmet';
 import {useAtom} from 'jotai';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import ChannelInfo from 'views/components/channel-info';
+import ChannelCard from 'views/components/channel-card';
 import LoginDialog from 'views/components/dialogs/login';
 import PublicBrand from 'views/components/public-brand';
 import useTranslation from 'hooks/use-translation';
@@ -59,7 +59,7 @@ const ChannelPublicPage = (props: RouteComponentProps) => {
             <Helmet><title>{t(`NostrChat - ${channel.name}`)}</title></Helmet>
             <PublicBrand />
             <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
-                <ChannelInfo channel={channel} onJoin={onJoin}/>
+                <ChannelCard channel={channel} onJoin={onJoin}/>
             </Box>
         </>
     }
