@@ -7,6 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import LoginDialog from 'views/components/dialogs/login';
 import ProfileCard from 'views/components/profile-card';
+import PublicBrand from 'views/components/public-brand';
 import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
@@ -70,6 +71,7 @@ const DirectMessagePublic = (props: RouteComponentProps) => {
     if (profile && pub) {
         return <>
             <Helmet><title>{t(`NostrChat - ${profile.name || npub}`)}</title></Helmet>
+            <PublicBrand />
             <Box sx={{maxWidth: isSm ? '500px' : '300px', ml: '10px', mr: '10px'}}>
                 <ProfileCard profile={profile} pub={pub} onDM={onDM}/>
             </Box>
@@ -78,6 +80,7 @@ const DirectMessagePublic = (props: RouteComponentProps) => {
 
     return <>
         <Helmet><title>{t('NostrChat')}</title></Helmet>
+        <PublicBrand />
         <Box sx={{display: 'flex', alignItems: 'center'}}>
             {(() => {
                 if (notFound) return t('Profile not found');

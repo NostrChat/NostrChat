@@ -6,6 +6,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import ChannelInfo from 'views/channel/components/channel-info';
 import LoginDialog from 'views/components/dialogs/login';
+import PublicBrand from 'views/components/public-brand';
 import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
 import Raven from 'raven/raven';
@@ -56,6 +57,7 @@ const ChannelPublicPage = (props: RouteComponentProps) => {
     if (channel) {
         return <>
             <Helmet><title>{t(`NostrChat - ${channel.name}`)}</title></Helmet>
+            <PublicBrand />
             <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
                 <ChannelInfo channel={channel} onJoin={onJoin}/>
             </Box>
@@ -64,6 +66,7 @@ const ChannelPublicPage = (props: RouteComponentProps) => {
 
     return <>
         <Helmet><title>{t('NostrChat')}</title></Helmet>
+        <PublicBrand />
         <Box sx={{display: 'flex', alignItems: 'center'}}>
             {(() => {
                 if (notFound) return t('Channel not found');
