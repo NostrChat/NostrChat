@@ -46,7 +46,7 @@ const DirectMessagePublic = (props: RouteComponentProps) => {
 
         const timer = setTimeout(() => setNotFound(true), 5000);
 
-        raven.fetchProfile(pub as string).then(profile => {
+        raven.fetchProfile(pub).then(profile => {
             if (profile) {
                 setProfile(profile);
                 clearTimeout(timer);
@@ -54,7 +54,6 @@ const DirectMessagePublic = (props: RouteComponentProps) => {
         });
 
         return () => clearTimeout(timer);
-
     }, [raven, pub]);
 
     const onDone = () => {
