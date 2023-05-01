@@ -1,13 +1,17 @@
 import {Box} from '@mui/material';
 import React from 'react';
 import {useTheme} from '@mui/material/styles';
+import Button from '@mui/material/Button';
 import {useAtom} from 'jotai';
-import {useLocation} from '@reach/router';
+import {useLocation, useNavigate} from '@reach/router';
 import useTranslation from 'hooks/use-translation';
 import ListItem from 'views/components/app-menu/list-item';
 import useLiveDirectContacts from 'hooks/use-live-direct-contacts';
+import useModal from 'hooks/use-modal';
 import {directMessageAtom, profilesAtom} from 'store';
+import Plus from 'svg/plus';
 import {truncateMiddle} from 'util/truncate';
+import JoinChannel from '../dialogs/join-channel';
 
 const DmList = () => {
     const theme = useTheme();
@@ -16,15 +20,34 @@ const DmList = () => {
     const directContacts = useLiveDirectContacts();
     const [directMessage] = useAtom(directMessageAtom);
     const location = useLocation();
+    const [, showModal] = useModal();
+    const navigate = useNavigate();
+
+    const search = () => {
+        showModal({
+            body: <JoinChannel onSuccess={(id) => {
+                showModal(null);
+                navigate(`/channel/${id}`).then();
+            }}/>
+        })
+    }
 
     return <>
         <Box sx={{
-            fontFamily: 'Faktum, sans-serif',
-            fontWeight: 'bold',
-            color: theme.palette.primary.dark,
-            mt: '40px'
+            mt: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
         }}>
-            {t('DMs')}
+            <Box sx={{
+                fontFamily: 'Faktum, sans-serif',
+                fontWeight: 'bold',
+                color: theme.palette.primary.dark,
+
+            }}>
+                {t('DMs')}
+            </Box>
+            <Button onClick={search} sx={{minWidth: 'auto'}}><Plus height={18}/></Button>
         </Box>
         <Box sx={{mt: '10px'}}>
             {(() => {
