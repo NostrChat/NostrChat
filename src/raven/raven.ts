@@ -197,8 +197,12 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     public async fetchChannel(id: string): Promise<Channel | null> {
         const filters: Filter[] = [
             {
-                kinds: [Kind.ChannelCreation, Kind.ChannelMetadata, Kind.EventDeletion],
+                kinds: [Kind.ChannelCreation],
                 ids: [id]
+            },
+            {
+                kinds: [Kind.ChannelMetadata, Kind.EventDeletion],
+                '#e': [id],
             }
         ];
 
