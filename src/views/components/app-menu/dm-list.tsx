@@ -6,12 +6,12 @@ import {useAtom} from 'jotai';
 import {useLocation, useNavigate} from '@reach/router';
 import useTranslation from 'hooks/use-translation';
 import ListItem from 'views/components/app-menu/list-item';
+import StartDM from 'views/components/dialogs/start-dm';
 import useLiveDirectContacts from 'hooks/use-live-direct-contacts';
 import useModal from 'hooks/use-modal';
 import {directMessageAtom, profilesAtom} from 'store';
 import Plus from 'svg/plus';
 import {truncateMiddle} from 'util/truncate';
-import JoinChannel from '../dialogs/join-channel';
 
 const DmList = () => {
     const theme = useTheme();
@@ -25,9 +25,9 @@ const DmList = () => {
 
     const search = () => {
         showModal({
-            body: <JoinChannel onSuccess={(id) => {
+            body: <StartDM onSuccess={(id) => {
                 showModal(null);
-                navigate(`/channel/${id}`).then();
+                navigate(`/dm/${id}`).then();
             }}/>
         })
     }
