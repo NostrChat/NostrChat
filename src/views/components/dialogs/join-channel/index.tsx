@@ -43,7 +43,7 @@ const JoinChannel = (props: { onSuccess: (id: string) => void }) => {
                     <TextField label={t('Channel id')} value={id} onChange={idChanged} fullWidth autoFocus
                                error={!!error} helperText={error || ' '}/>
                     <Box sx={{display: 'flex', justifyContent: 'flex-end'}}>
-                        <Button variant="contained" onClick={submit}>{t('Join')}</Button>
+                        <Button variant="contained" onClick={submit}>{t('Go')}</Button>
                     </Box>
                 </Box>
             </DialogContent>
