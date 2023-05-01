@@ -23,8 +23,7 @@ const Invite = (props: { channel: Channel }) => {
         showModal(null);
     };
 
-    // eslint-disable-next-line no-restricted-globals
-    const url = `${location.protocol}//${location.host}/channel/${channel.id}`;
+    const url = `${window.location.protocol}//${window.location.host}/channel/${channel.id}`;
 
     return (
         <>
