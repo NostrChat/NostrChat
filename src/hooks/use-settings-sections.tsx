@@ -4,6 +4,7 @@ import Account from 'svg/account';
 import Server from 'svg/server';
 import KeyChain from 'svg/key-chain';
 import Lock from 'svg/lock';
+import LinkVariant from '../svg/link-variant';
 
 const useSettingsSections = () => {
     const [t] = useTranslation();
@@ -33,6 +34,12 @@ const useSettingsSections = () => {
             title: t('Relays'),
             description: t('Manage your preferred relay list'),
             href: '/settings/relays'
+        },
+        {
+            icon: <LinkVariant height={40}/>,
+            title: t('Public DM page'),
+            description: t('Get your public DM page link'),
+            href: '/settings/dm'
         },
     ].filter(x => !x.hidden);
 }
