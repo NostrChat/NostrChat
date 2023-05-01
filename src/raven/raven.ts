@@ -216,15 +216,13 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
         const update = events.filter(x => x.kind === Kind.ChannelMetadata && x.pubkey === creation.pubkey).sort((a, b) => b.created_at - a.created_at)[0] // Find latest metadata update
 
-        const ev = update || creation;
-
-        const content = Raven.parseJson(ev.content);
+        const content = Raven.parseJson((update || creation).content);
         if (!content) return null;  // Invalid content
 
         return {
-            id: ev.id,
-            creator: ev.pubkey,
-            created: ev.created_at,
+            id: creation.id,
+            creator: creation.pubkey,
+            created: creation.created_at,
             ...Raven.normalizeMetadata(content)
         }
     }
