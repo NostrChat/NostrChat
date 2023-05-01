@@ -33,7 +33,7 @@ const SettingsPublicLinkPage = (_: RouteComponentProps) => {
 
     if (!keys) return null;
 
-    const url = `${window.location.protocol}//${window.location.host}/channel/${npub}`;
+    const url = `${window.location.protocol}//${window.location.host}/dm/${npub}`;
 
     return <>
         <Helmet><title>{t('NostrChat - Public DM page')}</title></Helmet>
