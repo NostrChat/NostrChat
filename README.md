@@ -46,8 +46,8 @@ NostrChat will open in your browser.
 - Reply in Thread ✅
 - Muting ✅
 - Reactions ✅
-- Channel invitations
-- User profiles
+- Channel invitations ✅
+- User profiles ✅
 - Channel & DM unread indicator
 - Mentions
 - NIP42 Support
