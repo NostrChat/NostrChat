@@ -44,7 +44,7 @@ const SettingsProfilePage = (_: RouteComponentProps) => {
                             showMessage(t('Your profile updated'), 'success');
                             navigate('/settings').then();
                         }).catch(e => {
-                            showMessage(e, 'error');
+                            showMessage(e.toString(), 'error');
                         });
                     }}/>
                 </SettingsContent>

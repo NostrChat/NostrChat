@@ -34,7 +34,7 @@ const MessageMenu = (props: { message: Message, inThreadView?: boolean }) => {
             body: <Box sx={{width: '298px'}}>
                 <EmojiPicker onSelect={(emoji) => {
                     raven?.sendReaction(message.id, message.creator, emoji).catch(e => {
-                        showMessage(e, 'error');
+                        showMessage(e.toString(), 'error');
                     });
                     setActiveMessage(null);
                     showPopover(null);
