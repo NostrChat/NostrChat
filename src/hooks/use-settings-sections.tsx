@@ -39,7 +39,7 @@ const useSettingsSections = () => {
             icon: <LinkVariant height={40}/>,
             title: t('Public DM page'),
             description: t('Get your public DM page link'),
-            href: '/settings/dm'
+            href: '/settings/public-link'
         },
     ].filter(x => !x.hidden);
 }

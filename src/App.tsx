@@ -13,6 +13,7 @@ import SettingsProfile from 'views/settings/profile';
 import SettingsKeys from 'views/settings/keys';
 import SettingsPassword from 'views/settings/password';
 import SettingsRelays from 'views/settings/relays';
+import SettingsPublicLinkPage from 'views/settings/public-link';
 import {keysAtom} from 'store';
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
         <SettingsKeys path='/settings/keys'/>
         <SettingsPassword path='/settings/password'/>
         <SettingsRelays path='/settings/relays'/>
+        <SettingsPublicLinkPage path='/settings/public-link'/>
     </Router>
 }
 
