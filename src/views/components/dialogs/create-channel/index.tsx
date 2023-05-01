@@ -35,7 +35,7 @@ const CreateChannel = (props: { onSuccess: (id: string) => void }) => {
                         raven?.createChannel(data).then((ev) => {
                             onSuccess(ev.id);
                         }).catch((e) => {
-                            showMessage(e, 'error');
+                            showMessage(e.toString(), 'error');
                         });
                     }}/>
                 </Box>

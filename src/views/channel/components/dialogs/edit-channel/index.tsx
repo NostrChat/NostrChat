@@ -44,7 +44,7 @@ const EditChannel = (props: { channel: Channel, onSuccess: () => void }) => {
                         raven?.updateChannel(channel, data).then(()=>{
                             onSuccess();
                         }).catch((e) => {
-                            showMessage(e, 'error');
+                            showMessage(e.toString(), 'error');
                         });
                     }}/>
                 </Box>

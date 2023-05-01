@@ -52,7 +52,7 @@ const ChannelMenu = () => {
                 raven?.deleteEvents([channel.id], '').then(() => {
                     navigate('/channel').then();
                 }).catch((e) => {
-                    showMessage(e, 'error');
+                    showMessage(e.toString(), 'error');
                 });
             }}/>
         });
