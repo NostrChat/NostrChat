@@ -34,6 +34,7 @@ import {
     MuteList, Reaction
 } from 'types';
 import {createLogger} from 'logger';
+import {notEmpty} from 'util/misc';
 
 
 const logger = createLogger('RavenProvider');
@@ -275,25 +276,40 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
 
     // nip05 verification
     useEffect(() => {
-        const pv = profiles.filter(x => x.nip05?.verified === null);
-
-        if (pv.length === 0) return;
-
-        const controller = new AbortController();
-
-        pv.forEach(p => {
-            if (!p.nip05) return;
-            const identifier = p.nip05.identifier;
-            const [name, domain] = identifier.split('@');
+        const fetchNip05Json = async (p: Profile, signal: AbortSignal): Promise<Profile | null> => {
+            if (!p.nip05?.identifier) return null;
+            const [name, domain] = p.nip05.identifier.split('@');
             const url = `https://${domain}/.well-known/nostr.json?name=${name}`;
-            fetch(url, {signal: controller.signal}).then(r => r.json()).then(resp => {
+            try {
+                const resp = await fetch(url, {signal}).then(r => r.json());
                 const verified = resp.names && resp.names[name] === p.creator;
-                const pu: Profile = {...p, nip05: {identifier: identifier, verified}};
-                setProfiles(profiles.map(x => x.id === p.id ? pu : x));
-            })
-        });
+                return {...p, nip05: {...p.nip05, verified}};
+            } catch (_) {
+                return {...p, nip05: {...p.nip05, verified: false}};
+            }
+        }
 
-        return () => controller.abort();
+        const verifyNip05 = (profiles: Profile[], signal: AbortSignal) => {
+            const promises = pv.map(p => fetchNip05Json(p, signal));
+            Promise.all(promises).then(resp => {
+                const npv = resp.filter(notEmpty);
+                if (npv.length === 0) return null;
+                setProfiles(profiles.map(p => npv.find(x => x && x.id === p.id) || p));
+            });
+        }
+
+        const pv = profiles.filter(x => x.nip05?.verified === null).slice(0, 20);
+        if (pv.length === 0) return;
+        const controller = new AbortController();
+        const timer = setTimeout(() => {
+            verifyNip05(profiles, controller.signal);
+            setTimeout(() => controller.abort(), 20000);
+        }, 500);
+
+        return () => {
+            clearTimeout(timer);
+            controller.abort();
+        }
     }, [profiles]);
 
     // reaction handler
