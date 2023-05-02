@@ -15,7 +15,12 @@ export type Metadata = {
 
 export type DirectContact = { pub: string, npub: string };
 
-export type Profile = { id: string, creator: string, created: number } & Metadata;
+export type ProfileNip05 = {
+    identifier: string;
+    verified: null | boolean;
+}
+
+export type Profile = { id: string, creator: string, created: number, nip05: ProfileNip05 | null } & Metadata;
 
 export type Channel = { id: string, creator: string, created: number } & Metadata;
 

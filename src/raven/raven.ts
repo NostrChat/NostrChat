@@ -243,7 +243,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             id: ev.id,
             creator: ev.pubkey,
             created: ev.created_at,
-            ...Raven.normalizeMetadata(content)
+            ...Raven.normalizeMetadata(content),
+            nip05: content.nip05 ? {identifier: content.nip05, verified: null} : null
         }
     }
 
@@ -518,12 +519,14 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
         const profileUpdates: Profile[] = this.eventQueue.filter(x => x.kind === Kind.Metadata).map(ev => {
             const content = Raven.parseJson(ev.content);
-            return content ? {
+            if (!content) return null;
+            return {
                 id: ev.id,
                 creator: ev.pubkey,
                 created: ev.created_at,
-                ...Raven.normalizeMetadata(content)
-            } : null;
+                ...Raven.normalizeMetadata(content),
+                nip05: content.nip05 ? {identifier: content.nip05, verified: null} : null
+            };
         }).filter(notEmpty);
         if (profileUpdates.length > 0) {
             this.emit(RavenEvents.ProfileUpdate, profileUpdates);

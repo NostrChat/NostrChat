@@ -55,7 +55,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
     const [muteList, setMuteList] = useAtom(muteListAtom);
     const [reactions, setReactions] = useAtom(reactionsAtom);
     const [, setDirectContacts] = useAtom(directContactsAtom);
-    const [since, setSince] = useState<number>(0)
+    const [since, setSince] = useState<number>(0);
 
     const raven = useMemo(() => initRaven(keys), [keys]);
 
@@ -272,6 +272,29 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
             })
         }
     }, [muteList, keys]);
+
+    // nip05 verification
+    useEffect(() => {
+        const pv = profiles.filter(x => x.nip05?.verified === null);
+
+        if (pv.length === 0) return;
+
+        const controller = new AbortController();
+
+        pv.forEach(p => {
+            if (!p.nip05) return;
+            const identifier = p.nip05.identifier;
+            const [name, domain] = identifier.split('@');
+            const url = `https://${domain}/.well-known/nostr.json?name=${name}`;
+            fetch(url, {signal: controller.signal}).then(r => r.json()).then(resp => {
+                const verified = resp.names && resp.names[name] === p.creator;
+                const pu: Profile = {...p, nip05: {identifier: identifier, verified}};
+                setProfiles(profiles.map(x => x.id === p.id ? pu : x));
+            })
+        });
+
+        return () => controller.abort();
+    }, [profiles]);
 
     // reaction handler
     const handleReaction = (data: Reaction[]) => {
