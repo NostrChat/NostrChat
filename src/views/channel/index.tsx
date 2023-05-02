@@ -124,7 +124,6 @@ const ChannelPage = (props: RouteComponentProps) => {
                             if (channelToJoin) {
                                 return <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
                                     <ChannelCard channel={channelToJoin} onJoin={() => {
-                                        console.log('channelToJoin', channelToJoin)
                                         raven?.loadChannel(channelToJoin.id);
                                         setChannelToJoin(null);
                                     }}/>

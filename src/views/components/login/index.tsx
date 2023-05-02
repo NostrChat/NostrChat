@@ -97,7 +97,7 @@ const Login = (props: { onDone: () => void }) => {
                         skipButton={<Button onClick={onDone}>{t('Skip')}</Button>}
                         submitBtnLabel={t('Finish')}
                         onSubmit={(data) => {
-                            raven?.updateProfile(data);
+                            raven?.updateProfile(data).then(() => onDone());
                         }}/>
                 </>
             }
