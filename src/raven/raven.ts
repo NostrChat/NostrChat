@@ -390,7 +390,14 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async updateProfile(profile: Metadata) {
-        return this.publish(Kind.Metadata, [], JSON.stringify(profile));
+        const filters: Filter[] = [{
+            kinds: [Kind.Metadata],
+            authors: [this.pub],
+        }];
+        const latestEv = (await this.fetch(filters)).sort((a, b) => b.created_at - a.created_at)[0];
+        const latest = Raven.parseJson(latestEv.content);
+        const update = latest.constructor === Object ? {...latest, ...profile} : {...profile};
+        return this.publish(Kind.Metadata, [], JSON.stringify(update));
     }
 
     public async createChannel(meta: Metadata) {
