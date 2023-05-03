@@ -519,7 +519,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
         const profileUpdates: Profile[] = this.eventQueue.filter(x => x.kind === Kind.Metadata).map(ev => {
             const content = Raven.parseJson(ev.content);
-            if (!content) return;
+            if (!content) return null;
             return {
                 id: ev.id,
                 creator: ev.pubkey,
