@@ -1,10 +1,11 @@
-import React, {useMemo} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {useAtom} from 'jotai';
-import {nip19} from 'nostr-tools';
+import {nip05, nip19} from 'nostr-tools';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
+import Tooltip from '@mui/material/Tooltip';
 import {useTheme} from '@mui/material/styles';
 import CopyToClipboard from 'components/copy-clipboard';
 import DmInput from 'views/components/dm-input';
@@ -14,6 +15,7 @@ import useStyles from 'hooks/use-styles';
 import KeyVariant from 'svg/key-variant';
 import {Profile} from 'types';
 import {keysAtom} from 'store';
+import CheckDecagram from 'svg/check-decagram';
 import {truncate} from 'util/truncate';
 
 const ProfileCard = (props: { profile: Profile, pub: string, onDM: () => void }) => {
@@ -22,18 +24,42 @@ const ProfileCard = (props: { profile: Profile, pub: string, onDM: () => void })
     const [t] = useTranslation();
     const [keys] = useAtom(keysAtom);
     const styles = useStyles();
+    const [nip05Verified, setNip05Verified] = useState<boolean>(false);
 
     const npub = useMemo(() => nip19.npubEncode(pub), [pub]);
     const isMe = keys?.pub === pub;
+
+    useEffect(() => {
+        if (!profile?.nip05) return;
+        nip05.queryProfile(profile.nip05).then((resp) => {
+            setNip05Verified(resp?.pubkey === profile.creator);
+        })
+    }, [profile]);
 
     return <Paper sx={{textAlign: 'center', p: '20px'}}>
         <Box sx={{mb: '10px'}}>
             <Avatar src={profile?.picture} seed={pub} size={140} rounded/>
         </Box>
-        {profile.name && (<Box sx={{
+        {(profile.name || nip05Verified) && (<Box sx={{
             fontFamily: 'Faktum, sans-serif',
             fontSize: '1.1em',
-        }}>{truncate(profile.name, 60)}</Box>)}
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        }}>
+            {profile.name ? truncate(profile.name, 60) : ''}
+            {nip05Verified && (<Tooltip title={t('NIP-05 verified')}>
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        ml: '6px'
+                    }}>
+                        <CheckDecagram height={18}/>
+                    </Box>
+                </Tooltip>
+            )}
+        </Box>)}
         {profile.about && (
             <>
                 <Divider sx={{m: '12px 0'}}/>
