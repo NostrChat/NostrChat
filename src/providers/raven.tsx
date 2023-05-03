@@ -276,12 +276,16 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
 
     // nip05 verification
     useEffect(() => {
-        const fetchNip05Json = async (p: Profile, signal: AbortSignal): Promise<Profile | null> => {
+        const pv = profiles.filter(x => x.nip05?.verified === null).slice(0, 20);
+        if (pv.length === 0) return;
+        const controller = new AbortController();
+
+        const fetchNip05Json = async (p: Profile): Promise<Profile | null> => {
             if (!p.nip05?.identifier) return null;
             const [name, domain] = p.nip05.identifier.split('@');
             const url = `https://${domain}/.well-known/nostr.json?name=${name}`;
             try {
-                const resp = await fetch(url, {signal}).then(r => r.json());
+                const resp = await fetch(url).then(r => r.json());
                 const verified = resp.names && resp.names[name] === p.creator;
                 return {...p, nip05: {...p.nip05, verified}};
             } catch (_) {
@@ -289,8 +293,8 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
             }
         }
 
-        const verifyNip05 = (profiles: Profile[], signal: AbortSignal) => {
-            const promises = pv.map(p => fetchNip05Json(p, signal));
+        const verifyNip05 = () => {
+            const promises = pv.map(p => fetchNip05Json(p));
             Promise.all(promises).then(resp => {
                 const npv = resp.filter(notEmpty);
                 if (npv.length === 0) return null;
@@ -298,16 +302,15 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
             });
         }
 
-        const pv = profiles.filter(x => x.nip05?.verified === null).slice(0, 20);
-        if (pv.length === 0) return;
-        const controller = new AbortController();
+        let abortTimer: any;
         const timer = setTimeout(() => {
-            verifyNip05(profiles, controller.signal);
-            setTimeout(() => controller.abort(), 20000);
+            verifyNip05();
+            abortTimer = setTimeout(() => controller.abort(), 20000);
         }, 500);
 
         return () => {
             clearTimeout(timer);
+            clearTimeout(abortTimer);
             controller.abort();
         }
     }, [profiles]);
