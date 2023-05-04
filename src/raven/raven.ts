@@ -243,7 +243,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             id: ev.id,
             creator: ev.pubkey,
             created: ev.created_at,
-            ...Raven.normalizeMetadata(content)
+            ...Raven.normalizeMetadata(content),
+            nip05: content.nip05
         }
     }
 
@@ -389,7 +390,14 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async updateProfile(profile: Metadata) {
-        return this.publish(Kind.Metadata, [], JSON.stringify(profile));
+        const filters: Filter[] = [{
+            kinds: [Kind.Metadata],
+            authors: [this.pub],
+        }];
+        const latestEv = (await this.fetch(filters)).sort((a, b) => b.created_at - a.created_at)[0];
+        const latest = latestEv?.content ? Raven.parseJson(latestEv?.content) : '';
+        const update = latest.constructor === Object ? {...latest, ...profile} : {...profile};
+        return this.publish(Kind.Metadata, [], JSON.stringify(update));
     }
 
     public async createChannel(meta: Metadata) {
@@ -518,12 +526,14 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
         const profileUpdates: Profile[] = this.eventQueue.filter(x => x.kind === Kind.Metadata).map(ev => {
             const content = Raven.parseJson(ev.content);
-            return content ? {
+            if (!content) return null;
+            return {
                 id: ev.id,
                 creator: ev.pubkey,
                 created: ev.created_at,
-                ...Raven.normalizeMetadata(content)
-            } : null;
+                ...Raven.normalizeMetadata(content),
+                nip05: content.nip05
+            };
         }).filter(notEmpty);
         if (profileUpdates.length > 0) {
             this.emit(RavenEvents.ProfileUpdate, profileUpdates);

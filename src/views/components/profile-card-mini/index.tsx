@@ -1,10 +1,10 @@
 import {useAtom} from 'jotai';
-import React, {useMemo} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import {nip19} from 'nostr-tools';
+import {nip05, nip19} from 'nostr-tools';
 import useTranslation from 'hooks/use-translation';
 import CopyToClipboard from 'components/copy-clipboard';
 import Avatar from 'views/components/avatar';
@@ -14,6 +14,7 @@ import {keysAtom} from 'store';
 import {Profile} from 'types';
 import KeyVariant from 'svg/key-variant';
 import EyeOff from 'svg/eye-off';
+import CheckDecagram from 'svg/check-decagram';
 import {truncate, truncateMiddle} from 'util/truncate';
 
 const ProfileCardMini = (props: { profile?: Profile, pubkey: string, onDM: () => void }) => {
@@ -21,10 +22,29 @@ const ProfileCardMini = (props: { profile?: Profile, pubkey: string, onDM: () =>
     const [keys] = useAtom(keysAtom);
     const theme = useTheme();
     const [t] = useTranslation();
+    const [nip05Verified, setNip05Verified] = useState<boolean>(false);
 
     const profileName = useMemo(() => profile?.name ? truncateMiddle(profile.name, 24, ':') : null, [profile]);
     const pub = useMemo(() => nip19.npubEncode(pubkey), [pubkey]);
     const isMe = keys?.pub === pubkey;
+
+    const boxSx = {
+        position: 'absolute',
+        top: '4px',
+        zIndex: 2,
+        padding: '3px',
+        borderRadius: theme.shape.borderRadius,
+        background: theme.palette.background.paper,
+        width: '36px',
+        height: '36px',
+    };
+
+    useEffect(() => {
+        if (!profile?.nip05) return;
+        nip05.queryProfile(profile.nip05).then((resp) => {
+            setNip05Verified(resp?.pubkey === profile.creator);
+        })
+    }, [profile]);
 
     return <Box sx={{fontSize: '0.8em'}}>
         <Box sx={{
@@ -33,15 +53,21 @@ const ProfileCardMini = (props: { profile?: Profile, pubkey: string, onDM: () =>
             position: 'relative',
             height: '200px',
         }}>
-            {!isMe && (<Box sx={{
-                position: 'absolute',
-                right: '4px',
-                top: '4px',
-                zIndex: 2,
-                padding: '3px',
-                borderRadius: theme.shape.borderRadius,
-                background: theme.palette.background.paper
-            }}>
+            {nip05Verified && (
+                <Box sx={{...boxSx, left: '4px'}}>
+                    <Tooltip title={t('NIP-05 verified')}>
+                        <Box sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            height: '100%',
+                        }}>
+                            <CheckDecagram height={18}/>
+                        </Box>
+                    </Tooltip>
+                </Box>
+            )}
+            {!isMe && (<Box sx={{...boxSx, right: '4px'}}>
                 <Tooltip title={t('Mute')}>
                     <Box>
                         <MuteBtn pubkey={pubkey}>

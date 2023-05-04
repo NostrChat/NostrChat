@@ -13,9 +13,10 @@ const MetadataForm = (props: {
     labels?: Metadata,
     submitBtnLabel: string,
     skipButton: React.ReactElement,
-    onSubmit: (data: Metadata) => void
+    onSubmit: (data: Metadata) => void,
+    inProgress?: boolean
 }) => {
-    const {skipButton, submitBtnLabel, values, labels, onSubmit} = props;
+    const {skipButton, submitBtnLabel, values, labels, onSubmit, inProgress} = props;
     const [name, setName] = useState(values?.name || '');
     const [about, setAbout] = useState(values?.about || '');
     const [picture, setPicture] = useState(values?.picture || '');
@@ -84,7 +85,7 @@ const MetadataForm = (props: {
                       error={error === 'picture' ? errorMessage : ''}/>
         <Box sx={{display: 'flex', justifyContent: 'space-between'}}>
             {skipButton ? skipButton : ''}
-            <Button variant="contained" onClick={submit}>{submitBtnLabel}</Button>
+            <Button variant="contained" disabled={inProgress} onClick={submit}>{inProgress ? '...' : submitBtnLabel}</Button>
         </Box>
     </>
 }
