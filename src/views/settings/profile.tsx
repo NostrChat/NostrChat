@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useAtom} from 'jotai';
 import {RouteComponentProps, useNavigate} from '@reach/router';
 import Button from '@mui/material/Button';
@@ -21,6 +21,7 @@ const SettingsProfilePage = (_: RouteComponentProps) => {
     const [profile] = useAtom(profileAtom);
     const [raven] = useAtom(ravenAtom);
     const [, showMessage] = useToast();
+    const [inProgress, setInProgress] = useState<boolean>(false);
 
     useEffect(() => {
         if (!keys) {
@@ -40,13 +41,14 @@ const SettingsProfilePage = (_: RouteComponentProps) => {
                         about: profile?.about || '',
                         picture: profile?.picture || ''
                     }} submitBtnLabel={t('Save')} skipButton={<Button/>} onSubmit={(data) => {
+                        setInProgress(true);
                         raven?.updateProfile(data).then(() => {
                             showMessage(t('Your profile updated'), 'success');
                             navigate('/settings').then();
                         }).catch(e => {
                             showMessage(e.toString(), 'error');
-                        });
-                    }}/>
+                        }).finally(() => setInProgress(false))
+                    }} inProgress={inProgress}/>
                 </SettingsContent>
             </AppContent>
         </AppWrapper>
