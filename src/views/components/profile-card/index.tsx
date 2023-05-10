@@ -69,6 +69,15 @@ const ProfileCard = (props: { profile: Profile, pub: string, onDM: () => void })
                 }}>{truncate(profile.about, 360)}</Box>
             </>
         )}
+        {profile.donate && (
+            <>
+                <Divider sx={{m: '12px 0'}}/>
+                <Box sx={{
+                    color: theme.palette.text.secondary,
+                    fontSize: '0.9em',
+                }}>{truncate(profile.donate, 360)}</Box>
+            </>
+        )}
         <CopyToClipboard copy={pub}>
             <Box sx={{
                 m: '16px 0',

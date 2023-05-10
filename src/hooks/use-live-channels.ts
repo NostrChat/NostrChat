@@ -13,7 +13,8 @@ const useLiveChannels = () => {
             return Object.assign(c, {
                 name: updated.name,
                 about: updated.about,
-                picture: updated.picture
+                picture: updated.picture,
+                donate: updated.donate
             });
         }
 

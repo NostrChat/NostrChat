@@ -30,6 +30,7 @@ const CreateChannel = (props: { onSuccess: (id: string) => void }) => {
                     <MetadataForm submitBtnLabel='Submit' skipButton={<span/>} labels={{
                         name: 'Channel name',
                         about: 'Description',
+                        donate: 'Donate profile',
                         picture: 'Channel picture'
                     }} onSubmit={(data) => {
                         raven?.createChannel(data).then((ev) => {

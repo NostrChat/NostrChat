@@ -708,7 +708,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return {
             name: meta.name || '',
             about: meta.about || '',
-            picture: meta.picture || ''
+            picture: meta.picture || '',
+            donate: meta.donate || ''
         }
     }
 

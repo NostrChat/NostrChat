@@ -43,6 +43,15 @@ const DmHeader = () => {
                     {profile.about}
                 </Box>
             )}
+            {profile?.donate && (
+                <Box sx={{
+                    color: theme.palette.primary.dark,
+                    fontSize: '96%',
+                    ...styles.ellipsis
+                }}>
+                    {profile.donate}
+                </Box>
+            )}
         </Box>
         <Box sx={{
             width: '50px',

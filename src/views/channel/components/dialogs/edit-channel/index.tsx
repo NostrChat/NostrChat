@@ -35,10 +35,12 @@ const EditChannel = (props: { channel: Channel, onSuccess: () => void }) => {
                     <MetadataForm values={{
                         name: channel.name,
                         about: channel.about,
+                        donate: channel.donate,
                         picture: channel.picture
                     }} labels={{
                         name: 'Channel name',
                         about: 'Description',
+                        donate: 'Donate profile',
                         picture: 'Channel picture'
                     }} submitBtnLabel='Update' skipButton={<span/>} onSubmit={(data) => {
                         raven?.updateChannel(channel, data).then(()=>{

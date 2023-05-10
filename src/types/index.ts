@@ -10,7 +10,8 @@ export type Keys = {
 export type Metadata = {
     name: string,
     about: string,
-    picture: string
+    picture: string,
+    donate: string
 }
 
 export type DirectContact = { pub: string, npub: string };

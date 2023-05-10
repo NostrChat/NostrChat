@@ -19,6 +19,7 @@ const MetadataForm = (props: {
     const {skipButton, submitBtnLabel, values, labels, onSubmit, inProgress} = props;
     const [name, setName] = useState(values?.name || '');
     const [about, setAbout] = useState(values?.about || '');
+    const [donate, setDonate] = useState(values?.donate || '');
     const [picture, setPicture] = useState(values?.picture || '');
     const [t,] = useTranslation();
     const [error, setError] = useState('');
@@ -29,6 +30,7 @@ const MetadataForm = (props: {
         if(values && !changed){
             setName(values.name);
             setAbout(values.about);
+            setDonate(values.donate);
             setPicture(values.picture);
         }
     }, [values]);
@@ -50,6 +52,12 @@ const MetadataForm = (props: {
         setChanged(true);
     };
 
+    const donateChanged = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+        resetError();
+        setDonate(e.target.value);
+        setChanged(true);
+    };
+
     const pictureChanged = (picture: string) => {
         resetError();
         setPicture(picture);
@@ -60,12 +68,13 @@ const MetadataForm = (props: {
         const scheme = Joi.object({
             name: Joi.string().required(),
             about: Joi.string().empty(''),
+            donate: Joi.string().empty(''),
             picture: Joi.string().uri({scheme: 'https', allowRelative: false}).empty(''),
         }).messages({
             'string.uriCustomScheme': t('Picture must be a valid uri with a scheme matching the https pattern')
         });
 
-        const metadata = {name, about, picture};
+        const metadata = {name, about, donate, picture};
         const validation = scheme.validate(metadata);
 
         if (validation.error) {
@@ -80,6 +89,8 @@ const MetadataForm = (props: {
     return <>
         <TextField label={t(labels?.name || 'Name')} value={name} onChange={nameChanged} fullWidth autoFocus autoComplete="off"
                    error={error === 'name'} helperText={error === 'name' ? errorMessage : ' '}/>
+        <TextField label={t(labels?.donate || 'Donate')} value={donate} onChange={donateChanged} fullWidth autoFocus autoComplete="off"
+                   error={error === 'donate'} helperText={error === 'donate' ? errorMessage : ' '}/>
         <TextField label={t(labels?.about || 'About')} value={about} onChange={aboutChanged} fullWidth autoComplete="off" helperText={' '}/>
         <PictureInput label={t(labels?.picture || 'Profile picture')} value={picture} onChange={pictureChanged}
                       error={error === 'picture' ? errorMessage : ''}/>

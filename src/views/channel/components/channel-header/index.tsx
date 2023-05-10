@@ -40,6 +40,12 @@ const ChannelHeader = () => {
             }}>
                 {channel.name}
             </Box>
+            <Box sx={{
+                fontFamily: 'Faktum, sans-serif',
+                ...styles.ellipsis
+            }}>
+                {channel.donate}
+            </Box>
             {channel.about && (
                 <Box sx={{
                     color: theme.palette.primary.dark,

@@ -39,6 +39,7 @@ const SettingsProfilePage = (_: RouteComponentProps) => {
                     <MetadataForm values={{
                         name: profile?.name || '',
                         about: profile?.about || '',
+                        donate: profile?.donate || '',
                         picture: profile?.picture || ''
                     }} submitBtnLabel={t('Save')} skipButton={<Button/>} onSubmit={(data) => {
                         setInProgress(true);

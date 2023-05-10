@@ -20,7 +20,8 @@ const useLiveChannel = () => {
             ...channel,
             name: updated.name,
             about: updated.about,
-            picture: updated.picture
+            picture: updated.picture,
+            donate: updated.donate
         }
     }
 

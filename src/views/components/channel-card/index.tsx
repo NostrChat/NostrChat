@@ -37,6 +37,10 @@ const ChannelCard = (props: { channel: Channel, onJoin: () => void }) => {
             fontFamily: 'Faktum, sans-serif',
             fontSize: '1.1em',
         }}>{truncate(channel.name, 60)}</Box>
+        <Box sx={{
+            fontFamily: 'Faktum, sans-serif',
+            fontSize: '1.1em',
+        }}>{truncate(channel.donate, 60)}</Box>
         <Divider sx={{m: '12px 0'}}/>
         {channel.about && (
             <>

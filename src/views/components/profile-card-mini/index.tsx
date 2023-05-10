@@ -95,6 +95,15 @@ const ProfileCardMini = (props: { profile?: Profile, pubkey: string, onDM: () =>
                 color: theme.palette.text.secondary
             }}>{truncate(profile.about, 94)}</Box>
         )}
+        {profile?.donate && (
+            <Box sx={{
+                mb: '10px',
+                wordBreak: 'break-word',
+                lineHeight: '1.4em',
+                fontSize: '0.9em',
+                color: theme.palette.text.secondary
+            }}>{truncate(profile.donate, 94)}</Box>
+        )}
         <CopyToClipboard copy={pub}>
             <Box sx={{
                 mb: '16px',
