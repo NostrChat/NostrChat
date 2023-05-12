@@ -403,9 +403,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     private async findHealthyRelay(relays: string[]) {
+        const pool = this.getPool();
         for (const relay of relays) {
             try {
-                await this.getPool().ensureRelay(relay);
+                await pool.ensureRelay(relay);
                 return relay;
             } catch (e) {
             }
@@ -430,7 +431,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async updateChannel(channel: Channel, meta: Metadata) {
-        return this.findHealthyRelay(this.getPool().seenOn(channel.id)).then(relay => {
+        return this.findHealthyRelay(this.seenOn[channel.id]).then(relay => {
             return this.publish(Kind.ChannelMetadata, [['e', channel.id, relay]], JSON.stringify(meta));
         });
     }
@@ -441,7 +442,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     public async sendPublicMessage(channel: Channel, message: string, mentions?: string[], parent?: string) {
         const root = parent || channel.id;
-        const relay = await this.findHealthyRelay(this.getPool().seenOn(root));
+        const relay = await this.findHealthyRelay(this.seenOn[root]);
         const tags = [['e', root, relay, 'root']];
         if (mentions) {
             mentions.forEach(m => tags.push(['p', m]));
@@ -453,7 +454,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         const encrypted = await (this.priv === 'nip07' ? window.nostr!.nip04.encrypt(toPubkey, message) : nip04.encrypt(this.priv, toPubkey, message));
         const tags = [['p', toPubkey]];
         if (parent) {
-            const relay = await this.findHealthyRelay(this.getPool().seenOn(parent));
+            const relay = await this.findHealthyRelay(this.seenOn[parent]);
             tags.push(['e', parent, relay, 'root']);
         }
         return this.publish(Kind.EncryptedDirectMessage, tags, encrypted);
@@ -478,7 +479,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async sendReaction(message: string, pubkey: string, reaction: string) {
-        const relay = await this.findHealthyRelay(this.getPool().seenOn(message));
+        const relay = await this.findHealthyRelay(this.seenOn[message]);
         const tags = [['e', message, relay, 'root'], ['p', pubkey]];
         return this.publish(Kind.Reaction, tags, reaction);
     }
