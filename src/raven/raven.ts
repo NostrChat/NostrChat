@@ -479,11 +479,15 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     resolve(event);
                 });
 
-                pub.on('failed', () => {
-                    reject("Couldn't sign event!");
+                pub.on('failed', (a: any) => {
+                    if (typeof a === 'string' && (a.startsWith('wss://') || a.startsWith('ws://'))) {
+                        reject(`Event couldn't be published on relay ${a}`);
+                        return;
+                    }
+                    reject("Event couldn't be published on a relay!");
                 })
             }).catch(() => {
-                reject("Couldn't sign event!");
+                reject("Couldn't publish event!");
             })
         })
     }
