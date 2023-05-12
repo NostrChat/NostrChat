@@ -60,6 +60,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     private _pool: SimplePool;
     private _poolCreated: number;
 
+    private seenOn: Record<string, string[]> = {};
+
     private readonly priv: string | 'nip07';
     private readonly pub: string;
 
@@ -88,8 +90,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         if (priv && pub) this.init().then();
     }
 
-    private getPool = (): SimplePool => {
-        if (Date.now() - this._poolCreated > 120000) {
+    private getPool = (renew: boolean = true): SimplePool => {
+        if (renew && Date.now() - this._poolCreated > 120000) {
             // renew pool every two minutes
 
             this._pool.close(this.readRelays);
@@ -269,7 +271,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     private fetch(filters: Filter[], quitMs: number = 0): Promise<Event[]> {
         return new Promise((resolve) => {
-            const sub = this.getPool().sub(this.readRelays, filters);
+            const pool = this.getPool();
+            const sub = pool.sub(this.readRelays, filters);
             const events: Event[] = [];
 
             const quit = () => {
@@ -281,6 +284,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
             sub.on('event', (event) => {
                 events.push(event);
+                this.seenOn[event.id] = pool.seenOn(event.id);
 
                 if (quitMs > 0) {
                     clearTimeout(timer);
@@ -298,9 +302,11 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     private sub(filters: Filter[], unsub: boolean = true) {
-        const sub = this.getPool().sub(this.readRelays, filters);
+        const pool = this.getPool();
+        const sub = pool.sub(this.readRelays, filters);
 
         sub.on('event', (event) => {
+            this.seenOn[event.id] = pool.seenOn(event.id);
             this.pushToEventBuffer(event);
         });
 
