@@ -57,7 +57,10 @@ type EventHandlerMap = {
 
 
 class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
-    private pool: SimplePool;
+    private _pool: SimplePool;
+    private _poolCreated: number;
+
+    private seenOn: Record<string, string[]> = {};
 
     private readonly priv: string | 'nip07';
     private readonly pub: string;
@@ -81,9 +84,27 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         this.priv = priv;
         this.pub = pub;
 
-        this.pool = new SimplePool();
+        this._pool = new SimplePool();
+        this._poolCreated = Date.now();
 
         if (priv && pub) this.init().then();
+    }
+
+    private getPool = (renew: boolean = true): SimplePool => {
+        if (renew && Date.now() - this._poolCreated > 120000) {
+            // renew pool every two minutes
+
+            this._pool.close(this.readRelays);
+
+            this._pool = new SimplePool();
+            this._poolCreated = Date.now();
+        }
+
+        return this._pool;
+    }
+
+    private closePool = () => {
+        this._pool.close(this.readRelays);
     }
 
     private async init() {
@@ -250,7 +271,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     private fetch(filters: Filter[], quitMs: number = 0): Promise<Event[]> {
         return new Promise((resolve) => {
-            const sub = this.pool.sub(this.readRelays, filters);
+            const pool = this.getPool();
+            const sub = pool.sub(this.readRelays, filters);
             const events: Event[] = [];
 
             const quit = () => {
@@ -262,6 +284,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
             sub.on('event', (event) => {
                 events.push(event);
+                this.seenOn[event.id] = pool.seenOn(event.id);
 
                 if (quitMs > 0) {
                     clearTimeout(timer);
@@ -279,9 +302,11 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     private sub(filters: Filter[], unsub: boolean = true) {
-        const sub = this.pool.sub(this.readRelays, filters);
+        const pool = this.getPool();
+        const sub = pool.sub(this.readRelays, filters);
 
         sub.on('event', (event) => {
+            this.seenOn[event.id] = pool.seenOn(event.id);
             this.pushToEventBuffer(event);
         });
 
@@ -378,9 +403,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     private async findHealthyRelay(relays: string[]) {
+        const pool = this.getPool();
         for (const relay of relays) {
             try {
-                await this.pool.ensureRelay(relay);
+                await pool.ensureRelay(relay);
                 return relay;
             } catch (e) {
             }
@@ -405,7 +431,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async updateChannel(channel: Channel, meta: Metadata) {
-        return this.findHealthyRelay(this.pool.seenOn(channel.id)).then(relay => {
+        return this.findHealthyRelay(this.seenOn[channel.id]).then(relay => {
             return this.publish(Kind.ChannelMetadata, [['e', channel.id, relay]], JSON.stringify(meta));
         });
     }
@@ -416,7 +442,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     public async sendPublicMessage(channel: Channel, message: string, mentions?: string[], parent?: string) {
         const root = parent || channel.id;
-        const relay = await this.findHealthyRelay(this.pool.seenOn(root));
+        const relay = await this.findHealthyRelay(this.seenOn[root]);
         const tags = [['e', root, relay, 'root']];
         if (mentions) {
             mentions.forEach(m => tags.push(['p', m]));
@@ -428,7 +454,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         const encrypted = await (this.priv === 'nip07' ? window.nostr!.nip04.encrypt(toPubkey, message) : nip04.encrypt(this.priv, toPubkey, message));
         const tags = [['p', toPubkey]];
         if (parent) {
-            const relay = await this.findHealthyRelay(this.pool.seenOn(parent));
+            const relay = await this.findHealthyRelay(this.seenOn[parent]);
             tags.push(['e', parent, relay, 'root']);
         }
         return this.publish(Kind.EncryptedDirectMessage, tags, encrypted);
@@ -453,7 +479,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async sendReaction(message: string, pubkey: string, reaction: string) {
-        const relay = await this.findHealthyRelay(this.pool.seenOn(message));
+        const relay = await this.findHealthyRelay(this.seenOn[message]);
         const tags = [['e', message, relay, 'root'], ['p', pubkey]];
         return this.publish(Kind.Reaction, tags, reaction);
     }
@@ -474,16 +500,20 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     return;
                 }
 
-                const pub = this.pool.publish(this.writeRelays, event);
+                const pub = this.getPool().publish(this.writeRelays, event);
                 pub.on('ok', () => {
                     resolve(event);
                 });
 
-                pub.on('failed', () => {
-                    reject("Couldn't sign event!");
+                pub.on('failed', (a: any) => {
+                    if (typeof a === 'string' && (a.startsWith('wss://') || a.startsWith('ws://'))) {
+                        reject(`Event couldn't be published on relay ${a}`);
+                        return;
+                    }
+                    reject("Event couldn't be published on a relay!");
                 })
             }).catch(() => {
-                reject("Couldn't sign event!");
+                reject("Couldn't publish event!");
             })
         })
     }
@@ -700,7 +730,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     close = () => {
-        this.pool.close(this.readRelays);
+        this.closePool();
         this.removeAllListeners();
     }
 
