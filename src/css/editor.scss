@@ -1,0 +1,9 @@
+.ProseMirror {
+  outline: none !important;
+  font-size: 15px;
+  line-height: 100%;
+
+  > * + * {
+    margin-top: 0.75em;
+  }
+}

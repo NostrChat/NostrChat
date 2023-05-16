@@ -1,15 +1,14 @@
 import {MutableRefObject, useEffect} from 'react';
 import Emoji from 'views/components/chat-input/tools/emoji';
 import Gif from 'views/components/chat-input/tools/gif';
-import {focusElem, insertText} from 'util/dom';
 
-const Tools = (props: { inputRef: MutableRefObject<HTMLDivElement | null>, senderFn: (message: string) => void }) => {
-    const {inputRef} = props;
+const Tools = (props: { inputRef: MutableRefObject<HTMLDivElement | null>, insertFn: (text: string) => void, senderFn: (message: string) => void }) => {
+    const {inputRef, insertFn, senderFn} = props;
 
     useEffect(() => {
         const onPaste = (e: ClipboardEvent) => {
             e.preventDefault();
-            insertText(e.clipboardData!.getData('text/plain'));
+            insertFn(e.clipboardData!.getData('text/plain'));
         }
 
         const onDrop = (e: DragEvent) => {
@@ -27,13 +26,8 @@ const Tools = (props: { inputRef: MutableRefObject<HTMLDivElement | null>, sende
     }, []);
 
     return <>
-        <Emoji onSelect={(emoji) => {
-            focusElem(inputRef.current!);
-            insertText(emoji);
-        }}/>
-        <Gif onSelect={(gif) => {
-            props.senderFn(gif);
-        }}/>
+        <Emoji onSelect={insertFn}/>
+        <Gif onSelect={senderFn}/>
     </>;
 }
 

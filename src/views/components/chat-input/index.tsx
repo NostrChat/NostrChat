@@ -1,4 +1,8 @@
 import React, {useEffect, useRef} from 'react';
+import {Extension, useEditor, EditorContent} from '@tiptap/react'
+import Document from '@tiptap/extension-document'
+import Paragraph from '@tiptap/extension-paragraph'
+import Text from '@tiptap/extension-text'
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import {lighten} from '@mui/material';
@@ -6,7 +10,7 @@ import Button from '@mui/material/Button';
 import Tools from 'views/components/chat-input/tools';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import Send from 'svg/send';
-import {focusElem} from 'util/dom';
+import 'css/editor.scss';
 
 const ChatInput = (props: { separator: string, senderFn: (message: string) => Promise<any> }) => {
     const {senderFn, separator} = props;
@@ -16,27 +20,58 @@ const ChatInput = (props: { separator: string, senderFn: (message: string) => Pr
     const storageKey = `${separator}_msg`;
     let saveTimer: any = null;
 
+    const editor = useEditor({
+        extensions: [
+            Document,
+            Paragraph,
+            Text,
+            Extension.create({
+                name: 'ShiftEnterExtension',
+                addKeyboardShortcuts() {
+                    return {
+                        'Shift-Enter': () => this.editor.commands.first(({commands}) => [
+                            () => commands.createParagraphNear(),
+                            () => commands.liftEmptyBlock(),
+                            () => commands.splitBlock(),
+                        ]),
+                    };
+                },
+            })
+        ],
+        content: localStorage.getItem(storageKey) || '',
+        onUpdate: () => {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => {
+                save();
+            }, 200);
+        },
+    })
+
     useEffect(() => {
-        inputRef.current!.innerText = localStorage.getItem(storageKey) || '';
-        focusElem(inputRef.current!);
+        editor?.commands.setContent(localStorage.getItem(storageKey) || '');
+        editor?.commands.focus();
     }, [storageKey]);
 
     const save = () => {
-        const val = inputRef.current!.innerText;
-        if (val === '') {
+        const val = editor?.getText();
+        if (!val) {
             localStorage.removeItem(storageKey);
+            return;
         }
-        localStorage.setItem(storageKey, inputRef.current!.innerText);
+        localStorage.setItem(storageKey, val);
     }
 
     const send = () => {
-        const message = inputRef.current!.innerText.trim();
-        if (!message) {
-            return;
-        }
-        inputRef.current!.innerHTML = '';
+        const message = editor?.getText();
+        if (!message) return;
+        editor?.commands.setContent('');
         localStorage.removeItem(storageKey);
-        senderFn(message);
+        return senderFn(message);
+    }
+
+    const insert = (text: string) => {
+        editor?.commands.insertContent(text);
+        editor?.commands.focus();
     }
 
     return <Box sx={{
@@ -50,35 +85,16 @@ const ChatInput = (props: { separator: string, senderFn: (message: string) => Pr
             background: theme.palette.divider,
             borderRadius: theme.shape.borderRadius,
         }}>
-            <Box contentEditable suppressContentEditableWarning ref={inputRef}
-                 sx={{
-                     p: '10px',
-                     maxHeight: '200px',
-                     overflowX: 'auto',
-                     borderRadius: theme.shape.borderRadius,
-                     outline: 'none',
-                     color: theme.palette.text.secondary,
-                     fontSize: '92%',
-                     'b, strong': {
-                         fontWeight: 'normal'
-                     },
-                     'i': {
-                         fontStyle: 'normal'
-                     }
-                 }}
-                 onInput={(e) => {
-                     clearTimeout(saveTimer);
-                     saveTimer = setTimeout(() => {
-                         save();
-                     }, 200);
-                 }}
-                 onKeyDown={(e) => {
-                     if (!e.shiftKey && e.key === 'Enter') {
-                         e.preventDefault();
-                         send();
-                     }
-                 }}
-            />
+            <Box sx={{p: '1px 10px'}}>
+                <EditorContent
+                    editor={editor}
+                    onKeyDown={(e) => {
+
+                        if (!e.shiftKey && e.key === 'Enter') {
+                            send();
+                        }
+                    }}/>
+            </Box>
             <Box sx={{
                 borderTop: `1px solid ${lighten(theme.palette.divider, 0.6)}`,
                 display: 'flex',
@@ -92,7 +108,7 @@ const ChatInput = (props: { separator: string, senderFn: (message: string) => Pr
                     display: 'flex',
                     alignItems: 'center',
                 }}>
-                    <Tools inputRef={inputRef} senderFn={props.senderFn}/>
+                    <Tools inputRef={inputRef} senderFn={props.senderFn} insertFn={insert}/>
                 </Box>
                 <Button variant="contained" size="small" color="primary" sx={{
                     minWidth: 'auto',
