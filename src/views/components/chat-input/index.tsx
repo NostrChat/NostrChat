@@ -1,5 +1,7 @@
 import React, {useEffect, useRef} from 'react';
+import {ReactRenderer} from '@tiptap/react';
 import {Extension, useEditor, EditorContent} from '@tiptap/react'
+import {Mention} from '@tiptap/extension-mention';
 import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
@@ -7,10 +9,13 @@ import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import {lighten} from '@mui/material';
 import Button from '@mui/material/Button';
-import Tools from 'views/components/chat-input/tools';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
+import Tools from 'views/components/chat-input/tools';
+import {MentionListRef} from 'views/components/chat-input/types';
+import useSuggestion from 'views/components/chat-input/suggestion';
 import Send from 'svg/send';
 import 'views/components/chat-input/editor.scss';
+
 
 const ChatInput = (props: { separator: string, senderFn: (message: string) => Promise<any> }) => {
     const {senderFn, separator} = props;
@@ -19,6 +24,9 @@ const ChatInput = (props: { separator: string, senderFn: (message: string) => Pr
     const inputRef = useRef<HTMLDivElement | null>(null);
     const storageKey = `${separator}_msg`;
     let saveTimer: any = null;
+
+    const reactRenderer = useRef<ReactRenderer<MentionListRef> | null>(null);
+    const suggestion = useSuggestion({reactRenderer});
 
     const editor = useEditor({
         extensions: [
@@ -36,7 +44,17 @@ const ChatInput = (props: { separator: string, senderFn: (message: string) => Pr
                         ]),
                     };
                 },
-            })
+            }),
+            Mention.configure({
+                HTMLAttributes: {
+                    class: 'mention',
+                },
+                renderLabel({options, node}) {
+                    const label = (options?.suggestion?.char as string) || '';
+                    return `${label}${String(node?.attrs?.label)}`;
+                },
+                suggestion,
+            }),
         ],
         content: localStorage.getItem(storageKey) || '',
         onUpdate: () => {
