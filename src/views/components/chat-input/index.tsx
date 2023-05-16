@@ -15,10 +15,11 @@ import {MentionListRef} from 'views/components/chat-input/types';
 import useSuggestion from 'views/components/chat-input/suggestion';
 import Send from 'svg/send';
 import 'views/components/chat-input/editor.scss';
+import {Profile} from 'types';
 
 
-const ChatInput = (props: { separator: string, senderFn: (message: string) => Promise<any> }) => {
-    const {senderFn, separator} = props;
+const ChatInput = (props: { mentionSuggestions: Profile[], separator: string, senderFn: (message: string) => Promise<any> }) => {
+    const {mentionSuggestions, senderFn, separator} = props;
     const theme = useTheme();
     const {isMd} = useMediaBreakPoint();
     const inputRef = useRef<HTMLDivElement | null>(null);
@@ -26,7 +27,7 @@ const ChatInput = (props: { separator: string, senderFn: (message: string) => Pr
     let saveTimer: any = null;
 
     const reactRenderer = useRef<ReactRenderer<MentionListRef> | null>(null);
-    const suggestion = useSuggestion({reactRenderer});
+    const suggestion = useSuggestion({reactRenderer, mentionSuggestions});
 
     const editor = useEditor({
         extensions: [

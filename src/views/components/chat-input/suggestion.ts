@@ -1,18 +1,19 @@
 import {MutableRefObject, useMemo} from 'react';
 import {ReactRenderer} from '@tiptap/react';
-import {useAtom} from 'jotai';
 import tippy, {GetReferenceClientRect, Instance} from 'tippy.js';
 import {SuggestionProps} from '@tiptap/suggestion';
 import MentionList from 'views/components/chat-input/mention-list';
 import {MentionListRef} from 'views/components/chat-input/types';
-import {profilesAtom} from 'store';
+import {Profile} from 'types';
 
-const useSuggestion = ({reactRenderer}: { reactRenderer: MutableRefObject<ReactRenderer<MentionListRef> | null> }) => {
-    const [profiles] = useAtom(profilesAtom);
+const useSuggestion = ({reactRenderer, mentionSuggestions}: {
+    reactRenderer: MutableRefObject<ReactRenderer<MentionListRef> | null>,
+    mentionSuggestions: Profile[]
+}) => {
 
     return useMemo(
         () => ({
-            items: ({query}: { query: string }) => profiles.filter(x => x.name.toLowerCase().indexOf(query.toLowerCase()) > -1).slice(0, 10).map(x => ({
+            items: ({query}: { query: string }) => mentionSuggestions.filter(x => x.name).filter(x => x.name.toLowerCase().indexOf(query.toLowerCase()) > -1).slice(0, 10).map(x => ({
                 name: x.name,
                 id: x.creator,
                 picture: x.picture
@@ -83,7 +84,7 @@ const useSuggestion = ({reactRenderer}: { reactRenderer: MutableRefObject<ReactR
                 };
             },
         }),
-        [profiles],
+        [mentionSuggestions],
     );
 };
 

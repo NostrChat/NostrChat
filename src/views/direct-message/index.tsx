@@ -155,7 +155,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
             <AppContent divide={!!threadRoot}>
                 <DmHeader/>
                 <ChatView separator={pub} messages={messages}/>
-                <ChatInput separator={pub} senderFn={(message: string) => {
+                <ChatInput mentionSuggestions={[]} separator={pub} senderFn={(message: string) => {
                     return raven!.sendDirectMessage(pub, message);
                 }}/>
             </AppContent>
