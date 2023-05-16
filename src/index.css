@@ -25,9 +25,9 @@ body {
     font-weight: 400;
     font-family: 'Faktum';
     font-style: normal;
-    src: url('../assets/fonts/faktum/FaktumWideMedium.otf') format('opentype'),
-    url('../assets/fonts/faktum/FaktumWideMedium.woff') format('woff'),
-    url('../assets/fonts/faktum/FaktumWideMedium.woff2') format('woff2');
+    src: url('assets/fonts/faktum/FaktumWideMedium.otf') format('opentype'),
+    url('assets/fonts/faktum/FaktumWideMedium.woff') format('woff'),
+    url('assets/fonts/faktum/FaktumWideMedium.woff2') format('woff2');
     font-display: block;
 }
 
@@ -35,9 +35,9 @@ body {
     font-weight: 600;
     font-family: 'Faktum';
     font-style: normal;
-    src: url('../assets/fonts/faktum/FaktumWideSemiBold.otf') format('opentype'),
-    url('../assets/fonts/faktum/FaktumWideSemiBold.woff') format('woff'),
-    url('../assets/fonts/faktum/FaktumWideSemiBold.woff2') format('woff2');
+    src: url('assets/fonts/faktum/FaktumWideSemiBold.otf') format('opentype'),
+    url('assets/fonts/faktum/FaktumWideSemiBold.woff') format('woff'),
+    url('assets/fonts/faktum/FaktumWideSemiBold.woff2') format('woff2');
     font-display: block;
 }
 

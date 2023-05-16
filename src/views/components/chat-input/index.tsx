@@ -10,7 +10,7 @@ import Button from '@mui/material/Button';
 import Tools from 'views/components/chat-input/tools';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import Send from 'svg/send';
-import 'css/editor.scss';
+import 'views/components/chat-input/editor.scss';
 
 const ChatInput = (props: { separator: string, senderFn: (message: string) => Promise<any> }) => {
     const {senderFn, separator} = props;

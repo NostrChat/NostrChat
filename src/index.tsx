@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './css/index.css';
+import 'index.css';
 import '@fontsource/inter';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-import Providers from './providers';
+import App from 'App';
+import reportWebVitals from 'reportWebVitals';
+import Providers from 'providers';
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
