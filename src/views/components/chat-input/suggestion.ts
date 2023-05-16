@@ -14,7 +14,8 @@ const useSuggestion = ({reactRenderer}: { reactRenderer: MutableRefObject<ReactR
         () => ({
             items: ({query}: { query: string }) => profiles.filter(x => x.name.toLowerCase().indexOf(query.toLowerCase()) > -1).slice(0, 10).map(x => ({
                 name: x.name,
-                id: x.creator
+                id: x.creator,
+                picture: x.picture
             })),
 
             render: () => {
