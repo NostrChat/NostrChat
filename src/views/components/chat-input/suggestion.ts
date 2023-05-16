@@ -8,11 +8,14 @@ import {MentionListRef} from 'views/components/chat-input/types';
 import {profilesAtom} from 'store';
 
 const useSuggestion = ({reactRenderer}: { reactRenderer: MutableRefObject<ReactRenderer<MentionListRef> | null> }) => {
-    const profiles = useAtom(profilesAtom);
+    const [profiles] = useAtom(profilesAtom);
 
     return useMemo(
         () => ({
-            items: ({query}: { query: string }) => [{name: 'lorem'}, {name: 'ipsum'}],
+            items: ({query}: { query: string }) => profiles.filter(x => x.name.toLowerCase().indexOf(query.toLowerCase()) > -1).slice(0, 10).map(x => ({
+                name: x.name,
+                id: x.creator
+            })),
 
             render: () => {
                 let popup: Instance[];
