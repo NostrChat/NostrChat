@@ -1,14 +1,42 @@
-import React, {forwardRef, useEffect, useImperativeHandle, useState} from 'react';
+import React, {forwardRef, useEffect, useImperativeHandle, useMemo, useState} from 'react';
 import Box from '@mui/material/Box';
+import uniqBy from 'lodash.uniqby';
+import {useAtom} from 'jotai';
 import {useTheme} from '@mui/material/styles';
 import {grey} from '@mui/material/colors';
 import useTranslation from 'hooks/use-translation';
 import {MentionListProps, MentionListRef} from 'views/components/chat-input/types';
 import Avatar from 'views/components/avatar';
+import useLiveChannel from 'hooks/use-live-channel';
+import useLivePublicMessages from 'hooks/use-live-public-messages';
+import {directMessageAtom, profilesAtom} from 'store';
+import {notEmpty} from 'util/misc';
 
 
 const MentionList = forwardRef<MentionListRef, MentionListProps>((props, ref) => {
-    const {items} = props;
+    const {query} = props;
+    const [profiles,] = useAtom(profilesAtom);
+    const channel = useLiveChannel();
+    const [directMessage,] = useAtom(directMessageAtom);
+    const messages = useLivePublicMessages(channel?.id);
+
+    const suggestionProfiles = useMemo(() => {
+        if (channel) {
+            return uniqBy(messages.map(m => profiles.find(x => x.creator === m.creator)).filter(notEmpty), 'creator')
+        } else if (directMessage) {
+            return profiles.filter(x => x.creator === directMessage);
+        }
+
+        return [];
+    }, [channel, messages, directMessage, profiles]);
+
+    const items = useMemo(() => suggestionProfiles.filter(x => x.name)
+        .filter(x => x.name.toLowerCase().indexOf(query.toLowerCase()) > -1).slice(0, 10).map(x => ({
+            name: x.name,
+            id: x.creator,
+            picture: x.picture
+        })), [suggestionProfiles, query]);
+
     const [selectedIndex, setSelectedIndex] = useState(0);
     const theme = useTheme();
     const [t] = useTranslation();

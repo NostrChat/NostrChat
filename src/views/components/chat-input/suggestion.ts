@@ -1,4 +1,4 @@
-import {MutableRefObject, useMemo} from 'react';
+import {MutableRefObject} from 'react';
 import {ReactRenderer} from '@tiptap/react';
 import tippy, {GetReferenceClientRect, Instance} from 'tippy.js';
 import {SuggestionProps} from '@tiptap/suggestion';
@@ -11,81 +11,72 @@ const useSuggestion = ({reactRenderer, mentionSuggestions}: {
     mentionSuggestions: Profile[]
 }) => {
 
-    return useMemo(
-        () => ({
-            items: ({query}: { query: string }) => mentionSuggestions.filter(x => x.name).filter(x => x.name.toLowerCase().indexOf(query.toLowerCase()) > -1).slice(0, 10).map(x => ({
-                name: x.name,
-                id: x.creator,
-                picture: x.picture
-            })),
+    return {
+        render: () => {
+            let popup: Instance[];
 
-            render: () => {
-                let popup: Instance[];
+            return {
+                onStart: (props: Pick<SuggestionProps, 'editor' | 'clientRect'>) => {
+                    reactRenderer.current = new ReactRenderer(MentionList, {
+                        props,
+                        editor: props.editor,
+                    });
 
-                return {
-                    onStart: (props: Pick<SuggestionProps, 'editor' | 'clientRect'>) => {
-                        reactRenderer.current = new ReactRenderer(MentionList, {
-                            props,
-                            editor: props.editor,
-                        });
+                    if (!props.clientRect) {
+                        return;
+                    }
 
-                        if (!props.clientRect) {
-                            return;
-                        }
+                    popup = tippy('body', {
+                        getReferenceClientRect: props.clientRect as GetReferenceClientRect,
+                        appendTo: () => document.body,
+                        content: reactRenderer.current.element,
+                        showOnCreate: true,
+                        interactive: true,
+                        trigger: 'manual',
+                        placement: 'top-start',
+                    });
+                },
+                onUpdate(props: Pick<SuggestionProps, 'clientRect'>) {
+                    if (reactRenderer.current) {
+                        reactRenderer.current.updateProps(props);
+                    }
 
-                        popup = tippy('body', {
+                    if (!props.clientRect) {
+                        return;
+                    } else {
+                        popup[0].setProps({
                             getReferenceClientRect: props.clientRect as GetReferenceClientRect,
-                            appendTo: () => document.body,
-                            content: reactRenderer.current.element,
-                            showOnCreate: true,
-                            interactive: true,
-                            trigger: 'manual',
-                            placement: 'top-start',
                         });
-                    },
-                    onUpdate(props: Pick<SuggestionProps, 'clientRect'>) {
+                    }
+                },
+                onKeyDown(props: { event: KeyboardEvent }) {
+                    props.event.stopPropagation();
+                    if (props.event.key === 'Escape') {
+                        popup[0].hide();
+
+                        return true;
+                    }
+
+                    if (reactRenderer.current && reactRenderer.current.ref) {
+                        return reactRenderer.current.ref?.onKeyDown(props);
+                    } else {
+                        return false;
+                    }
+                },
+                onExit() {
+                    if (popup) {
+                        popup[0]?.destroy();
+                    }
+                    setTimeout(() => {
                         if (reactRenderer.current) {
-                            reactRenderer.current.updateProps(props);
+                            reactRenderer.current.destroy();
                         }
-
-                        if (!props.clientRect) {
-                            return;
-                        } else {
-                            popup[0].setProps({
-                                getReferenceClientRect: props.clientRect as GetReferenceClientRect,
-                            });
-                        }
-                    },
-                    onKeyDown(props: { event: KeyboardEvent }) {
-                        props.event.stopPropagation();
-                        if (props.event.key === 'Escape') {
-                            popup[0].hide();
-
-                            return true;
-                        }
-
-                        if (reactRenderer.current && reactRenderer.current.ref) {
-                            return reactRenderer.current.ref?.onKeyDown(props);
-                        } else {
-                            return false;
-                        }
-                    },
-                    onExit() {
-                        if (popup) {
-                            popup[0]?.destroy();
-                        }
-                        setTimeout(() => {
-                            if (reactRenderer.current) {
-                                reactRenderer.current.destroy();
-                            }
-                            reactRenderer.current = null;
-                        }, 0);
-                    },
-                };
-            },
-        }),
-        [mentionSuggestions],
-    );
+                        reactRenderer.current = null;
+                    }, 0);
+                },
+            };
+        },
+    }
 };
 
 export default useSuggestion;

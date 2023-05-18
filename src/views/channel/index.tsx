@@ -56,7 +56,10 @@ const ChannelPage = (props: RouteComponentProps) => {
     }, [keys]);
 
     useEffect(() => {
-        return () => setChannelToJoin(null);
+        return () => {
+            setChannelToJoin(null);
+            setChannel(null);
+        }
     }, [location]);
 
     useEffect(() => {
