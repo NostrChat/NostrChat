@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import {EditorContent} from '@tiptap/react'
+import {EditorContent, JSONContent} from '@tiptap/react'
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import {lighten} from '@mui/material';
@@ -10,7 +10,7 @@ import useMakeEditor from 'views/components/chat-input/editor';
 import Send from 'svg/send';
 
 
-const ChatInput = (props: { separator: string, senderFn: (message: string) => Promise<any> }) => {
+const ChatInput = (props: { separator: string, senderFn: (message: string, mentions: string[]) => Promise<any> }) => {
     const {senderFn, separator} = props;
     const theme = useTheme();
     const {isMd} = useMediaBreakPoint();
@@ -33,12 +33,22 @@ const ChatInput = (props: { separator: string, senderFn: (message: string) => Pr
         editor?.commands.focus();
     }, [storageKey]);
 
+    function getMentions(data: JSONContent): string[] {
+        const mentions = (data.content || []).flatMap(getMentions)
+        if (data.type === 'mention' && data.attrs?.id) {
+            mentions.push(data.attrs.id)
+        }
+        return [...new Set(mentions)];
+    }
+
     const send = () => {
         const message = editor?.getText();
         if (!message) return;
+        const json = editor?.getJSON();
+        const mentions = json ? getMentions(json) : [];
         editor?.commands.setContent('');
         localStorage.removeItem(storageKey);
-        return senderFn(message);
+        return senderFn(message, mentions);
     }
 
     const insert = (text: string) => {
@@ -80,7 +90,9 @@ const ChatInput = (props: { separator: string, senderFn: (message: string) => Pr
                     display: 'flex',
                     alignItems: 'center',
                 }}>
-                    <Tools inputRef={inputRef} senderFn={props.senderFn} insertFn={insert}/>
+                    <Tools inputRef={inputRef} senderFn={(message: string) => {
+                        return props.senderFn(message, [])
+                    }} insertFn={insert}/>
                 </Box>
                 <Button variant="contained" size="small" color="primary" sx={{
                     minWidth: 'auto',

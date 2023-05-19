@@ -18,7 +18,7 @@ import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import useToast from 'hooks/use-toast';
-import {channelAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom, channelToJoinAtom, profilesAtom} from 'store';
+import {channelAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom, channelToJoinAtom} from 'store';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {isSha256} from 'util/crypto';
 
@@ -151,7 +151,7 @@ const ChannelPage = (props: RouteComponentProps) => {
             <AppContent divide={!!threadRoot}>
                 <ChannelHeader/>
                 <ChatView separator={channel.id} messages={messages} loading={loading}/>
-                <ChatInput separator={channel.id} senderFn={(message: string) => {
+                <ChatInput separator={channel.id} senderFn={(message: string, mentions: string[]) => {
                     return raven!.sendPublicMessage(channel, message).catch(e => {
                         showMessage(e.toString(), 'error');
                     });
