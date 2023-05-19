@@ -450,9 +450,12 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(Kind.ChannelMessage, tags, message);
     }
 
-    public async sendDirectMessage(toPubkey: string, message: string, parent?: string) {
+    public async sendDirectMessage(toPubkey: string, message: string, mentions?: string[], parent?: string) {
         const encrypted = await (this.priv === 'nip07' ? window.nostr!.nip04.encrypt(toPubkey, message) : nip04.encrypt(this.priv, toPubkey, message));
         const tags = [['p', toPubkey]];
+        if (mentions) {
+            mentions.forEach(m => tags.push(['p', m]));
+        }
         if (parent) {
             const relay = await this.findHealthyRelay(this.seenOn[parent]);
             tags.push(['e', parent, relay, 'root']);

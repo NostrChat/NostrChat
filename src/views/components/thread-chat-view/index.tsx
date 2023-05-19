@@ -15,7 +15,7 @@ import {threadRootAtom} from 'store';
 import Close from 'svg/close';
 
 
-const ThreadChatView = (props: { senderFn: (message: string) => Promise<any> }) => {
+const ThreadChatView = (props: { senderFn: (message: string, mentions: string[]) => Promise<any> }) => {
     const {isMd} = useMediaBreakPoint();
     const theme = useTheme();
     const styles = useStyles();
@@ -79,7 +79,7 @@ const ThreadChatView = (props: { senderFn: (message: string) => Promise<any> }) 
             })}
         </Box>
         <ChatInput separator={threadRoot.id} senderFn={(message: string, mentions: string[]) => {
-            return props.senderFn(message).then(() => {
+            return props.senderFn(message, mentions).then(() => {
                 setTimeout(() => {
                     scrollToBottom();
                 }, 500);

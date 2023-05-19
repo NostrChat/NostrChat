@@ -152,7 +152,7 @@ const ChannelPage = (props: RouteComponentProps) => {
                 <ChannelHeader/>
                 <ChatView separator={channel.id} messages={messages} loading={loading}/>
                 <ChatInput separator={channel.id} senderFn={(message: string, mentions: string[]) => {
-                    return raven!.sendPublicMessage(channel, message).catch(e => {
+                    return raven!.sendPublicMessage(channel, message, mentions).catch(e => {
                         showMessage(e.toString(), 'error');
                     });
                 }}/>
