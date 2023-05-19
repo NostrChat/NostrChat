@@ -5,7 +5,7 @@ import {useAtom} from 'jotai';
 import {useTheme} from '@mui/material/styles';
 import {grey} from '@mui/material/colors';
 import useTranslation from 'hooks/use-translation';
-import {MentionListProps, MentionListRef} from 'views/components/chat-input/types';
+import {MentionListProps, MentionListRef} from 'views/components/chat-input/editor/types';
 import Avatar from 'views/components/avatar';
 import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';

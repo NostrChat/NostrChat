@@ -7,7 +7,6 @@ import Button from '@mui/material/Button';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import Tools from 'views/components/chat-input/tools';
 import useMakeEditor from 'views/components/chat-input/editor';
-import 'views/components/chat-input/editor.scss';
 import Send from 'svg/send';
 
 
