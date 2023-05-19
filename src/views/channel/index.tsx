@@ -3,7 +3,6 @@ import {useAtom} from 'jotai';
 import {RouteComponentProps, useLocation, useNavigate} from '@reach/router';
 import {Helmet} from 'react-helmet';
 import isEqual from 'lodash.isequal';
-import uniqBy from 'lodash.uniqby';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import AppWrapper from 'views/components/app-wrapper';
@@ -22,7 +21,6 @@ import useToast from 'hooks/use-toast';
 import {channelAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom, channelToJoinAtom, profilesAtom} from 'store';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {isSha256} from 'util/crypto';
-import {notEmpty} from 'util/misc';
 
 const ChannelPage = (props: RouteComponentProps) => {
     const [keys] = useAtom(keysAtom);
@@ -33,7 +31,6 @@ const ChannelPage = (props: RouteComponentProps) => {
     const channels = useLiveChannels();
     const channel = useLiveChannel();
     const messages = useLivePublicMessages(channel?.id);
-    const [profiles,] = useAtom(profilesAtom);
     const [, setChannel] = useAtom(channelAtom);
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
     const [ravenReady] = useAtom(ravenReadyAtom);
@@ -42,8 +39,6 @@ const ChannelPage = (props: RouteComponentProps) => {
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [notFound, setNotFound] = useState(false);
-
-    const mentionSuggestions = useMemo(() => uniqBy(messages.map(m => profiles.find(x => x.creator === m.creator)).filter(notEmpty), 'creator'), [messages, profiles, channel?.id]);
 
     const cid = useMemo(() => ('channel' in props) && isSha256(props.channel as string) ? props.channel as string : null, [props]);
 
@@ -156,7 +151,7 @@ const ChannelPage = (props: RouteComponentProps) => {
             <AppContent divide={!!threadRoot}>
                 <ChannelHeader/>
                 <ChatView separator={channel.id} messages={messages} loading={loading}/>
-                <ChatInput mentionSuggestions={mentionSuggestions} separator={channel.id} senderFn={(message: string) => {
+                <ChatInput separator={channel.id} senderFn={(message: string) => {
                     return raven!.sendPublicMessage(channel, message).catch(e => {
                         showMessage(e.toString(), 'error');
                     });

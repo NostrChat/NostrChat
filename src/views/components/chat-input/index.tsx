@@ -1,75 +1,22 @@
 import React, {useEffect, useRef} from 'react';
-import {ReactRenderer} from '@tiptap/react';
-import {Extension, useEditor, EditorContent} from '@tiptap/react'
-import {Mention} from '@tiptap/extension-mention';
-import Document from '@tiptap/extension-document'
-import Paragraph from '@tiptap/extension-paragraph'
-import Text from '@tiptap/extension-text'
+import {EditorContent} from '@tiptap/react'
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import {lighten} from '@mui/material';
 import Button from '@mui/material/Button';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import Tools from 'views/components/chat-input/tools';
-import {MentionListRef} from 'views/components/chat-input/types';
-import useSuggestion from 'views/components/chat-input/suggestion';
-import Send from 'svg/send';
+import useMakeEditor from 'views/components/chat-input/editor';
 import 'views/components/chat-input/editor.scss';
-import {Profile} from 'types';
+import Send from 'svg/send';
 
 
-const ChatInput = (props: { mentionSuggestions: Profile[], separator: string, senderFn: (message: string) => Promise<any> }) => {
-    const {mentionSuggestions, senderFn, separator} = props;
+const ChatInput = (props: { separator: string, senderFn: (message: string) => Promise<any> }) => {
+    const {senderFn, separator} = props;
     const theme = useTheme();
     const {isMd} = useMediaBreakPoint();
     const inputRef = useRef<HTMLDivElement | null>(null);
     const storageKey = `${separator}_msg`;
-    let saveTimer: any = null;
-
-    const reactRenderer = useRef<ReactRenderer<MentionListRef> | null>(null);
-    const suggestion = useSuggestion({reactRenderer, mentionSuggestions});
-
-    const editor = useEditor({
-        extensions: [
-            Document,
-            Paragraph,
-            Text,
-            Extension.create({
-                name: 'ShiftEnterExtension',
-                addKeyboardShortcuts() {
-                    return {
-                        'Shift-Enter': () => this.editor.commands.first(({commands}) => [
-                            () => commands.createParagraphNear(),
-                            () => commands.liftEmptyBlock(),
-                            () => commands.splitBlock(),
-                        ]),
-                    };
-                },
-            }),
-            Mention.configure({
-                HTMLAttributes: {
-                    class: 'mention',
-                },
-                renderLabel({options, node}) {
-                    const label = (options?.suggestion?.char as string) || '';
-                    return `${label}${String(node?.attrs?.label)}`;
-                },
-                suggestion,
-            }),
-        ],
-        content: localStorage.getItem(storageKey) || '',
-        onUpdate: () => {
-            clearTimeout(saveTimer);
-            saveTimer = setTimeout(() => {
-                save();
-            }, 200);
-        },
-    })
-
-    useEffect(() => {
-        editor?.commands.setContent(localStorage.getItem(storageKey) || '');
-        editor?.commands.focus();
-    }, [storageKey]);
 
     const save = () => {
         const val = editor?.getText();
@@ -79,6 +26,14 @@ const ChatInput = (props: { mentionSuggestions: Profile[], separator: string, se
         }
         localStorage.setItem(storageKey, val);
     }
+
+    const editor = useMakeEditor({content: localStorage.getItem(storageKey) || '', onUpdate: save});
+
+    useEffect(() => {
+        editor?.commands.setContent(localStorage.getItem(storageKey) || '');
+        editor?.commands.focus();
+    }, [storageKey]);
+
 
     const send = () => {
         const message = editor?.getText();

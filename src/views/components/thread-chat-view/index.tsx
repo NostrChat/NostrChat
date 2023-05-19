@@ -78,7 +78,7 @@ const ThreadChatView = (props: { senderFn: (message: string) => Promise<any> }) 
                 return <MessageView key={msg.id} message={msg} dateFormat='fromNow' compactView={false} inThreadView/>
             })}
         </Box>
-        <ChatInput mentionSuggestions={[]} separator={threadRoot.id} senderFn={(message) => {
+        <ChatInput separator={threadRoot.id} senderFn={(message) => {
             return props.senderFn(message).then(() => {
                 setTimeout(() => {
                     scrollToBottom();
