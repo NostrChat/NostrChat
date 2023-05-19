@@ -33,7 +33,6 @@ const ChatInput = (props: { separator: string, senderFn: (message: string) => Pr
         editor?.commands.focus();
     }, [storageKey]);
 
-
     const send = () => {
         const message = editor?.getText();
         if (!message) return;

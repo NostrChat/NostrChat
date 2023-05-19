@@ -6,9 +6,8 @@ import Text from '@tiptap/extension-text';
 import {Mention} from '@tiptap/extension-mention';
 import tippy, {GetReferenceClientRect, Instance} from 'tippy.js';
 import {SuggestionProps} from '@tiptap/suggestion';
-import MentionList from './mention-list';
-
-import {MentionListRef} from './types';
+import MentionList from 'views/components/chat-input/editor/mention-list';
+import {MentionListRef} from 'views/components/chat-input/editor/types';
 
 const useMakeEditor = ({content, onUpdate}: { content: string, onUpdate: () => void }) => {
     const reactRenderer = useRef<ReactRenderer<MentionListRef> | null>(null);
