@@ -157,8 +157,8 @@ const ChannelPage = (props: RouteComponentProps) => {
                     });
                 }}/>
             </AppContent>
-            {threadRoot && <ThreadChatView senderFn={(message: string) => {
-                return raven!.sendPublicMessage(channel, message, [threadRoot.creator], threadRoot.id).catch(e => {
+            {threadRoot && <ThreadChatView senderFn={(message: string, mentions: string[]) => {
+                return raven!.sendPublicMessage(channel, message, [threadRoot.creator, ...mentions], threadRoot.id).catch(e => {
                     showMessage(e.toString(), 'error');
                 });
             }}/>}
