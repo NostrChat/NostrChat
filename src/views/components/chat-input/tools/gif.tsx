@@ -10,7 +10,7 @@ const Gif = (props: { onSelect: (selected: string) => void }) => {
     const [hover, setHover] = useState<boolean>(false);
     const styles = useStyles();
 
-    const emojiClicked = (event: React.MouseEvent<HTMLDivElement>) => {
+    const gifClicked = (event: React.MouseEvent<HTMLDivElement>) => {
         setHover(true);
         showPopover({
             body: <GifPicker onSelect={(gif) => {
@@ -27,7 +27,7 @@ const Gif = (props: { onSelect: (selected: string) => void }) => {
         });
     }
 
-    return <Box onClick={emojiClicked} sx={styles.chatInputToolSx} className={hover ? 'hover' : ''}>
+    return <Box onClick={gifClicked} sx={styles.chatInputToolSx} className={hover ? 'hover' : ''}>
         <GifIcon height={20}/>
     </Box>;
 }

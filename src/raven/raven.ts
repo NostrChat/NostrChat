@@ -450,9 +450,12 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(Kind.ChannelMessage, tags, message);
     }
 
-    public async sendDirectMessage(toPubkey: string, message: string, parent?: string) {
+    public async sendDirectMessage(toPubkey: string, message: string, mentions?: string[], parent?: string) {
         const encrypted = await (this.priv === 'nip07' ? window.nostr!.nip04.encrypt(toPubkey, message) : nip04.encrypt(this.priv, toPubkey, message));
         const tags = [['p', toPubkey]];
+        if (mentions) {
+            mentions.forEach(m => tags.push(['p', m]));
+        }
         if (parent) {
             const relay = await this.findHealthyRelay(this.seenOn[parent]);
             tags.push(['e', parent, relay, 'root']);
@@ -619,7 +622,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     root,
                     content: ev.content,
                     creator: ev.pubkey,
-                    mentions,
+                    mentions: uniq(mentions),
                     created: ev.created_at,
                 } : null;
             }
@@ -632,6 +635,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             const receiver = Raven.findTagValue(ev, 'p');
             if (!receiver) return null;
             const root = Raven.findNip10MarkerValue(ev, 'root');
+            const mentions = Raven.filterTagValue(ev, 'p').map(x => x?.[1]).filter(notEmpty);
 
             const peer = receiver === this.pub ? ev.pubkey : receiver;
             const msg = {
@@ -640,6 +644,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 content: ev.content,
                 peer,
                 creator: ev.pubkey,
+                mentions: uniq(mentions),
                 created: ev.created_at,
                 decrypted: false
             };

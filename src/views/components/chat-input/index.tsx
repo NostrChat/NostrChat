@@ -1,42 +1,59 @@
 import React, {useEffect, useRef} from 'react';
+import {EditorContent, JSONContent} from '@tiptap/react'
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import {lighten} from '@mui/material';
 import Button from '@mui/material/Button';
-import Tools from 'views/components/chat-input/tools';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
+import Tools from 'views/components/chat-input/tools';
+import useMakeEditor from 'views/components/chat-input/editor';
 import Send from 'svg/send';
-import {focusElem} from 'util/dom';
 
-const ChatInput = (props: { separator: string, senderFn: (message: string) => Promise<any> }) => {
+
+const ChatInput = (props: { separator: string, senderFn: (message: string, mentions: string[]) => Promise<any> }) => {
     const {senderFn, separator} = props;
     const theme = useTheme();
     const {isMd} = useMediaBreakPoint();
     const inputRef = useRef<HTMLDivElement | null>(null);
     const storageKey = `${separator}_msg`;
-    let saveTimer: any = null;
-
-    useEffect(() => {
-        inputRef.current!.innerText = localStorage.getItem(storageKey) || '';
-        focusElem(inputRef.current!);
-    }, [storageKey]);
 
     const save = () => {
-        const val = inputRef.current!.innerText;
-        if (val === '') {
+        const val = editor?.getText();
+        if (!val) {
             localStorage.removeItem(storageKey);
+            return;
         }
-        localStorage.setItem(storageKey, inputRef.current!.innerText);
+        localStorage.setItem(storageKey, val);
+    }
+
+    const editor = useMakeEditor({content: localStorage.getItem(storageKey) || '', onUpdate: save});
+
+    useEffect(() => {
+        editor?.commands.setContent(localStorage.getItem(storageKey) || '');
+        editor?.commands.focus();
+    }, [storageKey]);
+
+    function getMentions(data: JSONContent): string[] {
+        const mentions = (data.content || []).flatMap(getMentions)
+        if (data.type === 'mention' && data.attrs?.id) {
+            mentions.push(data.attrs.id)
+        }
+        return [...new Set(mentions)];
     }
 
     const send = () => {
-        const message = inputRef.current!.innerText.trim();
-        if (!message) {
-            return;
-        }
-        inputRef.current!.innerHTML = '';
+        const message = editor?.getText();
+        if (!message) return;
+        const json = editor?.getJSON();
+        const mentions = json ? getMentions(json) : [];
+        editor?.commands.setContent('');
         localStorage.removeItem(storageKey);
-        senderFn(message);
+        return senderFn(message, mentions);
+    }
+
+    const insert = (text: string) => {
+        editor?.commands.insertContent(text);
+        editor?.commands.focus();
     }
 
     return <Box sx={{
@@ -50,35 +67,16 @@ const ChatInput = (props: { separator: string, senderFn: (message: string) => Pr
             background: theme.palette.divider,
             borderRadius: theme.shape.borderRadius,
         }}>
-            <Box contentEditable suppressContentEditableWarning ref={inputRef}
-                 sx={{
-                     p: '10px',
-                     maxHeight: '200px',
-                     overflowX: 'auto',
-                     borderRadius: theme.shape.borderRadius,
-                     outline: 'none',
-                     color: theme.palette.text.secondary,
-                     fontSize: '92%',
-                     'b, strong': {
-                         fontWeight: 'normal'
-                     },
-                     'i': {
-                         fontStyle: 'normal'
-                     }
-                 }}
-                 onInput={(e) => {
-                     clearTimeout(saveTimer);
-                     saveTimer = setTimeout(() => {
-                         save();
-                     }, 200);
-                 }}
-                 onKeyDown={(e) => {
-                     if (!e.shiftKey && e.key === 'Enter') {
-                         e.preventDefault();
-                         send();
-                     }
-                 }}
-            />
+            <Box sx={{p: '1px 10px'}}>
+                <EditorContent
+                    editor={editor}
+                    onKeyDown={(e) => {
+
+                        if (!e.shiftKey && e.key === 'Enter') {
+                            send();
+                        }
+                    }}/>
+            </Box>
             <Box sx={{
                 borderTop: `1px solid ${lighten(theme.palette.divider, 0.6)}`,
                 display: 'flex',
@@ -92,7 +90,9 @@ const ChatInput = (props: { separator: string, senderFn: (message: string) => Pr
                     display: 'flex',
                     alignItems: 'center',
                 }}>
-                    <Tools inputRef={inputRef} senderFn={props.senderFn}/>
+                    <Tools inputRef={inputRef} senderFn={(message: string) => {
+                        return props.senderFn(message, [])
+                    }} insertFn={insert}/>
                 </Box>
                 <Button variant="contained" size="small" color="primary" sx={{
                     minWidth: 'auto',

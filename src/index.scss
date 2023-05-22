@@ -64,3 +64,12 @@ em-emoji-picker {
     --rgb-background: 1, 1, 1;
     --border-radius: 4px;
 }
+
+.ProseMirror {
+    outline: none !important;
+    font-size: 15px;
+
+    > * + * {
+        margin-top: 0.75em;
+    }
+}
