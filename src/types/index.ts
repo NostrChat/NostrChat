@@ -25,7 +25,7 @@ export type EventDeletion = { eventId: string, why: string };
 
 export type PublicMessage = { id: string, root: string, content: string, creator: string, created: number, children?: PublicMessage[], reactions?: Reaction[], mentions: string[] };
 
-export type DirectMessage = { id: string, root?: string, content: string, peer: string, creator: string, created: number, children?: DirectMessage[], reactions?: Reaction[], decrypted: boolean };
+export type DirectMessage = { id: string, root?: string, content: string, peer: string, creator: string, created: number, children?: DirectMessage[], reactions?: Reaction[], mentions: string[], decrypted: boolean };
 
 export type Message = PublicMessage | DirectMessage;
 

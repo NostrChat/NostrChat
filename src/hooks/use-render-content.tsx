@@ -1,11 +1,19 @@
-import React from 'react';
+import React, {ReactNode} from 'react';
+import {useAtom} from 'jotai';
 import Box from '@mui/material/Box';
 import Linkify from 'linkify-react';
 import {useNavigate} from '@reach/router';
+import {nip19} from 'nostr-tools';
 import {IntermediateRepresentation} from 'linkifyjs';
+import reactStringReplace from 'react-string-replace';
 import Link from '@mui/material/Link';
 import useModal from 'hooks/use-modal';
+import usePopover from 'hooks/use-popover';
 import ExternalLinkDialog from 'components/external-link-dialog';
+import ProfileCardMini from 'views/components/profile-card-mini';
+import {Message} from 'types';
+import {profilesAtom} from 'store';
+import {notEmpty} from 'util/misc';
 
 const imgReg = /(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/;
 const channelReg = new RegExp(`^${window.location.protocol}//${window.location.host}/channel/[a-f0-9]{64}$`, 'm');
@@ -13,8 +21,12 @@ const channelReg = new RegExp(`^${window.location.protocol}//${window.location.h
 const useRenderContent = () => {
     const [, showModal] = useModal();
     const navigate = useNavigate();
+    const [, showPopover] = usePopover();
+    const [profiles] = useAtom(profilesAtom);
 
-    return (content: string) => {
+    return (message: Message) => {
+        const {content} = message;
+
         const renderLink = (args: IntermediateRepresentation) => {
             const {href} = args.attributes;
 
@@ -57,8 +69,32 @@ const useRenderContent = () => {
             return <>{args.content}</>;
         };
 
+        const renderBlock = (c: string) => {
+            const {mentions} = message;
+            const mentionedProfiles = mentions.map(m => profiles.find(p => p.creator === m)).filter(notEmpty);
+            if (mentionedProfiles.length === 0) return c;
+
+            let res: string | ReactNode[] = c;
+            mentionedProfiles.forEach(profile => {
+                res = reactStringReplace(res, `@${profile.name}`, (match, i) => {
+                    return <Link href='#' onClick={(e) => {
+                        e.preventDefault();
+                        showPopover({
+                            body: <Box sx={{width: '220px', padding: '10px'}}>
+                                <ProfileCardMini profile={profile} pubkey={profile.creator} onDM={() => {
+                                    navigate(`/dm/${nip19.npubEncode(profile.creator)}`).then();
+                                }}/>
+                            </Box>,
+                            anchorEl: e.currentTarget
+                        });
+                    }} key={i}>{match}</Link>
+                }) as ReactNode[];
+            });
+            return res;
+        }
+
         return <Linkify options={{render: renderLink}}>{
-            content.split('\n').map((x, i) => <Box key={i} sx={{mb: '6px'}}>{x}</Box>)
+            content.split('\n').map((x, i) => <Box key={i} sx={{mb: '6px'}}>{renderBlock(x)}</Box>)
         }</Linkify>
     }
 }

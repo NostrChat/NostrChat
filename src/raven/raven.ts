@@ -622,7 +622,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     root,
                     content: ev.content,
                     creator: ev.pubkey,
-                    mentions,
+                    mentions: uniq(mentions),
                     created: ev.created_at,
                 } : null;
             }
@@ -635,6 +635,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             const receiver = Raven.findTagValue(ev, 'p');
             if (!receiver) return null;
             const root = Raven.findNip10MarkerValue(ev, 'root');
+            const mentions = Raven.filterTagValue(ev, 'p').map(x => x?.[1]).filter(notEmpty);
 
             const peer = receiver === this.pub ? ev.pubkey : receiver;
             const msg = {
@@ -643,6 +644,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 content: ev.content,
                 peer,
                 creator: ev.pubkey,
+                mentions: uniq(mentions),
                 created: ev.created_at,
                 decrypted: false
             };

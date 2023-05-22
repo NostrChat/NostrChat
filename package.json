@@ -59,6 +59,7 @@
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
     "react-scripts": "5.0.1",
+    "react-string-replace": "^1.1.0",
     "sass": "^1.62.1",
     "stream-browserify": "^3.0.0",
     "tippy.js": "^6.3.7",
