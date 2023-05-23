@@ -1,5 +1,6 @@
-import {Event, Filter, getEventHash, Kind, nip04, signEvent, SimplePool, Sub} from 'nostr-tools';
+import {Event, Filter, getEventHash, Kind, nip04, signEvent, SimplePool} from 'nostr-tools';
 import {TypedEventEmitter} from 'raven/helper/event-emitter';
+import * as Comlink from 'comlink';
 import {
     Channel,
     ChannelMessageHide,
@@ -19,6 +20,8 @@ import uniq from 'lodash.uniq';
 import {getRelays} from 'helper';
 import {GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {notEmpty} from 'util/misc';
+import {RavenBgWorker} from './worker';
+
 
 const relays = getRelays();
 
@@ -57,6 +60,7 @@ type EventHandlerMap = {
 
 
 class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
+    private bgWorker: Comlink.Remote<RavenBgWorker>;
     private _pool: SimplePool;
     private _poolCreated: number;
 
@@ -75,8 +79,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     private nameCache: Record<string, number> = {};
 
-    listenerSub: Sub | null = null;
-    messageListenerSub: Sub | null = null;
+    listenerSub: string | null = null;
+    messageListenerSub: string | null = null;
 
     constructor(priv: string, pub: string) {
         super();
@@ -86,6 +90,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
         this._pool = new SimplePool();
         this._poolCreated = Date.now();
+
+        const worker = new Worker(new URL('worker.ts', import.meta.url))
+        this.bgWorker = Comlink.wrap<RavenBgWorker>(worker);
+
 
         if (priv && pub) this.init().then();
     }
@@ -108,6 +116,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     private async init() {
+        await this.bgWorker.setup(this.readRelays);
 
         const filters1: Filter[] = [{
             kinds: [Kind.Metadata, Kind.EventDeletion, Kind.ChannelCreation],
@@ -270,53 +279,17 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     private fetch(filters: Filter[], quitMs: number = 0): Promise<Event[]> {
-        return new Promise((resolve) => {
-            const pool = this.getPool();
-            const sub = pool.sub(this.readRelays, filters);
-            const events: Event[] = [];
-
-            const quit = () => {
-                sub.unsub();
-                resolve(events);
-            }
-
-            let timer: any = quitMs > 0 ? setTimeout(quit, quitMs) : null;
-
-            sub.on('event', (event) => {
-                events.push(event);
-                this.seenOn[event.id] = pool.seenOn(event.id);
-
-                if (quitMs > 0) {
-                    clearTimeout(timer);
-                    timer = setTimeout(quit, quitMs);
-                }
-            });
-
-            if (quitMs === 0) {
-                sub.on('eose', () => {
-                    sub.unsub();
-                    resolve(events);
-                });
-            }
-        });
+        return this.bgWorker.fetch(filters, quitMs);
     }
 
     private sub(filters: Filter[], unsub: boolean = true) {
-        const pool = this.getPool();
-        const sub = pool.sub(this.readRelays, filters);
+        return this.bgWorker.sub(filters, Comlink.proxy((e: Event) => {
+            this.pushToEventBuffer(e);
+        }), unsub);
+    }
 
-        sub.on('event', (event) => {
-            this.seenOn[event.id] = pool.seenOn(event.id);
-            this.pushToEventBuffer(event);
-        });
-
-        sub.on('eose', () => {
-            if (unsub) {
-                sub.unsub();
-            }
-        });
-
-        return sub;
+    private unsub(subId: string) {
+        return this.bgWorker.unsub(subId);
     }
 
     public loadChannel(id: string) {
@@ -356,10 +329,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     public listen(channels: string[], since: number) {
         if (this.listenerSub) {
-            this.listenerSub.unsub();
+            this.unsub(this.listenerSub);
         }
 
-        this.listenerSub = this.sub([{
+        this.sub([{
             authors: [this.pub],
             since
         }, {
@@ -374,12 +347,14 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             kinds: [Kind.EncryptedDirectMessage],
             '#p': [this.pub],
             since
-        }], false);
+        }], false).then((id) => {
+            this.listenerSub = id
+        });
     }
 
     public listenMessages = (messageIds: string[], relIds: string[]) => {
         if (this.messageListenerSub) {
-            this.messageListenerSub.unsub();
+            this.unsub(this.messageListenerSub);
         }
 
         const filters: Filter[] = [
@@ -399,7 +374,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 }
             ))
         ];
-        this.messageListenerSub = this.sub(filters, false);
+
+        this.sub(filters, false).then(r => {
+            this.messageListenerSub = r;
+        });
     }
 
     private async findHealthyRelay(relays: string[]) {
