@@ -1,7 +1,7 @@
 import * as Comlink from 'comlink';
 import {Event, Filter, SimplePool, Sub} from 'nostr-tools';
 
-export class RavenBgWorker {
+export class BgRaven {
     private seenOn: Record<string, string[]> = {};
     private subs: Record<string, Sub> = {};
     private relays: string[] = [];
@@ -99,4 +99,4 @@ export class RavenBgWorker {
     }
 }
 
-Comlink.expose(new RavenBgWorker());
+Comlink.expose(new BgRaven());

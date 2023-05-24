@@ -17,7 +17,7 @@ import {
 } from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
-import {RavenBgWorker} from 'raven/worker';
+import {BgRaven} from 'raven/worker';
 import {getRelays} from 'helper';
 import {GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {notEmpty} from 'util/misc';
@@ -59,7 +59,8 @@ type EventHandlerMap = {
 
 
 class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
-    private bgWorker: Comlink.Remote<RavenBgWorker>;
+    private readonly worker: Worker;
+    private bgRaven: Comlink.Remote<BgRaven>;
 
     private readonly priv: string | 'nip07';
     private readonly pub: string;
@@ -83,15 +84,14 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         this.priv = priv;
         this.pub = pub;
 
-        const worker = new Worker(new URL('worker.ts', import.meta.url))
-        this.bgWorker = Comlink.wrap<RavenBgWorker>(worker);
-
+        this.worker = new Worker(new URL('worker.ts', import.meta.url))
+        this.bgRaven = Comlink.wrap<BgRaven>(this.worker);
 
         if (priv && pub) this.init().then();
     }
 
     private async init() {
-        await this.bgWorker.setup(this.readRelays);
+        await this.bgRaven.setup(this.readRelays);
 
         const filters1: Filter[] = [{
             kinds: [Kind.Metadata, Kind.EventDeletion, Kind.ChannelCreation],
@@ -254,17 +254,17 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     private fetch(filters: Filter[], quitMs: number = 0): Promise<Event[]> {
-        return this.bgWorker.fetch(filters, quitMs);
+        return this.bgRaven.fetch(filters, quitMs);
     }
 
     private sub(filters: Filter[], unsub: boolean = true) {
-        return this.bgWorker.sub(filters, Comlink.proxy((e: Event) => {
+        return this.bgRaven.sub(filters, Comlink.proxy((e: Event) => {
             this.pushToEventBuffer(e);
         }), unsub);
     }
 
     private unsub(subId: string) {
-        return this.bgWorker.unsub(subId);
+        return this.bgRaven.unsub(subId);
     }
 
     public loadChannel(id: string) {
@@ -371,7 +371,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async updateChannel(channel: Channel, meta: Metadata) {
-        return this.bgWorker.where(channel.id).then(relay => {
+        return this.bgRaven.where(channel.id).then(relay => {
             return this.publish(Kind.ChannelMetadata, [['e', channel.id, relay]], JSON.stringify(meta));
         });
     }
@@ -382,7 +382,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     public async sendPublicMessage(channel: Channel, message: string, mentions?: string[], parent?: string) {
         const root = parent || channel.id;
-        const relay = await this.bgWorker.where(root);
+        const relay = await this.bgRaven.where(root);
         const tags = [['e', root, relay, 'root']];
         if (mentions) {
             mentions.forEach(m => tags.push(['p', m]));
@@ -397,7 +397,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             mentions.forEach(m => tags.push(['p', m]));
         }
         if (parent) {
-            const relay = await this.bgWorker.where(parent);
+            const relay = await this.bgRaven.where(parent);
             tags.push(['e', parent, relay, 'root']);
         }
         return this.publish(Kind.EncryptedDirectMessage, tags, encrypted);
@@ -422,7 +422,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async sendReaction(message: string, pubkey: string, reaction: string) {
-        const relay = await this.bgWorker.where(message);
+        const relay = await this.bgRaven.where(message);
         const tags = [['e', message, relay, 'root'], ['p', pubkey]];
         return this.publish(Kind.Reaction, tags, reaction);
     }
@@ -682,6 +682,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     close = () => {
+        this.worker.terminate();
         this.removeAllListeners();
     }
 
