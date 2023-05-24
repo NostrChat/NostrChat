@@ -1,20 +1,34 @@
 import * as Comlink from 'comlink';
 import {Event, Filter, SimplePool, Sub} from 'nostr-tools';
 
-let RELAYS: string[];
-let POOL: SimplePool;
-
 export class RavenBgWorker {
     subs: Record<string, Sub> = {};
+    relays: string[] = [];
+    _pool = new SimplePool();
+    _poolCreated = Date.now();
+
 
     public setup(relays: string[]) {
-        RELAYS = relays;
-        POOL = new SimplePool();
+        this.relays = relays;
+        this._pool = new SimplePool();
+        this._poolCreated = Date.now();
+    }
+
+    private getPool = (renew: boolean = true): SimplePool => {
+        if (renew && Date.now() - this._poolCreated > 120000) {
+            // renew pool every two minutes
+            this._pool.close(this.relays);
+
+            this._pool = new SimplePool();
+            this._poolCreated = Date.now();
+        }
+
+        return this._pool;
     }
 
     public fetch(filters: Filter[], quitMs: number = 0): Promise<Event[]> {
         return new Promise((resolve) => {
-            const sub = POOL.sub(RELAYS, filters);
+            const sub = this.getPool().sub(this.relays, filters);
             const events: Event[] = [];
 
             const quit = () => {
@@ -45,7 +59,7 @@ export class RavenBgWorker {
     public sub(filters: Filter[], onEvent: (e: Event) => void, unsub: boolean = true) {
         const subId = Math.random().toString().slice(2);
 
-        const sub = POOL.sub(RELAYS, filters, {id: subId});
+        const sub = this.getPool().sub(this.relays, filters, {id: subId});
 
         sub.on('event', (event) => {
             onEvent(event)
