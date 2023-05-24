@@ -77,8 +77,10 @@ export class BgRaven {
     }
 
     public unsub(subId: string) {
-        this.subs[subId].unsub();
-        delete this.subs[subId];
+        if (this.subs[subId]) {
+            this.subs[subId].unsub();
+            delete this.subs[subId];
+        }
     }
 
     public where(eventId: string) {
