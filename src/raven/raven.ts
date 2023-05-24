@@ -1,5 +1,6 @@
-import {Event, Filter, getEventHash, Kind, nip04, signEvent, SimplePool, Sub} from 'nostr-tools';
+import {Event, Filter, getEventHash, Kind, nip04, signEvent, SimplePool} from 'nostr-tools';
 import {TypedEventEmitter} from 'raven/helper/event-emitter';
+import * as Comlink from 'comlink';
 import {
     Channel,
     ChannelMessageHide,
@@ -16,6 +17,7 @@ import {
 } from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
+import {BgRaven} from 'raven/worker';
 import {getRelays} from 'helper';
 import {GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {notEmpty} from 'util/misc';
@@ -57,10 +59,8 @@ type EventHandlerMap = {
 
 
 class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
-    private _pool: SimplePool;
-    private _poolCreated: number;
-
-    private seenOn: Record<string, string[]> = {};
+    private readonly worker: Worker;
+    private bgRaven: Comlink.Remote<BgRaven>;
 
     private readonly priv: string | 'nip07';
     private readonly pub: string;
@@ -75,8 +75,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     private nameCache: Record<string, number> = {};
 
-    listenerSub: Sub | null = null;
-    messageListenerSub: Sub | null = null;
+    listenerSub: string | null = null;
+    messageListenerSub: string | null = null;
 
     constructor(priv: string, pub: string) {
         super();
@@ -84,31 +84,17 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         this.priv = priv;
         this.pub = pub;
 
-        this._pool = new SimplePool();
-        this._poolCreated = Date.now();
+        // Raven is all about relay/pool management through websockets using timers.
+        // Browsers (chrome) slows down timer tasks when the window goes to inactive.
+        // That is why we use a web worker to read data from relays.
+        this.worker = new Worker(new URL('worker.ts', import.meta.url))
+        this.bgRaven = Comlink.wrap<BgRaven>(this.worker);
+        this.bgRaven.setup(this.readRelays).then();
 
         if (priv && pub) this.init().then();
     }
 
-    private getPool = (renew: boolean = true): SimplePool => {
-        if (renew && Date.now() - this._poolCreated > 120000) {
-            // renew pool every two minutes
-
-            this._pool.close(this.readRelays);
-
-            this._pool = new SimplePool();
-            this._poolCreated = Date.now();
-        }
-
-        return this._pool;
-    }
-
-    private closePool = () => {
-        this._pool.close(this.readRelays);
-    }
-
     private async init() {
-
         const filters1: Filter[] = [{
             kinds: [Kind.Metadata, Kind.EventDeletion, Kind.ChannelCreation],
             authors: [this.pub],
@@ -270,53 +256,17 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     private fetch(filters: Filter[], quitMs: number = 0): Promise<Event[]> {
-        return new Promise((resolve) => {
-            const pool = this.getPool();
-            const sub = pool.sub(this.readRelays, filters);
-            const events: Event[] = [];
-
-            const quit = () => {
-                sub.unsub();
-                resolve(events);
-            }
-
-            let timer: any = quitMs > 0 ? setTimeout(quit, quitMs) : null;
-
-            sub.on('event', (event) => {
-                events.push(event);
-                this.seenOn[event.id] = pool.seenOn(event.id);
-
-                if (quitMs > 0) {
-                    clearTimeout(timer);
-                    timer = setTimeout(quit, quitMs);
-                }
-            });
-
-            if (quitMs === 0) {
-                sub.on('eose', () => {
-                    sub.unsub();
-                    resolve(events);
-                });
-            }
-        });
+        return this.bgRaven.fetch(filters, quitMs);
     }
 
     private sub(filters: Filter[], unsub: boolean = true) {
-        const pool = this.getPool();
-        const sub = pool.sub(this.readRelays, filters);
+        return this.bgRaven.sub(filters, Comlink.proxy((e: Event) => {
+            this.pushToEventBuffer(e);
+        }), unsub);
+    }
 
-        sub.on('event', (event) => {
-            this.seenOn[event.id] = pool.seenOn(event.id);
-            this.pushToEventBuffer(event);
-        });
-
-        sub.on('eose', () => {
-            if (unsub) {
-                sub.unsub();
-            }
-        });
-
-        return sub;
+    private unsub(subId: string) {
+        return this.bgRaven.unsub(subId);
     }
 
     public loadChannel(id: string) {
@@ -356,10 +306,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     public listen(channels: string[], since: number) {
         if (this.listenerSub) {
-            this.listenerSub.unsub();
+            this.unsub(this.listenerSub).then();
         }
 
-        this.listenerSub = this.sub([{
+        this.sub([{
             authors: [this.pub],
             since
         }, {
@@ -374,12 +324,14 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             kinds: [Kind.EncryptedDirectMessage],
             '#p': [this.pub],
             since
-        }], false);
+        }], false).then((id) => {
+            this.listenerSub = id
+        });
     }
 
     public listenMessages = (messageIds: string[], relIds: string[]) => {
         if (this.messageListenerSub) {
-            this.messageListenerSub.unsub();
+            this.unsub(this.messageListenerSub).then();
         }
 
         const filters: Filter[] = [
@@ -399,20 +351,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 }
             ))
         ];
-        this.messageListenerSub = this.sub(filters, false);
-    }
 
-    private async findHealthyRelay(relays: string[]) {
-        const pool = this.getPool();
-        for (const relay of relays) {
-            try {
-                await pool.ensureRelay(relay);
-                return relay;
-            } catch (e) {
-            }
-        }
-
-        throw new Error("Couldn't find a working relay");
+        this.sub(filters, false).then(r => {
+            this.messageListenerSub = r;
+        });
     }
 
     public async updateProfile(profile: Metadata) {
@@ -431,7 +373,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async updateChannel(channel: Channel, meta: Metadata) {
-        return this.findHealthyRelay(this.seenOn[channel.id]).then(relay => {
+        return this.bgRaven.where(channel.id).then(relay => {
             return this.publish(Kind.ChannelMetadata, [['e', channel.id, relay]], JSON.stringify(meta));
         });
     }
@@ -442,7 +384,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     public async sendPublicMessage(channel: Channel, message: string, mentions?: string[], parent?: string) {
         const root = parent || channel.id;
-        const relay = await this.findHealthyRelay(this.seenOn[root]);
+        const relay = await this.bgRaven.where(root);
         const tags = [['e', root, relay, 'root']];
         if (mentions) {
             mentions.forEach(m => tags.push(['p', m]));
@@ -457,7 +399,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             mentions.forEach(m => tags.push(['p', m]));
         }
         if (parent) {
-            const relay = await this.findHealthyRelay(this.seenOn[parent]);
+            const relay = await this.bgRaven.where(parent);
             tags.push(['e', parent, relay, 'root']);
         }
         return this.publish(Kind.EncryptedDirectMessage, tags, encrypted);
@@ -482,13 +424,15 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async sendReaction(message: string, pubkey: string, reaction: string) {
-        const relay = await this.findHealthyRelay(this.seenOn[message]);
+        const relay = await this.bgRaven.where(message);
         const tags = [['e', message, relay, 'root'], ['p', pubkey]];
         return this.publish(Kind.Reaction, tags, reaction);
     }
 
     private publish(kind: number, tags: Array<any>[], content: string): Promise<Event> {
         return new Promise((resolve, reject) => {
+            const pool = new SimplePool();
+
             this.signEvent({
                 kind,
                 tags,
@@ -503,9 +447,11 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     return;
                 }
 
-                const pub = this.getPool().publish(this.writeRelays, event);
+                const pub = pool.publish(this.writeRelays, event);
+
                 pub.on('ok', () => {
                     resolve(event);
+                    pool.close(this.writeRelays);
                 });
 
                 pub.on('failed', (a: any) => {
@@ -514,9 +460,12 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                         return;
                     }
                     reject("Event couldn't be published on a relay!");
+
                 })
             }).catch(() => {
                 reject("Couldn't publish event!");
+            }).finally(() => {
+                pool.close(this.writeRelays);
             })
         })
     }
@@ -735,7 +684,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     close = () => {
-        this.closePool();
+        this.worker.terminate();
         this.removeAllListeners();
     }
 
