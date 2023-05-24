@@ -17,11 +17,10 @@ import {
 } from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
+import {RavenBgWorker} from 'raven/worker';
 import {getRelays} from 'helper';
 import {GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {notEmpty} from 'util/misc';
-import {RavenBgWorker} from './worker';
-
 
 const relays = getRelays();
 
@@ -61,10 +60,6 @@ type EventHandlerMap = {
 
 class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     private bgWorker: Comlink.Remote<RavenBgWorker>;
-    private _pool: SimplePool;
-    private _poolCreated: number;
-
-    private seenOn: Record<string, string[]> = {};
 
     private readonly priv: string | 'nip07';
     private readonly pub: string;
@@ -88,31 +83,11 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         this.priv = priv;
         this.pub = pub;
 
-        this._pool = new SimplePool();
-        this._poolCreated = Date.now();
-
         const worker = new Worker(new URL('worker.ts', import.meta.url))
         this.bgWorker = Comlink.wrap<RavenBgWorker>(worker);
 
 
         if (priv && pub) this.init().then();
-    }
-
-    private getPool = (renew: boolean = true): SimplePool => {
-        if (renew && Date.now() - this._poolCreated > 120000) {
-            // renew pool every two minutes
-
-            this._pool.close(this.readRelays);
-
-            this._pool = new SimplePool();
-            this._poolCreated = Date.now();
-        }
-
-        return this._pool;
-    }
-
-    private closePool = () => {
-        this._pool.close(this.readRelays);
     }
 
     private async init() {
@@ -329,7 +304,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     public listen(channels: string[], since: number) {
         if (this.listenerSub) {
-            this.unsub(this.listenerSub);
+            this.unsub(this.listenerSub).then();
         }
 
         this.sub([{
@@ -354,7 +329,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     public listenMessages = (messageIds: string[], relIds: string[]) => {
         if (this.messageListenerSub) {
-            this.unsub(this.messageListenerSub);
+            this.unsub(this.messageListenerSub).then();
         }
 
         const filters: Filter[] = [
@@ -380,19 +355,6 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         });
     }
 
-    private async findHealthyRelay(relays: string[]) {
-        const pool = this.getPool();
-        for (const relay of relays) {
-            try {
-                await pool.ensureRelay(relay);
-                return relay;
-            } catch (e) {
-            }
-        }
-
-        throw new Error("Couldn't find a working relay");
-    }
-
     public async updateProfile(profile: Metadata) {
         const filters: Filter[] = [{
             kinds: [Kind.Metadata],
@@ -409,7 +371,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async updateChannel(channel: Channel, meta: Metadata) {
-        return this.findHealthyRelay(this.seenOn[channel.id]).then(relay => {
+        return this.bgWorker.where(channel.id).then(relay => {
             return this.publish(Kind.ChannelMetadata, [['e', channel.id, relay]], JSON.stringify(meta));
         });
     }
@@ -420,7 +382,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
     public async sendPublicMessage(channel: Channel, message: string, mentions?: string[], parent?: string) {
         const root = parent || channel.id;
-        const relay = await this.findHealthyRelay(this.seenOn[root]);
+        const relay = await this.bgWorker.where(root);
         const tags = [['e', root, relay, 'root']];
         if (mentions) {
             mentions.forEach(m => tags.push(['p', m]));
@@ -435,7 +397,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             mentions.forEach(m => tags.push(['p', m]));
         }
         if (parent) {
-            const relay = await this.findHealthyRelay(this.seenOn[parent]);
+            const relay = await this.bgWorker.where(parent);
             tags.push(['e', parent, relay, 'root']);
         }
         return this.publish(Kind.EncryptedDirectMessage, tags, encrypted);
@@ -460,13 +422,15 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     public async sendReaction(message: string, pubkey: string, reaction: string) {
-        const relay = await this.findHealthyRelay(this.seenOn[message]);
+        const relay = await this.bgWorker.where(message);
         const tags = [['e', message, relay, 'root'], ['p', pubkey]];
         return this.publish(Kind.Reaction, tags, reaction);
     }
 
     private publish(kind: number, tags: Array<any>[], content: string): Promise<Event> {
         return new Promise((resolve, reject) => {
+            const pool = new SimplePool();
+
             this.signEvent({
                 kind,
                 tags,
@@ -481,9 +445,11 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     return;
                 }
 
-                const pub = this.getPool().publish(this.writeRelays, event);
+                const pub = pool.publish(this.writeRelays, event);
+
                 pub.on('ok', () => {
                     resolve(event);
+                    pool.close(this.writeRelays);
                 });
 
                 pub.on('failed', (a: any) => {
@@ -492,9 +458,12 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                         return;
                     }
                     reject("Event couldn't be published on a relay!");
+
                 })
             }).catch(() => {
                 reject("Couldn't publish event!");
+            }).finally(() => {
+                pool.close(this.writeRelays);
             })
         })
     }
@@ -713,7 +682,6 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     close = () => {
-        this.closePool();
         this.removeAllListeners();
     }
 

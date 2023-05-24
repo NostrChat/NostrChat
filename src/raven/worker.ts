@@ -2,33 +2,32 @@ import * as Comlink from 'comlink';
 import {Event, Filter, SimplePool, Sub} from 'nostr-tools';
 
 export class RavenBgWorker {
-    subs: Record<string, Sub> = {};
-    relays: string[] = [];
-    _pool = new SimplePool();
-    _poolCreated = Date.now();
-
+    private seenOn: Record<string, string[]> = {};
+    private subs: Record<string, Sub> = {};
+    private relays: string[] = [];
+    private pool = new SimplePool();
+    private poolCreated = Date.now();
 
     public setup(relays: string[]) {
         this.relays = relays;
-        this._pool = new SimplePool();
-        this._poolCreated = Date.now();
     }
 
-    private getPool = (renew: boolean = true): SimplePool => {
-        if (renew && Date.now() - this._poolCreated > 120000) {
+    private getPool = (): SimplePool => {
+        if (Date.now() - this.poolCreated > 120000) {
             // renew pool every two minutes
-            this._pool.close(this.relays);
+            this.pool.close(this.relays);
 
-            this._pool = new SimplePool();
-            this._poolCreated = Date.now();
+            this.pool = new SimplePool();
+            this.poolCreated = Date.now();
         }
 
-        return this._pool;
+        return this.pool;
     }
 
     public fetch(filters: Filter[], quitMs: number = 0): Promise<Event[]> {
         return new Promise((resolve) => {
-            const sub = this.getPool().sub(this.relays, filters);
+            const pool = this.getPool();
+            const sub = pool.sub(this.relays, filters);
             const events: Event[] = [];
 
             const quit = () => {
@@ -40,6 +39,7 @@ export class RavenBgWorker {
 
             sub.on('event', (event: Event) => {
                 events.push(event);
+                this.seenOn[event.id] = pool.seenOn(event.id);
 
                 if (quitMs > 0) {
                     clearTimeout(timer);
@@ -58,10 +58,11 @@ export class RavenBgWorker {
 
     public sub(filters: Filter[], onEvent: (e: Event) => void, unsub: boolean = true) {
         const subId = Math.random().toString().slice(2);
-
-        const sub = this.getPool().sub(this.relays, filters, {id: subId});
+        const pool = this.getPool();
+        const sub = pool.sub(this.relays, filters, {id: subId});
 
         sub.on('event', (event) => {
+            this.seenOn[event.id] = pool.seenOn(event.id);
             onEvent(event)
         });
 
@@ -78,6 +79,23 @@ export class RavenBgWorker {
     public unsub(subId: string) {
         this.subs[subId].unsub();
         delete this.subs[subId];
+    }
+
+    public where(eventId: string) {
+        return this.findHealthyRelay(this.seenOn[eventId]);
+    }
+
+    private async findHealthyRelay(relays: string[]) {
+        const pool = this.getPool();
+        for (const relay of relays) {
+            try {
+                await pool.ensureRelay(relay);
+                return relay;
+            } catch (e) {
+            }
+        }
+
+        throw new Error("Couldn't find a working relay");
     }
 }
 
