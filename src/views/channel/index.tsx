@@ -54,6 +54,9 @@ const ChannelPage = (props: RouteComponentProps) => {
         return () => {
             setChannelToJoin(null);
             setChannel(null);
+            setLoading(false);
+            setHasMore(true);
+            setNotFound(false);
         }
     }, [location]);
 
