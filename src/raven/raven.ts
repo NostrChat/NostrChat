@@ -89,13 +89,12 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         // That is why we use a web worker to read data from relays.
         this.worker = new Worker(new URL('worker.ts', import.meta.url))
         this.bgRaven = Comlink.wrap<BgRaven>(this.worker);
+        this.bgRaven.setup(this.readRelays).then();
 
         if (priv && pub) this.init().then();
     }
 
     private async init() {
-        await this.bgRaven.setup(this.readRelays);
-
         const filters1: Filter[] = [{
             kinds: [Kind.Metadata, Kind.EventDeletion, Kind.ChannelCreation],
             authors: [this.pub],
