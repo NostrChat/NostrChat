@@ -84,6 +84,9 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         this.priv = priv;
         this.pub = pub;
 
+        // Raven is all about relay/pool management through websockets using timers.
+        // Browsers (chrome) slows down timer tasks when the window goes to inactive.
+        // That is why we use a web worker to read data from relays.
         this.worker = new Worker(new URL('worker.ts', import.meta.url))
         this.bgRaven = Comlink.wrap<BgRaven>(this.worker);
 
