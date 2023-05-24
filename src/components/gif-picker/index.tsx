@@ -54,6 +54,13 @@ const Giphy = (props: { onSelect: (selected: string) => void }) => {
             height: '260px',
             ...styles.scrollY
         }}>
+            <Box sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                mb: '6px'
+            }}>
+                <Box component="img" src="/giphy.png" sx={{width: '260px'}}/>
+            </Box>
             <Grid
                 tabIndex={1}
                 key={searchKey}
