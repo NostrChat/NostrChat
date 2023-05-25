@@ -48,8 +48,9 @@ NostrChat will open in your browser.
 - Reactions ✅
 - Channel invitations ✅
 - User profiles ✅
+- Mentions ✅
+- Mobile apps
 - Channel & DM unread indicator
-- Mentions
 - NIP42 Support
 - Notifications
 
