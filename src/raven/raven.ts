@@ -449,20 +449,33 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     return;
                 }
 
+                let resolved = false;
+                const okRelays: string[] = [];
+                const failedRelays: string[] = [];
+
                 const pub = pool.publish(this.writeRelays, event);
 
-                pub.on('ok', () => {
-                    resolve(event);
-                    pool.close(this.writeRelays);
+                const closePool = () => {
+                    if ([...okRelays, ...failedRelays].length === this.writeRelays.length) {
+                        pool.close(this.writeRelays);
+                    }
+                }
+
+                pub.on('ok', (r: string) => {
+                    okRelays.push(r);
+                    if (!resolved) {
+                        resolve(event);
+                        resolved = true;
+                    }
+                    closePool();
                 });
 
-                pub.on('failed', (a: any) => {
-                    if (typeof a === 'string' && (a.startsWith('wss://') || a.startsWith('ws://'))) {
-                        reject(`Event couldn't be published on relay ${a}`);
-                        return;
+                pub.on('failed', (r: string) => {
+                    failedRelays.push(r);
+                    if (failedRelays.length === this.writeRelays.length) {
+                        reject("Event couldn't be published on any relay!");
                     }
-                    reject("Event couldn't be published on a relay!");
-
+                    closePool();
                 })
             }).catch(() => {
                 reject("Couldn't publish event!");
