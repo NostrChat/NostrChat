@@ -102,6 +102,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             kinds: [Kind.ChannelHideMessage, Kind.ChannelMuteUser],
             authors: [this.pub],
         }, {
+            // TODO: Find an elegant way
+            // @ts-ignore
             kinds: [NewKinds.MuteList],
             authors: [this.pub],
         }, {
