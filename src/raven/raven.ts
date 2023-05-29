@@ -449,6 +449,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     return;
                 }
 
+                this.pushToEventBuffer(event);
+
                 let resolved = false;
                 const okRelays: string[] = [];
                 const failedRelays: string[] = [];
