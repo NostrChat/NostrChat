@@ -18,7 +18,15 @@ import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import useToast from 'hooks/use-toast';
-import {channelAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom, channelToJoinAtom} from 'store';
+import {
+    channelAtom,
+    keysAtom,
+    ravenAtom,
+    ravenReadyAtom,
+    threadRootAtom,
+    channelToJoinAtom,
+    leftChannelListAtom
+} from 'store';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {isSha256} from 'util/crypto';
 
@@ -36,6 +44,7 @@ const ChannelPage = (props: RouteComponentProps) => {
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [raven] = useAtom(ravenAtom);
     const [channelToJoin, setChannelToJoin] = useAtom(channelToJoinAtom);
+    const [leftChannelList] = useAtom(leftChannelListAtom);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [notFound, setNotFound] = useState(false);
@@ -104,6 +113,10 @@ const ChannelPage = (props: RouteComponentProps) => {
         }
     }, [ravenReady, channel, cid, channelToJoin]);
 
+    const onJoin = () => {
+
+    }
+
     if (!cid || !keys) return null;
 
     if (!ravenReady) {
@@ -129,8 +142,16 @@ const ChannelPage = (props: RouteComponentProps) => {
                             if (channelToJoin) {
                                 return <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
                                     <ChannelCard channel={channelToJoin} onJoin={() => {
-                                        raven?.loadChannel(channelToJoin.id);
-                                        setChannelToJoin(null);
+                                        const load = () => {
+                                            raven?.loadChannel(channelToJoin.id);
+                                            setChannelToJoin(null);
+                                        }
+
+                                        if (leftChannelList.includes(channelToJoin.id)) {
+                                            raven?.updateLeftChannelList(leftChannelList.filter(x => x !== channelToJoin.id)).then(load);
+                                        } else {
+                                            load();
+                                        }
                                     }}/>
                                 </Box>;
                             }
