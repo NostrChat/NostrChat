@@ -1,12 +1,17 @@
 import {useAtom} from 'jotai';
-import {channelAtom, channelUpdatesAtom, eventDeletionsAtom} from 'store';
+import {channelAtom, channelUpdatesAtom, eventDeletionsAtom, leftChannelListAtom} from 'store';
 
 const useLiveChannel = () => {
     const [channel] = useAtom(channelAtom);
     const [channelUpdates] = useAtom(channelUpdatesAtom);
     const [eventDeletions] = useAtom(eventDeletionsAtom);
+    const [leftChannelList] = useAtom(leftChannelListAtom);
 
     if (!channel) {
+        return null;
+    }
+
+    if (leftChannelList.includes(channel.id)) {
         return null;
     }
 
