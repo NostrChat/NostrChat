@@ -113,10 +113,6 @@ const ChannelPage = (props: RouteComponentProps) => {
         }
     }, [ravenReady, channel, cid, channelToJoin]);
 
-    const onJoin = () => {
-
-    }
-
     if (!cid || !keys) return null;
 
     if (!ravenReady) {
