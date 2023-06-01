@@ -19,7 +19,8 @@ import {
     channelUserMutesAtom,
     muteListAtom,
     directMessageAtom,
-    reactionsAtom
+    reactionsAtom,
+    leftChannelListAtom
 } from 'store';
 import {initRaven, RavenEvents} from 'raven/raven';
 import {
@@ -53,6 +54,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
     const [channelMessageHides, setChannelMessageHides] = useAtom(channelMessageHidesAtom);
     const [channelUserMutes, setChannelUserMutes] = useAtom(channelUserMutesAtom);
     const [muteList, setMuteList] = useAtom(muteListAtom);
+    const [leftChannelList, setLeftChannelList] = useAtom(leftChannelListAtom);
     const [reactions, setReactions] = useAtom(reactionsAtom);
     const [, setDirectContacts] = useAtom(directContactsAtom);
     const [since, setSince] = useState<number>(0)
@@ -260,6 +262,23 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
             raven?.removeListener(RavenEvents.MuteList, handleMuteList);
         }
     }, [raven, muteList]);
+
+    // Left channel handler
+
+    const handleLeftChannelList = (data: string[]) => {
+        logger.info('handleLeftChannelList', data);
+        setLeftChannelList(data);
+    }
+
+    useEffect(() => {
+        raven?.removeListener(RavenEvents.LeftChannelList, handleLeftChannelList);
+        raven?.addListener(RavenEvents.LeftChannelList, handleLeftChannelList);
+
+        return () => {
+            raven?.removeListener(RavenEvents.LeftChannelList, handleLeftChannelList);
+        }
+    }, [raven, leftChannelList]);
+
 
     // muteList runtime decryption for nip04 wallet users.
     useEffect(() => {
