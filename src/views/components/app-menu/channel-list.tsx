@@ -32,11 +32,20 @@ const ChannelList = () => {
             }}>{t('Channels')}</Box>
             <ChannelAddMenu/>
         </Box>
+        {(() => {
+            if (channels.length === 0) {
+                return <Box component='span' sx={{
+                    color: theme.palette.primary.dark,
+                    fontSize: '85%',
+                    opacity: '0.6',
+                }}>{t('No channel')}</Box>
+            }
 
-        {channels.map(c => {
-            const isSelected = c.id === channel?.id && location.pathname.startsWith('/channel/');
-            return <ListItem key={c.id} label={c.name} href={`/channel/${c.id}`} selected={isSelected}/>;
-        })}
+            return channels.map(c => {
+                const isSelected = c.id === channel?.id && location.pathname.startsWith('/channel/');
+                return <ListItem key={c.id} label={c.name} href={`/channel/${c.id}`} selected={isSelected}/>;
+            })
+        })()}
     </>
 }
 
