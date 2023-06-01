@@ -52,8 +52,9 @@ const ChannelPage = (props: RouteComponentProps) => {
     const cid = useMemo(() => ('channel' in props) && isSha256(props.channel as string) ? props.channel as string : null, [props]);
 
     useEffect(() => {
-        if (!cid) navigate(`/channel/${GLOBAL_CHAT.id}`).then();
-    }, [cid]);
+        // If the user didn't leave global chat for empty channel id
+        if (ravenReady && !cid && !leftChannelList.includes(GLOBAL_CHAT.id)) navigate(`/channel/${GLOBAL_CHAT.id}`).then();
+    }, [cid, ravenReady]);
 
     useEffect(() => {
         if (!keys) navigate('/login').then();
@@ -113,12 +114,33 @@ const ChannelPage = (props: RouteComponentProps) => {
         }
     }, [ravenReady, channel, cid, channelToJoin]);
 
-    if (!cid || !keys) return null;
+    if (!keys) return null;
 
     if (!ravenReady) {
         return <Box sx={{display: 'flex', alignItems: 'center'}}>
             <CircularProgress size={20} sx={{mr: '8px'}}/> {t('Loading...')}
         </Box>;
+    }
+
+    if (!cid) {
+        return <>
+            <Helmet><title>{t('NostrChat')}</title></Helmet>
+            <AppWrapper>
+                <AppMenu/>
+                <AppContent>
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexGrow: 1,
+                        color: 'text.secondary',
+                        fontSize: '0.8em',
+                    }}>
+                        {t('Select a channel from the menu')}
+                    </Box>
+                </AppContent>
+            </AppWrapper>
+        </>
     }
 
     if (!channel) {
