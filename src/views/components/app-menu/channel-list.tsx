@@ -6,10 +6,20 @@ import {useTheme} from '@mui/material/styles';
 
 import useTranslation from 'hooks/use-translation';
 import useLiveChannels from 'hooks/use-live-channels';
+import useLivePublicMessages from 'hooks/use-live-public-messages';
 import ChannelAddMenu from 'views/components/app-menu/channel-add-menu';
 import ListItem from 'views/components/app-menu/list-item';
-import {channelAtom} from 'store';
+import {channelAtom, readMarkMapAtom} from 'store';
+import {Channel} from 'types';
 
+const ChannelListItem = (props: { channel: Channel, selected: boolean }) => {
+    const {channel, selected} = props;
+    const messages = useLivePublicMessages(channel.id);
+    const [readMarkMap] = useAtom(readMarkMapAtom);
+    const lMessage = messages[messages.length - 1];
+    const hasUnread = !!(readMarkMap[channel.id] && lMessage && lMessage.created > readMarkMap[channel.id]);
+    return <ListItem key={channel.id} label={channel.name} href={`/channel/${channel.id}`} selected={selected} hasUnread={hasUnread}/>;
+}
 
 const ChannelList = () => {
     const theme = useTheme();
@@ -43,7 +53,7 @@ const ChannelList = () => {
 
             return channels.map(c => {
                 const isSelected = c.id === channel?.id && location.pathname.startsWith('/channel/');
-                return <ListItem key={c.id} label={c.name} href={`/channel/${c.id}`} selected={isSelected}/>;
+                return <ChannelListItem key={c.id} channel={c} selected={isSelected}/>;
             })
         })()}
     </>

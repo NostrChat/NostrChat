@@ -3,7 +3,7 @@ import {useNavigate} from '@reach/router';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 
-const ListItem = (props: { label: React.ReactNode, href: string, selected: boolean }) => {
+const ListItem = (props: { label: React.ReactNode, href: string, selected: boolean, hasUnread?: boolean }) => {
     const navigate = useNavigate();
     const theme = useTheme();
 
@@ -17,6 +17,7 @@ const ListItem = (props: { label: React.ReactNode, href: string, selected: boole
         fontSize: '15px',
         position: 'relative',
         zIndex: 0,
+        fontWeight: props.hasUnread ? 'bold' : null,
         color: theme.palette.text.primary,
         textDecoration: 'none',
         pl: '10px',
