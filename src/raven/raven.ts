@@ -118,7 +118,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             // @ts-ignore
             kinds: [NewKinds.Arbitrary],
             authors: [this.pub],
-            '#d': ['left-channel-list']
+            '#d': ['left-channel-list', 'read-mark-map']
         }, {
             kinds: [Kind.ChannelMessage],
             authors: [this.pub],

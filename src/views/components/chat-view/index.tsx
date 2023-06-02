@@ -40,11 +40,19 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
 
     useEffect(() => {
         if (isBottom) {
+            if (messages.length === 0) return;
+
             if (readMarkMap[separator] === undefined) {
-                const m = {...readMarkMap, ...{[separator]: Date.now()}};
+                raven?.updateReadMarkMap({...readMarkMap, ...{[separator]: Date.now()}});
+                return;
+            }
+
+            const lMessage = messages[messages.length - 1];
+            if (lMessage.created > readMarkMap[separator]) {
+                raven?.updateReadMarkMap({...readMarkMap, ...{[separator]: Date.now()}});
             }
         }
-    }, [separator, isBottom]);
+    }, [separator, isBottom, messages, readMarkMap]);
 
     useEffect(() => {
         let scrollTimer: any;
