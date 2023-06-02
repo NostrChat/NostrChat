@@ -11,7 +11,8 @@ import {
     MuteList,
     Message,
     Reaction,
-    DirectContact
+    DirectContact,
+    UnreadMap
 } from 'types';
 import {GLOBAL_CHAT} from 'const';
 
@@ -40,3 +41,4 @@ export const threadRootAtom = atom<Message | null>(null);
 export const reactionsAtom = atom<Reaction[]>([]);
 export const backupWarnAtom = atom<boolean>(false);
 export const activeMessageAtom = atom<string | null>(null);
+export const unreadMapAtom = atom<UnreadMap>({});
