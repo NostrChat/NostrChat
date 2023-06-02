@@ -12,7 +12,7 @@ import {
     Message,
     Reaction,
     DirectContact,
-    UnreadMap
+    ReadMarkMap
 } from 'types';
 import {GLOBAL_CHAT} from 'const';
 
@@ -41,4 +41,4 @@ export const threadRootAtom = atom<Message | null>(null);
 export const reactionsAtom = atom<Reaction[]>([]);
 export const backupWarnAtom = atom<boolean>(false);
 export const activeMessageAtom = atom<string | null>(null);
-export const unreadMapAtom = atom<UnreadMap>({});
+export const readMarkMapAtom = atom<ReadMarkMap>({});

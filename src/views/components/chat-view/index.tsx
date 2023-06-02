@@ -9,7 +9,7 @@ import useStyles from 'hooks/use-styles';
 import {formatMessageDate, formatMessageTime} from 'helper';
 import {Message} from 'types';
 import {SCROLL_DETECT_THRESHOLD} from 'const';
-import {keysAtom, ravenAtom} from 'store';
+import {keysAtom, ravenAtom, readMarkMapAtom} from 'store';
 import {notEmpty} from 'util/misc';
 
 const ChatView = (props: { messages: Message[], separator: string, loading?: boolean }) => {
@@ -22,6 +22,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
     const [scrollTop, setScrollTop] = useState<number>(0);
     const [raven] = useAtom(ravenAtom);
     const [keys] = useAtom(keysAtom);
+    const [readMarkMap] = useAtom(readMarkMapAtom)
 
     const scrollToBottom = () => {
         ref.current!.scroll({top: ref.current!.scrollHeight, behavior: 'auto'});
@@ -36,6 +37,14 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
     useEffect(() => {
         scrollToBottom();
     }, [separator]);
+
+    useEffect(() => {
+        if (isBottom) {
+            if (readMarkMap[separator] === undefined) {
+                const m = {...readMarkMap, ...{[separator]: Date.now()}};
+            }
+        }
+    }, [separator, isBottom]);
 
     useEffect(() => {
         let scrollTimer: any;
