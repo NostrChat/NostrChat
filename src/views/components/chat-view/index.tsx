@@ -43,13 +43,13 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
             if (messages.length === 0) return;
 
             if (readMarkMap[separator] === undefined) {
-                raven?.updateReadMarkMap({...readMarkMap, ...{[separator]: Date.now()}});
+                raven?.updateReadMarkMap({...readMarkMap, ...{[separator]: Math.floor(Date.now() / 1000)}});
                 return;
             }
 
             const lMessage = messages[messages.length - 1];
             if (lMessage.created > readMarkMap[separator]) {
-                raven?.updateReadMarkMap({...readMarkMap, ...{[separator]: Date.now()}});
+                raven?.updateReadMarkMap({...readMarkMap, ...{[separator]: Math.floor(Date.now() / 1000)}});
             }
         }
     }, [separator, isBottom, messages, readMarkMap]);
