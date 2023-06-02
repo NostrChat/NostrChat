@@ -363,6 +363,9 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
             raven?.removeListener(RavenEvents.ChannelMessageHide, handlePublicMessageHide);
             raven?.removeListener(RavenEvents.ChannelUserMute, handleChannelUserMute);
             raven?.removeListener(RavenEvents.MuteList, handleMuteList);
+            raven?.removeListener(RavenEvents.LeftChannelList, handleLeftChannelList);
+            raven?.removeListener(RavenEvents.ReadMarkMap, handleReadMarkMap);
+            raven?.removeListener(RavenEvents.Reaction, handleReaction);
         }
     }, [raven]);
 
