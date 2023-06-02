@@ -14,6 +14,7 @@ import {
     Profile,
     PublicMessage,
     Reaction,
+    UnreadMap,
 } from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
@@ -43,7 +44,8 @@ export enum RavenEvents {
     ChannelUserMute = 'channel_user_mute',
     MuteList = 'mute_list',
     LeftChannelList = 'left_channel_list',
-    Reaction = 'reaction'
+    Reaction = 'reaction',
+    UnreadMap = 'unread_map'
 }
 
 type EventHandlerMap = {
@@ -59,6 +61,7 @@ type EventHandlerMap = {
     [RavenEvents.MuteList]: (data: MuteList) => void;
     [RavenEvents.LeftChannelList]: (data: string[]) => void;
     [RavenEvents.Reaction]: (data: Reaction[]) => void;
+    [RavenEvents.UnreadMap]: (data: UnreadMap) => void;
 };
 
 
@@ -139,6 +142,9 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
         const leftChannelList = events.find(x => x.kind.toString() === NewKinds.Arbitrary.toString() && Raven.findTagValue(x, 'd') === 'left-channel-list');
         if (leftChannelList) this.pushToEventBuffer(leftChannelList);
+
+        const unreadMap = events.find(x => x.kind.toString() === NewKinds.Arbitrary.toString() && Raven.findTagValue(x, 'd') === 'unread-map');
+        if (unreadMap) this.pushToEventBuffer(unreadMap);
 
         for (const e of events.filter(x => [Kind.ChannelHideMessage, Kind.ChannelMuteUser].includes(x.kind))) {
             this.pushToEventBuffer(e);
@@ -449,6 +455,11 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(NewKinds.Arbitrary, tags, JSON.stringify(channelIds));
     }
 
+    public async updateUnreadMap(map: UnreadMap){
+        const tags = [['d', 'unread-map']];
+        return this.publish(NewKinds.Arbitrary, tags, JSON.stringify(map));
+    }
+
     private publish(kind: number, tags: Array<any>[], content: string): Promise<Event> {
         return new Promise((resolve, reject) => {
             const pool = new SimplePool();
@@ -722,6 +733,16 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         ).filter(notEmpty);
         if (reactions.length > 0) {
             this.emit(RavenEvents.Reaction, reactions);
+        }
+
+        const unreadMapEv = this.eventQueue.filter(x => x.kind.toString() === NewKinds.Arbitrary.toString() && Raven.findTagValue(x, 'd') === 'unread-map')
+            .sort((a, b) => b.created_at - a.created_at)[0];
+
+        if (unreadMapEv) {
+            const content = Raven.parseJson(unreadMapEv.content);
+            if (typeof content === 'object' && Object.keys(content).every(x => isSha256(x))) {
+                this.emit(RavenEvents.UnreadMap, content);
+            }
         }
 
         this.eventQueue = [];
