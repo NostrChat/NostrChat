@@ -8,18 +8,36 @@ import useTranslation from 'hooks/use-translation';
 import ListItem from 'views/components/app-menu/list-item';
 import StartDM from 'views/components/dialogs/start-dm';
 import useLiveDirectContacts from 'hooks/use-live-direct-contacts';
+import useLiveDirectMessages from 'hooks/use-live-direct-messages';
 import useModal from 'hooks/use-modal';
-import {directMessageAtom, profilesAtom} from 'store';
+import {directMessageAtom, profilesAtom, readMarkMapAtom} from 'store';
 import Plus from 'svg/plus';
+import {DirectContact} from 'types';
 import {truncateMiddle} from 'util/truncate';
+
+const DmListItem = (props: { contact: DirectContact }) => {
+    const {contact} = props;
+
+    const [profiles] = useAtom(profilesAtom);
+    const [directMessage] = useAtom(directMessageAtom);
+    const [readMarkMap] = useAtom(readMarkMapAtom);
+    const location = useLocation();
+    const messages = useLiveDirectMessages(contact.pub);
+
+    const lMessage = messages[messages.length - 1];
+    const hasUnread = !!(readMarkMap[contact.pub] && lMessage && lMessage.created > readMarkMap[contact.pub]);
+
+    const profile = profiles.find(x => x.creator === contact.pub);
+    const label = profile?.name || truncateMiddle(contact.npub, 28, ':');
+    const isSelected = contact.pub === directMessage && location.pathname.startsWith('/dm/');
+
+    return <ListItem label={label} href={`/dm/${contact.npub}`} selected={isSelected} hasUnread={hasUnread}/>;
+}
 
 const DmList = () => {
     const theme = useTheme();
     const [t] = useTranslation();
-    const [profiles] = useAtom(profilesAtom);
     const directContacts = useLiveDirectContacts();
-    const [directMessage] = useAtom(directMessageAtom);
-    const location = useLocation();
     const [, showModal] = useModal();
     const navigate = useNavigate();
 
@@ -58,12 +76,7 @@ const DmList = () => {
                 }}>{t('No direct message')}</Box>
             }
 
-            return directContacts.map(p => {
-                const profile = profiles.find(x => x.creator === p.pub);
-                const label = profile?.name || truncateMiddle(p.npub, 28, ':');
-                const isSelected = p.pub === directMessage && location.pathname.startsWith('/dm/');
-                return <ListItem key={p.npub} label={label} href={`/dm/${p.npub}`} selected={isSelected}/>
-            })
+            return directContacts.map(p => <DmListItem key={p.npub} contact={p}/>);
         })()}
     </>
 }

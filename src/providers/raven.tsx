@@ -20,7 +20,8 @@ import {
     muteListAtom,
     directMessageAtom,
     reactionsAtom,
-    leftChannelListAtom
+    leftChannelListAtom,
+    readMarkMapAtom
 } from 'store';
 import {initRaven, RavenEvents} from 'raven/raven';
 import {
@@ -32,7 +33,9 @@ import {
     PublicMessage,
     ChannelMessageHide,
     ChannelUserMute,
-    MuteList, Reaction
+    MuteList,
+    Reaction,
+    ReadMarkMap
 } from 'types';
 import {createLogger} from 'logger';
 
@@ -55,6 +58,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
     const [channelUserMutes, setChannelUserMutes] = useAtom(channelUserMutesAtom);
     const [muteList, setMuteList] = useAtom(muteListAtom);
     const [leftChannelList, setLeftChannelList] = useAtom(leftChannelListAtom);
+    const [readMarkMap, setReadMarkMap] = useAtom(readMarkMapAtom);
     const [reactions, setReactions] = useAtom(reactionsAtom);
     const [, setDirectContacts] = useAtom(directContactsAtom);
     const [since, setSince] = useState<number>(0)
@@ -279,6 +283,20 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
         }
     }, [raven, leftChannelList]);
 
+    const handleReadMarkMap = (data: ReadMarkMap) => {
+        logger.info('handleReadMarkMap', data);
+        setReadMarkMap(data);
+    }
+
+    useEffect(() => {
+        raven?.removeListener(RavenEvents.ReadMarkMap, handleReadMarkMap);
+        raven?.addListener(RavenEvents.ReadMarkMap, handleReadMarkMap);
+
+        return () => {
+            raven?.removeListener(RavenEvents.ReadMarkMap, handleReadMarkMap);
+        }
+    }, [raven, readMarkMap]);
+
 
     // muteList runtime decryption for nip04 wallet users.
     useEffect(() => {
@@ -345,6 +363,9 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
             raven?.removeListener(RavenEvents.ChannelMessageHide, handlePublicMessageHide);
             raven?.removeListener(RavenEvents.ChannelUserMute, handleChannelUserMute);
             raven?.removeListener(RavenEvents.MuteList, handleMuteList);
+            raven?.removeListener(RavenEvents.LeftChannelList, handleLeftChannelList);
+            raven?.removeListener(RavenEvents.ReadMarkMap, handleReadMarkMap);
+            raven?.removeListener(RavenEvents.Reaction, handleReaction);
         }
     }, [raven]);
 
