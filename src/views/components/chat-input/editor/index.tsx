@@ -29,6 +29,7 @@ const useMakeEditor = ({content, onUpdate}: { content: string, onUpdate: () => v
                             () => commands.liftEmptyBlock(),
                             () => commands.splitBlock(),
                         ]),
+                        'Enter': () => true,
                     };
                 },
             }),
