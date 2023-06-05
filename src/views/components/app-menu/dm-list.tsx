@@ -1,5 +1,5 @@
 import {Box} from '@mui/material';
-import React from 'react';
+import React, {useMemo} from 'react';
 import {useTheme} from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import {useAtom} from 'jotai';
@@ -10,7 +10,7 @@ import StartDM from 'views/components/dialogs/start-dm';
 import useLiveDirectContacts from 'hooks/use-live-direct-contacts';
 import useLiveDirectMessages from 'hooks/use-live-direct-messages';
 import useModal from 'hooks/use-modal';
-import {directMessageAtom, profilesAtom, readMarkMapAtom} from 'store';
+import {directMessageAtom, directMessagesAtom, profilesAtom, readMarkMapAtom, showRequestsAtom} from 'store';
 import Plus from 'svg/plus';
 import {DirectContact} from 'types';
 import {truncateMiddle} from 'util/truncate';
@@ -40,6 +40,12 @@ const DmList = () => {
     const directContacts = useLiveDirectContacts();
     const [, showModal] = useModal();
     const navigate = useNavigate();
+    const [directMessages] = useAtom(directMessagesAtom);
+    const [showRequests, setShowRequests] = useAtom(showRequestsAtom);
+
+    const switchShowRequests = () => {
+        setShowRequests(!showRequests);
+    }
 
     const search = () => {
         showModal({
@@ -49,6 +55,9 @@ const DmList = () => {
             }}/>
         })
     }
+
+    const requests = useMemo(() => directContacts.filter(d => directMessages.find(m => m.peer === d.pub && m.creator !== d.pub) === undefined), [directContacts, directMessages]);
+    const dmList = useMemo(() => directContacts.filter(d => requests.find(r => r.pub === d.pub) === undefined), [directContacts, requests]);
 
     return <>
         <Box sx={{
@@ -63,12 +72,31 @@ const DmList = () => {
                 color: theme.palette.primary.dark,
 
             }}>
-                {t('DMs')}
+                {showRequests ? t('DM Requests') : t('DMs')}
             </Box>
             <Button onClick={search} sx={{minWidth: 'auto'}}><Plus height={18}/></Button>
         </Box>
+
+        {!showRequests && requests.length > 0 && (
+            <Box sx={{m: '12px 0'}}>
+                <Button size='small' onClick={switchShowRequests}>
+                    {t(requests.length === 1 ? '{{n}} DM request' : '{{n}} DM requests', {n: requests.length})}
+                </Button>
+            </Box>
+        )}
+
+        {showRequests && (
+            <Box sx={{m: '12px 0'}}>
+                <Button size='small' onClick={switchShowRequests}>
+                    {t('< Back to DMs')}
+                </Button>
+            </Box>
+        )}
+
         {(() => {
-            if (directContacts.length === 0) {
+            const theList = showRequests ? requests : dmList;
+
+            if (theList.length === 0) {
                 return <Box component='span' sx={{
                     color: theme.palette.primary.dark,
                     fontSize: '85%',
@@ -76,7 +104,7 @@ const DmList = () => {
                 }}>{t('No direct message')}</Box>
             }
 
-            return directContacts.map(p => <DmListItem key={p.npub} contact={p}/>);
+            return theList.map(p => <DmListItem key={p.npub} contact={p}/>);
         })()}
     </>
 }
