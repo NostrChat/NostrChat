@@ -19,7 +19,9 @@ import {
     channelUserMutesAtom,
     muteListAtom,
     directMessageAtom,
-    reactionsAtom
+    reactionsAtom,
+    leftChannelListAtom,
+    readMarkMapAtom
 } from 'store';
 import {initRaven, RavenEvents} from 'raven/raven';
 import {
@@ -31,7 +33,9 @@ import {
     PublicMessage,
     ChannelMessageHide,
     ChannelUserMute,
-    MuteList, Reaction
+    MuteList,
+    Reaction,
+    ReadMarkMap
 } from 'types';
 import {createLogger} from 'logger';
 
@@ -53,6 +57,8 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
     const [channelMessageHides, setChannelMessageHides] = useAtom(channelMessageHidesAtom);
     const [channelUserMutes, setChannelUserMutes] = useAtom(channelUserMutesAtom);
     const [muteList, setMuteList] = useAtom(muteListAtom);
+    const [leftChannelList, setLeftChannelList] = useAtom(leftChannelListAtom);
+    const [readMarkMap, setReadMarkMap] = useAtom(readMarkMapAtom);
     const [reactions, setReactions] = useAtom(reactionsAtom);
     const [, setDirectContacts] = useAtom(directContactsAtom);
     const [since, setSince] = useState<number>(0)
@@ -261,6 +267,37 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
         }
     }, [raven, muteList]);
 
+    // Left channel handler
+
+    const handleLeftChannelList = (data: string[]) => {
+        logger.info('handleLeftChannelList', data);
+        setLeftChannelList(data);
+    }
+
+    useEffect(() => {
+        raven?.removeListener(RavenEvents.LeftChannelList, handleLeftChannelList);
+        raven?.addListener(RavenEvents.LeftChannelList, handleLeftChannelList);
+
+        return () => {
+            raven?.removeListener(RavenEvents.LeftChannelList, handleLeftChannelList);
+        }
+    }, [raven, leftChannelList]);
+
+    const handleReadMarkMap = (data: ReadMarkMap) => {
+        logger.info('handleReadMarkMap', data);
+        setReadMarkMap(data);
+    }
+
+    useEffect(() => {
+        raven?.removeListener(RavenEvents.ReadMarkMap, handleReadMarkMap);
+        raven?.addListener(RavenEvents.ReadMarkMap, handleReadMarkMap);
+
+        return () => {
+            raven?.removeListener(RavenEvents.ReadMarkMap, handleReadMarkMap);
+        }
+    }, [raven, readMarkMap]);
+
+
     // muteList runtime decryption for nip04 wallet users.
     useEffect(() => {
         if (muteList.encrypted && keys) {
@@ -326,6 +363,9 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
             raven?.removeListener(RavenEvents.ChannelMessageHide, handlePublicMessageHide);
             raven?.removeListener(RavenEvents.ChannelUserMute, handleChannelUserMute);
             raven?.removeListener(RavenEvents.MuteList, handleMuteList);
+            raven?.removeListener(RavenEvents.LeftChannelList, handleLeftChannelList);
+            raven?.removeListener(RavenEvents.ReadMarkMap, handleReadMarkMap);
+            raven?.removeListener(RavenEvents.Reaction, handleReaction);
         }
     }, [raven]);
 

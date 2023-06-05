@@ -4,7 +4,7 @@ export const DEFAULT_RELAYS: RelayDict = {
     'wss://relay1.nostrchat.io': {read: true, write: true},
     'wss://relay2.nostrchat.io': {read: true, write: true},
     'wss://relay.damus.io': {read: true, write: true},
-    'wss://relay.snort.social': {read: true, write: true},
+    'wss://relay.snort.social': {read: true, write: false},
     'wss://nos.lol': {read: true, write: true},
 };
 

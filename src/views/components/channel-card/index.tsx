@@ -7,7 +7,7 @@ import Paper from '@mui/material/Paper';
 import {useTheme} from '@mui/material/styles';
 import useTranslation from 'hooks/use-translation';
 import {Channel} from 'types';
-import {keysAtom} from 'store';
+import {keysAtom, leftChannelListAtom} from 'store';
 import {truncate} from 'util/truncate';
 
 
@@ -16,8 +16,10 @@ const ChannelCard = (props: { channel: Channel, onJoin: () => void }) => {
     const theme = useTheme();
     const [t] = useTranslation();
     const [keys] = useAtom(keysAtom);
+    const [leftChannelList] = useAtom(leftChannelListAtom);
 
     const hasPicture = channel.picture.startsWith('https://');
+    const left = leftChannelList.includes(channel.id);
 
     const join = () => onJoin();
 
@@ -47,7 +49,17 @@ const ChannelCard = (props: { channel: Channel, onJoin: () => void }) => {
                 }}>{truncate(channel.about, 360)}</Box>
             </>
         )}
-        <Box><Button variant="contained" onClick={join}>{keys ? t('Join') : t('Login to Join')}</Button></Box>
+        <Box>
+            {left && (
+                <Box sx={{
+                    mb: '20px',
+                    color: theme.palette.text.secondary,
+                    fontSize: '0.8em',
+                }}>{t('You left this channel')}</Box>)}
+            <Button variant="contained" onClick={join}>
+                {keys ? (left ? t('Re-join') : t('Join')) : t('Login to Join')}
+            </Button>
+        </Box>
     </Paper>
 }
 

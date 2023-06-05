@@ -12,7 +12,7 @@ import useLiveChannel from 'hooks/use-live-channel';
 import EditChannel from 'views/channel/components/dialogs/edit-channel';
 import Invite from 'views/channel/components/dialogs/invite';
 import ConfirmDialog from 'components/confirm-dialog';
-import {keysAtom, ravenAtom} from 'store';
+import {keysAtom, leftChannelListAtom, ravenAtom} from 'store';
 import DotsVertical from 'svg/dots-vertical';
 import {GLOBAL_CHAT} from 'const';
 
@@ -25,6 +25,7 @@ const ChannelMenu = () => {
     const [, showMessage] = useToast();
     const [raven] = useAtom(ravenAtom);
     const [keys] = useAtom(keysAtom);
+    const [leftChannelList] = useAtom(leftChannelListAtom);
     const navigate = useNavigate();
 
     const openMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -59,6 +60,20 @@ const ChannelMenu = () => {
         closeMenu();
     }
 
+    const leave = () => {
+        if (!channel) return;
+        showModal({
+            body: <ConfirmDialog onConfirm={() => {
+                raven?.updateLeftChannelList([...leftChannelList, channel.id]).then(() => {
+                    navigate('/channel').then();
+                }).catch((e) => {
+                    showMessage(e.toString(), 'error');
+                });
+            }}/>
+        });
+        closeMenu();
+    }
+
     const invite = () => {
         if (!channel) return;
         showModal({
@@ -78,6 +93,7 @@ const ChannelMenu = () => {
         }
 
         items.push(<MenuItem key={3} dense onClick={invite}>{t('Invite')}</MenuItem>);
+        items.push(<MenuItem key={4} dense onClick={leave}>{t('Leave')}</MenuItem>);
 
         return items;
     }, [keys, channel]);

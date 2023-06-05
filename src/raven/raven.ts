@@ -14,6 +14,7 @@ import {
     Profile,
     PublicMessage,
     Reaction,
+    ReadMarkMap,
 } from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
@@ -21,12 +22,14 @@ import {BgRaven} from 'raven/worker';
 import {getRelays} from 'helper';
 import {GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {notEmpty} from 'util/misc';
+import {isSha256} from '../util/crypto';
 
 const relays = getRelays();
 
 
 enum NewKinds {
     MuteList = 10000,
+    Arbitrary = 30078
 }
 
 export enum RavenEvents {
@@ -40,7 +43,9 @@ export enum RavenEvents {
     ChannelMessageHide = 'channel_message_hide',
     ChannelUserMute = 'channel_user_mute',
     MuteList = 'mute_list',
-    Reaction = 'reaction'
+    LeftChannelList = 'left_channel_list',
+    Reaction = 'reaction',
+    ReadMarkMap = 'read_mark_map'
 }
 
 type EventHandlerMap = {
@@ -54,7 +59,9 @@ type EventHandlerMap = {
     [RavenEvents.ChannelMessageHide]: (data: ChannelMessageHide[]) => void;
     [RavenEvents.ChannelUserMute]: (data: ChannelUserMute[]) => void;
     [RavenEvents.MuteList]: (data: MuteList) => void;
+    [RavenEvents.LeftChannelList]: (data: string[]) => void;
     [RavenEvents.Reaction]: (data: Reaction[]) => void;
+    [RavenEvents.ReadMarkMap]: (data: ReadMarkMap) => void;
 };
 
 
@@ -102,8 +109,16 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             kinds: [Kind.ChannelHideMessage, Kind.ChannelMuteUser],
             authors: [this.pub],
         }, {
+            // TODO: Find an elegant way
+            // @ts-ignore
             kinds: [NewKinds.MuteList],
             authors: [this.pub],
+        }, {
+            // TODO: Find an elegant way
+            // @ts-ignore
+            kinds: [NewKinds.Arbitrary],
+            authors: [this.pub],
+            '#d': ['left-channel-list', 'read-mark-map']
         }, {
             kinds: [Kind.ChannelMessage],
             authors: [this.pub],
@@ -124,6 +139,12 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
         const muteList = events.find(x => x.kind.toString() === NewKinds.MuteList.toString());
         if (muteList) this.pushToEventBuffer(muteList);
+
+        const leftChannelList = events.find(x => x.kind.toString() === NewKinds.Arbitrary.toString() && Raven.findTagValue(x, 'd') === 'left-channel-list');
+        if (leftChannelList) this.pushToEventBuffer(leftChannelList);
+
+        const readMarkMap = events.find(x => x.kind.toString() === NewKinds.Arbitrary.toString() && Raven.findTagValue(x, 'd') === 'read-mark-map');
+        if (readMarkMap) this.pushToEventBuffer(readMarkMap);
 
         for (const e of events.filter(x => [Kind.ChannelHideMessage, Kind.ChannelMuteUser].includes(x.kind))) {
             this.pushToEventBuffer(e);
@@ -429,6 +450,16 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(Kind.Reaction, tags, reaction);
     }
 
+    public async updateLeftChannelList(channelIds: string[]) {
+        const tags = [['d', 'left-channel-list']];
+        return this.publish(NewKinds.Arbitrary, tags, JSON.stringify(channelIds));
+    }
+
+    public async updateReadMarkMap(map: ReadMarkMap){
+        const tags = [['d', 'read-mark-map']];
+        return this.publish(NewKinds.Arbitrary, tags, JSON.stringify(map));
+    }
+
     private publish(kind: number, tags: Array<any>[], content: string): Promise<Event> {
         return new Promise((resolve, reject) => {
             const pool = new SimplePool();
@@ -447,20 +478,35 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     return;
                 }
 
+                this.pushToEventBuffer(event);
+
+                let resolved = false;
+                const okRelays: string[] = [];
+                const failedRelays: string[] = [];
+
                 const pub = pool.publish(this.writeRelays, event);
 
-                pub.on('ok', () => {
-                    resolve(event);
-                    pool.close(this.writeRelays);
+                const closePool = () => {
+                    if ([...okRelays, ...failedRelays].length === this.writeRelays.length) {
+                        pool.close(this.writeRelays);
+                    }
+                }
+
+                pub.on('ok', (r: string) => {
+                    okRelays.push(r);
+                    if (!resolved) {
+                        resolve(event);
+                        resolved = true;
+                    }
+                    closePool();
                 });
 
-                pub.on('failed', (a: any) => {
-                    if (typeof a === 'string' && (a.startsWith('wss://') || a.startsWith('ws://'))) {
-                        reject(`Event couldn't be published on relay ${a}`);
-                        return;
+                pub.on('failed', (r: string) => {
+                    failedRelays.push(r);
+                    if (failedRelays.length === this.writeRelays.length) {
+                        reject("Event couldn't be published on any relay!");
                     }
-                    reject("Event couldn't be published on a relay!");
-
+                    closePool();
                 })
             }).catch(() => {
                 reject("Couldn't publish event!");
@@ -661,6 +707,16 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             }
         }
 
+        const leftChannelListEv = this.eventQueue.filter(x => x.kind.toString() === NewKinds.Arbitrary.toString() && Raven.findTagValue(x, 'd') === 'left-channel-list')
+            .sort((a, b) => b.created_at - a.created_at)[0];
+
+        if (leftChannelListEv) {
+            const content = Raven.parseJson(leftChannelListEv.content);
+            if (Array.isArray(content) && content.every(x => isSha256(x))) {
+                this.emit(RavenEvents.LeftChannelList, content);
+            }
+        }
+
         const reactions: Reaction[] = this.eventQueue.filter(x => x.kind === Kind.Reaction).map(ev => {
                 const message = Raven.findNip10MarkerValue(ev, 'root');
                 const peer = Raven.findTagValue(ev, 'p');
@@ -677,6 +733,16 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         ).filter(notEmpty);
         if (reactions.length > 0) {
             this.emit(RavenEvents.Reaction, reactions);
+        }
+
+        const readMarkMapEv = this.eventQueue.filter(x => x.kind.toString() === NewKinds.Arbitrary.toString() && Raven.findTagValue(x, 'd') === 'read-mark-map')
+            .sort((a, b) => b.created_at - a.created_at)[0];
+
+        if (readMarkMapEv) {
+            const content = Raven.parseJson(readMarkMapEv.content);
+            if (typeof content === 'object' && Object.keys(content).every(x => isSha256(x))) {
+                this.emit(RavenEvents.ReadMarkMap, content);
+            }
         }
 
         this.eventQueue = [];
@@ -704,11 +770,11 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         }
     }
 
-    static findTagValue(ev: Event, tag: 'e' | 'p') {
+    static findTagValue(ev: Event, tag: 'e' | 'p' | 'd') {
         return ev.tags.find(([t]) => t === tag)?.[1]
     }
 
-    static filterTagValue(ev: Event, tag: 'e' | 'p') {
+    static filterTagValue(ev: Event, tag: 'e' | 'p' | 'd') {
         return ev.tags.filter(([t]) => t === tag)
     }
 

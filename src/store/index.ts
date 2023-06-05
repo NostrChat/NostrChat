@@ -11,7 +11,8 @@ import {
     MuteList,
     Message,
     Reaction,
-    DirectContact
+    DirectContact,
+    ReadMarkMap
 } from 'types';
 import {GLOBAL_CHAT} from 'const';
 
@@ -35,7 +36,10 @@ export const profileToDmAtom = atom<Profile | null>(null);
 export const channelMessageHidesAtom = atom<ChannelMessageHide[]>([]);
 export const channelUserMutesAtom = atom<ChannelUserMute[]>([]);
 export const muteListAtom = atom<MuteList>({pubkeys: [], encrypted: ''});
+export const leftChannelListAtom = atom<string[]>([]);
 export const threadRootAtom = atom<Message | null>(null);
 export const reactionsAtom = atom<Reaction[]>([]);
 export const backupWarnAtom = atom<boolean>(false);
 export const activeMessageAtom = atom<string | null>(null);
+export const readMarkMapAtom = atom<ReadMarkMap>({});
+export const showRequestsAtom = atom<boolean>(false);

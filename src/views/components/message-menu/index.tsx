@@ -15,6 +15,7 @@ import useToast from 'hooks/use-toast';
 import EyeOff from 'svg/eye-off';
 import MessageReplyText from 'svg/message-reply-text';
 import Emoticon from 'svg/emoticon';
+import Close from '../../../svg/close';
 
 const MessageMenu = (props: { message: Message, inThreadView?: boolean }) => {
     const {message, inThreadView} = props;
@@ -62,11 +63,19 @@ const MessageMenu = (props: { message: Message, inThreadView?: boolean }) => {
         });
     }
 
+    const del = () => {
+        showModal({
+            body: <ConfirmDialog onConfirm={() => {
+                raven?.deleteEvents([message.id])
+            }}/>
+        });
+    }
+
     const buttons = [<Tooltip title={t('Reaction')}>
-            <IconButton size="small" onClick={emoji}>
-                <Emoticon height={20}/>
-            </IconButton>
-        </Tooltip>];
+        <IconButton size="small" onClick={emoji}>
+            <Emoticon height={20}/>
+        </IconButton>
+    </Tooltip>];
 
     if (!inThreadView) {
         buttons.push(<Tooltip title={t('Reply in thread')}>
@@ -80,6 +89,14 @@ const MessageMenu = (props: { message: Message, inThreadView?: boolean }) => {
         buttons.push(<Tooltip title={t('Hide')}>
             <IconButton size="small" onClick={hide}>
                 <EyeOff height={20}/>
+            </IconButton>
+        </Tooltip>);
+    }
+
+    if (keys?.pub === message.creator) {
+        buttons.push(<Tooltip title={t('Delete')}>
+            <IconButton size="small" onClick={del}>
+                <Close height={20}/>
             </IconButton>
         </Tooltip>);
     }

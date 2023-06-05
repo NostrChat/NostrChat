@@ -40,3 +40,5 @@ export type MuteList = { pubkeys: string[], encrypted: string };
 export type Reaction = { id: string, message: string, peer: string, content: string, creator: string, created: number };
 
 export type ReactionCombined = { symbol: string, authors: string[], count: number, userReaction: Reaction | undefined };
+
+export type ReadMarkMap = Record<string, number>;

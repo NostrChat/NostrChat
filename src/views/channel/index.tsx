@@ -18,7 +18,15 @@ import useLiveChannels from 'hooks/use-live-channels';
 import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import useToast from 'hooks/use-toast';
-import {channelAtom, keysAtom, ravenAtom, ravenReadyAtom, threadRootAtom, channelToJoinAtom} from 'store';
+import {
+    channelAtom,
+    keysAtom,
+    ravenAtom,
+    ravenReadyAtom,
+    threadRootAtom,
+    channelToJoinAtom,
+    leftChannelListAtom
+} from 'store';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {isSha256} from 'util/crypto';
 
@@ -36,6 +44,7 @@ const ChannelPage = (props: RouteComponentProps) => {
     const [ravenReady] = useAtom(ravenReadyAtom);
     const [raven] = useAtom(ravenAtom);
     const [channelToJoin, setChannelToJoin] = useAtom(channelToJoinAtom);
+    const [leftChannelList] = useAtom(leftChannelListAtom);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [notFound, setNotFound] = useState(false);
@@ -43,8 +52,9 @@ const ChannelPage = (props: RouteComponentProps) => {
     const cid = useMemo(() => ('channel' in props) && isSha256(props.channel as string) ? props.channel as string : null, [props]);
 
     useEffect(() => {
-        if (!cid) navigate(`/channel/${GLOBAL_CHAT.id}`).then();
-    }, [cid]);
+        // If the user didn't leave global chat for empty channel id
+        if (ravenReady && !cid && !leftChannelList.includes(GLOBAL_CHAT.id)) navigate(`/channel/${GLOBAL_CHAT.id}`).then();
+    }, [cid, ravenReady]);
 
     useEffect(() => {
         if (!keys) navigate('/login').then();
@@ -104,12 +114,33 @@ const ChannelPage = (props: RouteComponentProps) => {
         }
     }, [ravenReady, channel, cid, channelToJoin]);
 
-    if (!cid || !keys) return null;
+    if (!keys) return null;
 
     if (!ravenReady) {
         return <Box sx={{display: 'flex', alignItems: 'center'}}>
             <CircularProgress size={20} sx={{mr: '8px'}}/> {t('Loading...')}
         </Box>;
+    }
+
+    if (!cid) {
+        return <>
+            <Helmet><title>{t('NostrChat')}</title></Helmet>
+            <AppWrapper>
+                <AppMenu/>
+                <AppContent>
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexGrow: 1,
+                        color: 'text.secondary',
+                        fontSize: '0.8em',
+                    }}>
+                        {t('Select a channel from the menu')}
+                    </Box>
+                </AppContent>
+            </AppWrapper>
+        </>
     }
 
     if (!channel) {
@@ -129,8 +160,16 @@ const ChannelPage = (props: RouteComponentProps) => {
                             if (channelToJoin) {
                                 return <Box sx={{maxWidth: '500px', ml: '10px', mr: '10px'}}>
                                     <ChannelCard channel={channelToJoin} onJoin={() => {
-                                        raven?.loadChannel(channelToJoin.id);
-                                        setChannelToJoin(null);
+                                        const load = () => {
+                                            raven?.loadChannel(channelToJoin.id);
+                                            setChannelToJoin(null);
+                                        }
+
+                                        if (leftChannelList.includes(channelToJoin.id)) {
+                                            raven?.updateLeftChannelList(leftChannelList.filter(x => x !== channelToJoin.id)).then(load);
+                                        } else {
+                                            load();
+                                        }
                                     }}/>
                                 </Box>;
                             }
