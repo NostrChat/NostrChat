@@ -1,10 +1,11 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useAtom} from 'jotai';
-import {useNavigate} from '@reach/router';
+import {useLocation, useNavigate} from '@reach/router';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import useTranslation from 'hooks/use-translation';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
+import usePopover from 'hooks/use-popover';
 import {backupWarnAtom} from 'store';
 import Alert from 'svg/alert';
 
@@ -14,7 +15,13 @@ const AppWrapper = (props: { children: React.ReactNode }) => {
     const {isSm} = useMediaBreakPoint();
     const [t,] = useTranslation();
     const navigate = useNavigate();
+    const location = useLocation();
     const [backupWarn, setBackupWarn] = useAtom(backupWarnAtom);
+    const [, setPopover] = usePopover();
+
+    useEffect(() => {
+        setPopover(null);
+    }, [location.pathname]);
 
     const warnHeight = isSm ? '36px' : '50px';
 
