@@ -29,7 +29,7 @@ const ChatInput = (props: { separator: string, senderFn: (message: string, menti
     const editor = useMakeEditor({content: localStorage.getItem(storageKey) || '', onUpdate: save});
 
     useEffect(() => {
-        editor?.commands.setContent(localStorage.getItem(storageKey) || '');
+        editor?.commands.setContent(localStorage.getItem(storageKey) || '', false, {preserveWhitespace: 'full'});
         editor?.commands.focus();
     }, [storageKey]);
 

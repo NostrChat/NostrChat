@@ -68,7 +68,7 @@ const ChannelPage = (props: RouteComponentProps) => {
             setHasMore(true);
             setNotFound(false);
         }
-    }, [location]);
+    }, [location.pathname]);
 
     useEffect(() => {
         if (!cid) return;
