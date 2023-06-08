@@ -95,7 +95,8 @@ const useRenderContent = () => {
 
         return <Linkify options={{render: renderLink}}>{
             content.trim().split('\n').map((x, i) => (
-                <Box key={i} sx={{mb: '6px'}}>{x.trim() === '' ? <>&nbsp;</> : renderBlock(x)}</Box>
+                x.trim() === '' ? <Box sx={{height: '8px'}} key={i}/> :
+                    <Box key={i} sx={{mb: '6px'}}>{renderBlock(x)}</Box>
             ))}
         </Linkify>
     }
