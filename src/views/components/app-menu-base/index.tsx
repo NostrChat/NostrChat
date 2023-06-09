@@ -9,6 +9,7 @@ import useStyles from 'hooks/use-styles';
 import {appMenuAtom} from 'store';
 import Github from 'svg/github';
 import pack from '../../../../package.json';
+import ThemeSwitch from '../app-menu/theme-switch';
 
 
 const AppMenuBase = (props: { children: React.ReactNode }) => {
@@ -59,14 +60,21 @@ const AppMenuBase = (props: { children: React.ReactNode }) => {
                 pt: '10px',
                 flexShrink: 0,
                 display: 'flex',
-                fontSize: '0.8em',
-                color: theme.palette.text.disabled
+                alignItems: 'center',
+                justifyContent: 'space-between'
             }}>
-                <Box sx={{mr: '20px'}}>{`NostrChat v${pack.version}`}</Box>
-                <Box component="a" href="https://github.com/NostrChat/NostrChat" target="_blank" rel="noreferrer"
-                     sx={{color: theme.palette.text.secondary}}>
-                    <Github height={20} style={{marginRight: '4px'}}/>
+                <Box sx={{
+                    display: 'flex',
+                    fontSize: '0.8em',
+                    color: theme.palette.text.disabled,
+                }}>
+                    <Box sx={{mr: '10px'}}>{`NostrChat v${pack.version}`}</Box>
+                    <Box component="a" href="https://github.com/NostrChat/NostrChat" target="_blank" rel="noreferrer"
+                         sx={{color: theme.palette.text.secondary}}>
+                        <Github height={20} style={{marginRight: '4px'}}/>
+                    </Box>
                 </Box>
+                <ThemeSwitch />
             </Box>
         </Box>
     </Box>
