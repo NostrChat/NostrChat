@@ -1,6 +1,8 @@
 import React from 'react';
 import {ThemeProvider as MThemeProvider, createTheme, CssBaseline} from '@mui/material';
-import useAppTheme from '../hooks/use-app-theme';
+import {TypographyOptions} from '@mui/material/styles/createTypography';
+import useAppTheme from 'hooks/use-app-theme';
+
 
 declare module '@mui/material/Button' {
     interface ButtonPropsVariantOverrides {
@@ -8,11 +10,43 @@ declare module '@mui/material/Button' {
     }
 }
 
+const typography: TypographyOptions = {
+    allVariants: {
+        fontFamily: 'Inter, sans-serif'
+    },
+    button: {
+        textTransform: 'none'
+    },
+    fontSize: 16,
+};
+
+const shape  = {
+    borderRadius: 4
+}
+
 const themes = {
     'light': createTheme({
         palette: {
             mode: 'light',
-        }
+            divider: 'rgba(54, 49, 122, 0.09)',
+            primary: {
+                main: '#7166FF',
+                dark: 'rgb(132, 132, 132)',
+            },
+            error: {
+                main: '#F23047'
+            },
+            background: {
+                default: 'rgb(255, 255, 255)',
+                paper: 'rgb(237, 236, 243)',
+            },
+            text: {
+                primary: 'rgb(89, 89, 89)',
+                secondary: '#736d6d',
+            }
+        },
+        typography,
+        shape,
     }),
     'dark': createTheme({
         palette: {
@@ -34,18 +68,8 @@ const themes = {
                 secondary: 'rgb(189, 189, 189)',
             }
         },
-        typography: {
-            allVariants: {
-                fontFamily: 'Inter, sans-serif'
-            },
-            button: {
-                textTransform: 'none'
-            },
-            fontSize: 16,
-        },
-        shape: {
-            borderRadius: 4,
-        },
+        typography,
+        shape,
         components: {
             MuiLink: {
                 variants: [
