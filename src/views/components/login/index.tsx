@@ -1,3 +1,4 @@
+import {useEffect, useState} from 'react';
 import {useAtom} from 'jotai';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
@@ -10,13 +11,12 @@ import ImportAccount from 'views/components/dialogs/import-account';
 import MetadataForm from 'views/components/metadata-form';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
-import usePlatform from 'hooks/use-platform';
 import useModal from 'hooks/use-modal';
 import {keysAtom, profileAtom, backupWarnAtom, ravenAtom, ravenReadyAtom} from 'store';
 import Creation from 'svg/creation';
 import Import from 'svg/import';
 import Wallet from 'svg/wallet';
-import {useEffect, useState} from 'react';
+import {PLATFORM} from 'const';
 
 
 const Login = (props: { onDone: () => void }) => {
@@ -24,7 +24,6 @@ const Login = (props: { onDone: () => void }) => {
     const {isSm} = useMediaBreakPoint();
     const [t,] = useTranslation();
     const [, showModal] = useModal();
-    const platform = usePlatform();
     const [, setKeys] = useAtom(keysAtom);
     const [profile, setProfile] = useAtom(profileAtom);
     const [, setBackupWarn] = useAtom(backupWarnAtom);
@@ -124,7 +123,7 @@ const Login = (props: { onDone: () => void }) => {
                         {t('Import Nostr Account')}
                     </Button>
                 </Box>
-                {platform === 'web' && (
+                {PLATFORM === 'web' && (
                     <Button variant="login" size="large" disableElevation fullWidth onClick={loginNip07}
                             sx={{p: '14px'}} startIcon={<Wallet height={20}/>}>
                         {t('Use NIP-07 Wallet')}
