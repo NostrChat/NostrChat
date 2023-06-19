@@ -17,6 +17,7 @@ import Creation from 'svg/creation';
 import Import from 'svg/import';
 import Wallet from 'svg/wallet';
 import {PLATFORM} from 'const';
+import {storeKeys} from '../../../storage';
 
 
 const Login = (props: { onDone: () => void }) => {
@@ -73,10 +74,11 @@ const Login = (props: { onDone: () => void }) => {
 
     const proceed = (priv: string, pub: string) => {
         const keys = {priv, pub};
-        localStorage.setItem('keys', JSON.stringify(keys));
-        setKeys({priv, pub});
-        setProfile(null);
-        setStep(1);
+        storeKeys(keys).then(() => {
+            setKeys({priv, pub});
+            setProfile(null);
+            setStep(1);
+        });
     }
 
     return <>

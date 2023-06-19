@@ -455,7 +455,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(NewKinds.Arbitrary, tags, JSON.stringify(channelIds));
     }
 
-    public async updateReadMarkMap(map: ReadMarkMap){
+    public async updateReadMarkMap(map: ReadMarkMap) {
         const tags = [['d', 'read-mark-map']];
         return this.publish(NewKinds.Arbitrary, tags, JSON.stringify(map));
     }
@@ -786,7 +786,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
 export default Raven;
 
-export const initRaven = (keys: Keys): Raven | undefined => {
+export const initRaven = (keys: Keys | undefined): Raven | undefined => {
     if (window.raven) {
         window.raven.close();
         window.raven = undefined;

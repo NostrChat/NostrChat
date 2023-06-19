@@ -46,6 +46,7 @@
     "@types/react-helmet": "^6.1.6",
     "add": "^2.0.6",
     "buffer": "^6.0.3",
+    "capacitor-secure-storage-plugin": "^0.9.0",
     "comlink": "^4.4.1",
     "crypto-browserify": "^3.12.0",
     "emoji-mart": "^5.5.2",
