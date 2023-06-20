@@ -49,8 +49,8 @@ NostrChat will open in your browser.
 - Channel invitations ✅
 - User profiles ✅
 - Mentions ✅
-- Channel & DM unread indicator
-- iPhone app
-- NIP42 Support
-- Notifications
-
+- Channel & DM unread indicator ✅
+- iOS app
+- Notifications (push/fetch)
+- Android app
+- NIP-29 support
