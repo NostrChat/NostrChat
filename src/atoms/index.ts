@@ -12,14 +12,15 @@ import {
     Message,
     Reaction,
     DirectContact,
-    ReadMarkMap
+    ReadMarkMap, Keys
 } from 'types';
 import {GLOBAL_CHAT} from 'const';
+import Raven from 'raven/raven';
 
 export * from 'atoms/ui';
-export * from 'atoms/keys';
-export * from 'atoms/raven';
 
+export const keysAtom = atom<Keys | undefined>(undefined);
+export const ravenAtom = atom<Raven | undefined>(undefined);
 export const ravenReadyAtom = atom<boolean>(false);
 export const profilesAtom = atom<Profile[]>([]);
 export const profileAtom = atom<Profile | null>(null);
