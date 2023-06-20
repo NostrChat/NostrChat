@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {Router} from '@reach/router';
 import {useAtom} from 'jotai';
 
@@ -15,16 +15,9 @@ import SettingsPassword from 'views/settings/password';
 import SettingsRelays from 'views/settings/relays';
 import SettingsPublicLinkPage from 'views/settings/public-link';
 import {keysAtom} from 'store';
-import {getKeys} from 'storage';
 
 function App() {
-    const [keys, setKeys] = useAtom(keysAtom);
-
-    useEffect(() => {
-       getKeys().then(setKeys);
-    }, []);
-
-    if (keys === undefined) return null; // Wait until we find key from storage
+    const [keys] = useAtom(keysAtom);
 
     return <Router style={{
         width: '100%',
