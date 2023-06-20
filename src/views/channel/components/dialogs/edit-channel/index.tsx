@@ -9,7 +9,7 @@ import MetadataForm from 'views/components/metadata-form';
 import useModal from 'hooks/use-modal';
 import useToast from 'hooks/use-toast';
 import useTranslation from 'hooks/use-translation';
-import {ravenAtom} from 'store';
+import {ravenAtom} from 'atoms';
 import {Channel} from 'types';
 
 const EditChannel = (props: { channel: Channel, onSuccess: () => void }) => {

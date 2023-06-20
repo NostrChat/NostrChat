@@ -1,6 +1,6 @@
 import {useMemo} from 'react';
 import {useAtom} from 'jotai';
-import {directMessagesAtom, eventDeletionsAtom, muteListAtom} from 'store';
+import {directMessagesAtom, eventDeletionsAtom, muteListAtom} from 'atoms';
 import useLiveReactions from 'hooks/use-live-reactions';
 
 const useLiveDirectMessages = (peer?: string) => {

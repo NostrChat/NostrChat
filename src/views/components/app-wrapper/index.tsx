@@ -6,7 +6,7 @@ import {useTheme} from '@mui/material/styles';
 import useTranslation from 'hooks/use-translation';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import usePopover from 'hooks/use-popover';
-import {backupWarnAtom} from 'store';
+import {backupWarnAtom} from 'atoms';
 import Alert from 'svg/alert';
 
 

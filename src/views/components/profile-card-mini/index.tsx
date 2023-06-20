@@ -10,7 +10,7 @@ import CopyToClipboard from 'components/copy-clipboard';
 import Avatar from 'views/components/avatar';
 import MuteBtn from 'views/components/mute-btn';
 import DmInput from 'views/components/dm-input';
-import {keysAtom} from 'store';
+import {keysAtom} from 'atoms';
 import {Profile} from 'types';
 import KeyVariant from 'svg/key-variant';
 import EyeOff from 'svg/eye-off';

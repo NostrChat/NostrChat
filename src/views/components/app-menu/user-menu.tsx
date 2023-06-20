@@ -7,7 +7,7 @@ import {nip19} from 'nostr-tools';
 
 import Avatar from 'views/components/avatar';
 import useStyles from 'hooks/use-styles';
-import {keysAtom, profileAtom} from 'store';
+import {keysAtom, profileAtom} from 'atoms';
 import {truncateMiddle} from 'util/truncate';
 
 

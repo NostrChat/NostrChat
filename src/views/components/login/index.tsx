@@ -12,7 +12,7 @@ import MetadataForm from 'views/components/metadata-form';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
-import {keysAtom, profileAtom, backupWarnAtom, ravenAtom, ravenReadyAtom} from 'store';
+import {keysAtom, profileAtom, backupWarnAtom, ravenAtom, ravenReadyAtom} from 'atoms';
 import Creation from 'svg/creation';
 import Import from 'svg/import';
 import Wallet from 'svg/wallet';

@@ -8,7 +8,7 @@ import AppContent from 'views/components/app-content';
 import SettingsMenu from 'views/settings/components/settings-menu';
 import SettingsHeader from 'views/settings/components/settings-header';
 import SettingsContent from 'views/settings/components/settings-content';
-import {keysAtom} from 'store';
+import {keysAtom} from 'atoms';
 
 
 const SettingsPasswordPage = (props: RouteComponentProps) => {

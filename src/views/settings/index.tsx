@@ -15,7 +15,7 @@ import useSettingsSections from 'hooks/use-settings-sections';
 import SettingsHeader from 'views/settings/components/settings-header';
 import SettingsContent from 'views/settings/components/settings-content';
 import ConfirmDialog from 'components/confirm-dialog';
-import {keysAtom} from 'store';
+import {keysAtom} from 'atoms';
 
 
 const SettingsPage = (_: RouteComponentProps) => {

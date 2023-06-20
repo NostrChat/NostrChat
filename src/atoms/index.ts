@@ -16,9 +16,9 @@ import {
 } from 'types';
 import {GLOBAL_CHAT} from 'const';
 
-export * from 'store/ui';
-export * from 'store/keys';
-export * from 'store/raven';
+export * from 'atoms/ui';
+export * from 'atoms/keys';
+export * from 'atoms/raven';
 
 export const ravenReadyAtom = atom<boolean>(false);
 export const profilesAtom = atom<Profile[]>([]);

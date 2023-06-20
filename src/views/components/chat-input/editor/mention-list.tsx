@@ -9,7 +9,7 @@ import useLiveChannel from 'hooks/use-live-channel';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import {MentionListProps, MentionListRef} from 'views/components/chat-input/editor/types';
 import Avatar from 'views/components/avatar';
-import {directMessageAtom, profilesAtom} from 'store';
+import {directMessageAtom, profilesAtom} from 'atoms';
 import {notEmpty} from 'util/misc';
 
 

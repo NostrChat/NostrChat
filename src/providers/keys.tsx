@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {getKeys} from 'storage';
 import {useAtom} from 'jotai';
-import {keysAtom} from 'store';
+import {keysAtom} from 'atoms';
 
 const KeysProvider = (props: { children: React.ReactNode }) => {
     const [keys, setKeys] = useAtom(keysAtom);

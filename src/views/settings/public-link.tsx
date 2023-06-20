@@ -14,7 +14,7 @@ import AppContent from 'views/components/app-content';
 import SettingsHeader from 'views/settings/components/settings-header';
 import SettingsContent from 'views/settings/components/settings-content';
 import SettingsMenu from 'views/settings/components/settings-menu';
-import {keysAtom} from 'store';
+import {keysAtom} from 'atoms';
 import CopyToClipboard from 'components/copy-clipboard';
 import ContentCopy from 'svg/content-copy';
 import Information from 'svg/information';

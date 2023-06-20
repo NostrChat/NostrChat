@@ -12,7 +12,7 @@ import usePopover from 'hooks/use-popover';
 import ExternalLinkDialog from 'components/external-link-dialog';
 import ProfileCardMini from 'views/components/profile-card-mini';
 import {Message} from 'types';
-import {profilesAtom} from 'store';
+import {profilesAtom} from 'atoms';
 import {notEmpty} from 'util/misc';
 
 const imgReg = /(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/;

@@ -26,7 +26,7 @@ import {
     threadRootAtom,
     channelToJoinAtom,
     leftChannelListAtom
-} from 'store';
+} from 'atoms';
 import {ACCEPTABLE_LESS_PAGE_MESSAGES, GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {isSha256} from 'util/crypto';
 

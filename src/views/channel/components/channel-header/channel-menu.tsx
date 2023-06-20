@@ -12,7 +12,7 @@ import useLiveChannel from 'hooks/use-live-channel';
 import EditChannel from 'views/channel/components/dialogs/edit-channel';
 import Invite from 'views/channel/components/dialogs/invite';
 import ConfirmDialog from 'components/confirm-dialog';
-import {keysAtom, leftChannelListAtom, ravenAtom} from 'store';
+import {keysAtom, leftChannelListAtom, ravenAtom} from 'atoms';
 import DotsVertical from 'svg/dots-vertical';
 import {GLOBAL_CHAT} from 'const';
 

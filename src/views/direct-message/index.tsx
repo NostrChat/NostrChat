@@ -27,7 +27,7 @@ import {
     ravenAtom,
     ravenReadyAtom,
     threadRootAtom
-} from 'store';
+} from 'atoms';
 
 
 const DirectMessagePage = (props: RouteComponentProps) => {

@@ -6,7 +6,7 @@ import {useTheme} from '@mui/material/styles';
 
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useStyles from 'hooks/use-styles';
-import {appMenuAtom} from 'store';
+import {appMenuAtom} from 'atoms';
 import ChevronRight from 'svg/chevron-right';
 import ChevronLeft from 'svg/chevron-left';
 

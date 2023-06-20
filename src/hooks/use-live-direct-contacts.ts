@@ -1,5 +1,5 @@
 import {useAtom} from 'jotai';
-import {directContactsAtom, directMessagesAtom, muteListAtom} from 'store';
+import {directContactsAtom, directMessagesAtom, muteListAtom} from 'atoms';
 import {useMemo} from 'react';
 
 const useLiveDirectContacts = () => {

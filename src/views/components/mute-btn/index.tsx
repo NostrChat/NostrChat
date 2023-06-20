@@ -3,7 +3,7 @@ import {useAtom} from 'jotai';
 import useModal from 'hooks/use-modal';
 import usePopover from 'hooks/use-popover';
 import ConfirmDialog from 'components/confirm-dialog';
-import {muteListAtom, ravenAtom} from 'store';
+import {muteListAtom, ravenAtom} from 'atoms';
 
 const MuteBtn = (props: { pubkey: string, children: JSX.Element, }) => {
     const {pubkey, children} = props;
