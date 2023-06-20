@@ -1,4 +1,5 @@
-import {Channel, RelayDict} from 'types';
+import {Capacitor} from '@capacitor/core';
+import {Channel, Platform, RelayDict} from 'types';
 
 export const DEFAULT_RELAYS: RelayDict = {
     'wss://relay1.nostrchat.io': {read: true, write: true},
@@ -20,3 +21,5 @@ export const GLOBAL_CHAT: Channel = {
     creator: 'aea59833635dd0868bc7cf923926e51df936405d8e6a753b78038981c75c4a74',
     created: 1678198928
 };
+
+export const PLATFORM = Capacitor.getPlatform() as Platform;

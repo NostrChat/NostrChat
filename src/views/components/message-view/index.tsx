@@ -15,7 +15,7 @@ import Avatar from 'views/components/avatar';
 import ProfileCardMini from 'views/components/profile-card-mini';
 import MessageMenu from 'views/components/message-menu';
 import MessageReactions from 'views/components/message-reactions';
-import {activeMessageAtom, profilesAtom, threadRootAtom} from 'store';
+import {activeMessageAtom, profilesAtom, threadRootAtom} from 'atoms';
 import {Message,} from 'types';
 import {formatMessageTime, formatMessageFromNow, formatMessageDateTime} from 'helper';
 import ChevronRight from 'svg/chevron-right';

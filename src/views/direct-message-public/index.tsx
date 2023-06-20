@@ -13,7 +13,7 @@ import useModal from 'hooks/use-modal';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import Raven from 'raven/raven';
 import {Profile} from 'types';
-import {profileToDmAtom} from 'store';
+import {profileToDmAtom} from 'atoms';
 
 
 const DirectMessagePublic = (props: RouteComponentProps) => {

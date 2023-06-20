@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import {useTheme} from '@mui/material/styles';
 import {useAtom} from 'jotai';
-import {activeMessageAtom, keysAtom, ravenAtom, threadRootAtom} from 'store';
+import {activeMessageAtom, keysAtom, ravenAtom, threadRootAtom} from 'atoms';
 import useModal from 'hooks/use-modal';
 import ConfirmDialog from 'components/confirm-dialog';
 import EmojiPicker from 'components/emoji-picker';

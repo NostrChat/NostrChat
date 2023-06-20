@@ -7,7 +7,7 @@ import {
     channelUserMutesAtom,
     muteListAtom,
     keysAtom,
-} from 'store';
+} from 'atoms';
 import useLiveReactions from 'hooks/use-live-reactions';
 
 const useLivePublicMessages = (channelId?: string) => {

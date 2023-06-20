@@ -4,7 +4,7 @@ import {useTheme} from '@mui/material/styles';
 import ChannelMenu from 'views/channel/components/channel-header/channel-menu';
 import AppContentHeaderBase from 'views/components/app-content-header-base';
 import useStyle from 'hooks/use-styles';
-import {channelAtom, keysAtom} from 'store';
+import {channelAtom, keysAtom} from 'atoms';
 
 
 const ChannelHeader = () => {

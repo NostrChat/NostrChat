@@ -11,7 +11,7 @@ import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
 import Raven from 'raven/raven';
 import {Channel} from 'types';
-import {channelToJoinAtom} from 'store';
+import {channelToJoinAtom} from 'atoms';
 import {isSha256} from 'util/crypto';
 
 const ChannelPublicPage = (props: RouteComponentProps) => {

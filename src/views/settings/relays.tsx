@@ -26,7 +26,7 @@ import SettingsMenu from 'views/settings/components/settings-menu';
 import SettingsHeader from 'views/settings/components/settings-header';
 import SettingsContent from 'views/settings/components/settings-content';
 import ConfirmDialog from 'components/confirm-dialog';
-import {keysAtom, ravenAtom} from 'store';
+import {keysAtom, ravenAtom} from 'atoms';
 import {RelayDict} from 'types';
 import {getRelays} from 'helper';
 import ShareIcon from 'svg/share';

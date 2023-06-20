@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import uniq from 'lodash.uniq';
 import toArray from 'lodash.toarray';
 import {useAtom} from 'jotai';
-import {keysAtom} from 'store';
+import {keysAtom} from 'atoms';
 import ReactionBtn from 'views/components/message-reactions/reaction-btn';
 import {Message, ReactionCombined} from 'types';
 

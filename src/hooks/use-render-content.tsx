@@ -12,7 +12,7 @@ import usePopover from 'hooks/use-popover';
 import ExternalLinkDialog from 'components/external-link-dialog';
 import ProfileCardMini from 'views/components/profile-card-mini';
 import {Message} from 'types';
-import {profilesAtom} from 'store';
+import {profilesAtom} from 'atoms';
 import {notEmpty} from 'util/misc';
 
 const imgReg = /(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/;
@@ -95,7 +95,8 @@ const useRenderContent = () => {
 
         return <Linkify options={{render: renderLink}}>{
             content.trim().split('\n').map((x, i) => (
-                <Box key={i} sx={{mb: '6px'}}>{x.trim() === '' ? <>&nbsp;</> : renderBlock(x)}</Box>
+                x.trim() === '' ? <Box sx={{height: '8px'}} key={i}/> :
+                    <Box key={i} sx={{mb: '6px'}}>{renderBlock(x)}</Box>
             ))}
         </Linkify>
     }

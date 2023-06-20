@@ -9,7 +9,7 @@ import useStyles from 'hooks/use-styles';
 import {formatMessageDate, formatMessageTime} from 'helper';
 import {Message} from 'types';
 import {SCROLL_DETECT_THRESHOLD} from 'const';
-import {keysAtom, ravenAtom, readMarkMapAtom} from 'store';
+import {keysAtom, ravenAtom, readMarkMapAtom} from 'atoms';
 import {notEmpty} from 'util/misc';
 
 const ChatView = (props: { messages: Message[], separator: string, loading?: boolean }) => {

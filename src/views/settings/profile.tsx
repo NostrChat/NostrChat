@@ -11,7 +11,7 @@ import SettingsHeader from 'views/settings/components/settings-header';
 import SettingsContent from 'views/settings/components/settings-content';
 import SettingsMenu from 'views/settings/components/settings-menu';
 import MetadataForm from 'views/components/metadata-form';
-import {keysAtom, profileAtom, ravenAtom} from 'store';
+import {keysAtom, profileAtom, ravenAtom} from 'atoms';
 
 
 const SettingsProfilePage = (_: RouteComponentProps) => {

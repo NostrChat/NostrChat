@@ -1,6 +1,6 @@
 import {useAtom} from 'jotai';
 import {PaletteMode} from '@mui/material';
-import {themeAtom} from '../store';
+import {themeAtom} from '../atoms';
 
 const useAppTheme = (): [PaletteMode, () => void] => {
     const [theme, setTheme] = useAtom(themeAtom);

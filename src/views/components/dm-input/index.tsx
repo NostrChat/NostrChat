@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {useAtom} from 'jotai';
 import TextField from '@mui/material/TextField';
 import useTranslation from 'hooks/use-translation';
-import {ravenAtom} from 'store';
+import {ravenAtom} from 'atoms';
 
 const DmInput = (props: { pubkey: string, onDM: () => void }) => {
     const {pubkey, onDM} = props;

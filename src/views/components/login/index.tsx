@@ -1,3 +1,4 @@
+import {useEffect, useState} from 'react';
 import {useAtom} from 'jotai';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
@@ -11,11 +12,12 @@ import MetadataForm from 'views/components/metadata-form';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
-import {keysAtom, profileAtom, backupWarnAtom, ravenAtom, ravenReadyAtom} from 'store';
+import {keysAtom, profileAtom, backupWarnAtom, ravenAtom, ravenReadyAtom} from 'atoms';
 import Creation from 'svg/creation';
 import Import from 'svg/import';
 import Wallet from 'svg/wallet';
-import {useEffect, useState} from 'react';
+import {PLATFORM} from 'const';
+import {storeKeys} from '../../../storage';
 
 
 const Login = (props: { onDone: () => void }) => {
@@ -72,10 +74,11 @@ const Login = (props: { onDone: () => void }) => {
 
     const proceed = (priv: string, pub: string) => {
         const keys = {priv, pub};
-        localStorage.setItem('keys', JSON.stringify(keys));
-        setKeys({priv, pub});
-        setProfile(null);
-        setStep(1);
+        storeKeys(keys).then(() => {
+            setKeys({priv, pub});
+            setProfile(null);
+            setStep(1);
+        });
     }
 
     return <>
@@ -122,10 +125,12 @@ const Login = (props: { onDone: () => void }) => {
                         {t('Import Nostr Account')}
                     </Button>
                 </Box>
-                <Button variant="login" size="large" disableElevation fullWidth onClick={loginNip07}
-                        sx={{p: '14px'}} startIcon={<Wallet height={20}/>}>
-                    {t('Use NIP-07 Wallet')}
-                </Button>
+                {PLATFORM === 'web' && (
+                    <Button variant="login" size="large" disableElevation fullWidth onClick={loginNip07}
+                            sx={{p: '14px'}} startIcon={<Wallet height={20}/>}>
+                        {t('Use NIP-07 Wallet')}
+                    </Button>
+                )}
             </>
         })()}
     </>

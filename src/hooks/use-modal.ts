@@ -1,5 +1,5 @@
 import {useAtom} from 'jotai';
-import {modalAtom, Modal} from 'store';
+import {modalAtom, Modal} from 'atoms';
 
 const useModal = (): [Modal, (modal: Modal) => void] => {
     const [modal, setModal] = useAtom(modalAtom);

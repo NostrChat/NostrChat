@@ -14,7 +14,7 @@ import SettingsKeys from 'views/settings/keys';
 import SettingsPassword from 'views/settings/password';
 import SettingsRelays from 'views/settings/relays';
 import SettingsPublicLinkPage from 'views/settings/public-link';
-import {keysAtom} from 'store';
+import {keysAtom} from 'atoms';
 
 function App() {
     const [keys] = useAtom(keysAtom);

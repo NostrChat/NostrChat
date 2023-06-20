@@ -22,7 +22,7 @@ import {
     reactionsAtom,
     leftChannelListAtom,
     readMarkMapAtom
-} from 'store';
+} from 'atoms';
 import {initRaven, RavenEvents} from 'raven/raven';
 import {
     Channel,

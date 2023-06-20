@@ -9,7 +9,7 @@ import useLiveChannels from 'hooks/use-live-channels';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import ChannelAddMenu from 'views/components/app-menu/channel-add-menu';
 import ListItem from 'views/components/app-menu/list-item';
-import {channelAtom, readMarkMapAtom} from 'store';
+import {channelAtom, readMarkMapAtom} from 'atoms';
 import {Channel} from 'types';
 
 const ChannelListItem = (props: { c: Channel }) => {
