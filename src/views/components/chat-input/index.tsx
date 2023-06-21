@@ -18,7 +18,7 @@ const ChatInput = (props: { separator: string, senderFn: (message: string, menti
     const storageKey = `${separator}_msg`;
 
     const save = () => {
-        const val = editor?.getText();
+        const val = editor?.getHTML();
         if (!val) {
             localStorage.removeItem(storageKey);
             return;
@@ -29,7 +29,7 @@ const ChatInput = (props: { separator: string, senderFn: (message: string, menti
     const editor = useMakeEditor({content: localStorage.getItem(storageKey) || '', onUpdate: save});
 
     useEffect(() => {
-        editor?.commands.setContent(localStorage.getItem(storageKey) || '', false, {preserveWhitespace: 'full'});
+        editor?.commands.setContent(localStorage.getItem(storageKey) || '');
         editor?.commands.focus();
     }, [storageKey]);
 
