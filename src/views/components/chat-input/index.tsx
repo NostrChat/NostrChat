@@ -57,8 +57,6 @@ const ChatInput = (props: { separator: string, senderFn: (message: string, menti
     }
 
     return <Box sx={{
-        height: 'auto',
-        minHeight: '120px',
         p: `10px 10px 14px ${isMd ? '20px' : '10px'}`,
         flexGrow: 0,
         flexShrink: 0,
