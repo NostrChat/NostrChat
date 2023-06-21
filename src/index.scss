@@ -68,6 +68,8 @@ em-emoji-picker {
 .ProseMirror {
     outline: none !important;
     font-size: 15px;
+    max-height: 200px;
+    overflow: auto;
 
     > * + * {
         margin-top: 0.75em;
