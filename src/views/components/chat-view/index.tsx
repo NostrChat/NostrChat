@@ -129,6 +129,23 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
         }
     }, [raven, messages, scrollTop]);
 
+    useEffect(() => {
+        // Observe chat view size change and keep scrolled to bottom
+        if (!ref.current) return;
+
+        const observer = new ResizeObserver(() => {
+            if (ref.current && isBottom) {
+                scrollToBottom();
+            }
+        });
+
+        observer.observe(ref.current);
+
+        return () => {
+            observer.disconnect();
+        }
+    }, [isBottom]);
+
     return <Box ref={ref} sx={{
         mt: 'auto',
         ...styles.scrollY,
