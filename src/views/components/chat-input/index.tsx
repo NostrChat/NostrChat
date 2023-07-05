@@ -8,6 +8,7 @@ import useMediaBreakPoint from 'hooks/use-media-break-point';
 import Tools from 'views/components/chat-input/tools';
 import useMakeEditor from 'views/components/chat-input/editor';
 import Send from 'svg/send';
+import {getEditorValue, removeEditorValue, storeEditorValue} from '../../../storage';
 
 
 const ChatInput = (props: { separator: string, senderFn: (message: string, mentions: string[]) => Promise<any> }) => {
@@ -20,16 +21,16 @@ const ChatInput = (props: { separator: string, senderFn: (message: string, menti
     const save = () => {
         const val = editor?.getHTML();
         if (!val) {
-            localStorage.removeItem(storageKey);
+            removeEditorValue(storageKey);
             return;
         }
-        localStorage.setItem(storageKey, val);
+        storeEditorValue(storageKey, val);
     }
 
-    const editor = useMakeEditor({content: localStorage.getItem(storageKey) || '', onUpdate: save});
+    const editor = useMakeEditor({content: getEditorValue(storageKey) || '', onUpdate: save});
 
     useEffect(() => {
-        editor?.commands.setContent(localStorage.getItem(storageKey) || '');
+        editor?.commands.setContent(getEditorValue(storageKey) || '');
         editor?.commands.focus();
     }, [storageKey]);
 
@@ -47,7 +48,7 @@ const ChatInput = (props: { separator: string, senderFn: (message: string, menti
         const json = editor?.getJSON();
         const mentions = json ? getMentions(json) : [];
         editor?.commands.setContent('');
-        localStorage.removeItem(storageKey);
+        removeEditorValue(storageKey);
         return senderFn(message, mentions);
     }
 

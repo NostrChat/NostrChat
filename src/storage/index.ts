@@ -60,3 +60,8 @@ export const storeRelays = async (relays: RelayDict) => setItem('relays', relays
 export const removeRelays = async (): Promise<void> => removeItem('relays');
 export const getAppTheme = async (): Promise<PaletteMode> => getItem('app_theme');
 export const storeAppTheme = async (theme: PaletteMode) => setItem('app_theme', theme);
+
+// Skipping using capacitor secure plugin for storing editor history and putting function here to have a clear structure for local storage.
+export const getEditorValue = (key: string) => localStorage.getItem(key);
+export const storeEditorValue = (key: string, value: string) => localStorage.setItem(key, value);
+export const removeEditorValue = (key: string) => localStorage.removeItem(key);
