@@ -4,24 +4,24 @@ import {Keys} from 'types';
 
 const isCapacitor = PLATFORM === 'ios' || PLATFORM === 'android';
 
-export const getKeys = async (): Promise<Keys> => {
-    let keysRaw: null | string;
+const getItem = async (key: string): Promise<any> => {
+    let valueRaw: null | string;
 
     if (isCapacitor) {
         try {
-            keysRaw = await SecureStoragePlugin.get({key: 'keys'}).then(a => a.value);
+            valueRaw = await SecureStoragePlugin.get({key}).then(a => a.value);
         } catch (e) {
-            keysRaw = null;
+            valueRaw = null;
         }
     } else if (PLATFORM === 'web') {
-        keysRaw = localStorage.getItem('keys');
+        valueRaw = localStorage.getItem(key);
     } else {
         throw new Error('Not implemented');
     }
 
-    if (keysRaw !== null) {
+    if (valueRaw !== null) {
         try {
-            return JSON.parse(keysRaw);
+            return JSON.parse(valueRaw);
         } catch (e) {
 
         }
@@ -30,22 +30,26 @@ export const getKeys = async (): Promise<Keys> => {
     return null;
 }
 
-export const storeKeys = async (keys: Keys): Promise<void> => {
+const setItem = async (key: string, value: any): Promise<void> => {
     if (isCapacitor) {
-        await SecureStoragePlugin.set({key: 'keys', value: JSON.stringify(keys)});
+        await SecureStoragePlugin.set({key, value: JSON.stringify(value)});
     } else if (PLATFORM === 'web') {
-        localStorage.setItem('keys', JSON.stringify(keys));
+        localStorage.setItem(key, JSON.stringify(value));
     } else {
         throw new Error('Not implemented');
     }
 }
 
-export const removeKeys = async (): Promise<void> => {
+const removeItem = async (key: string): Promise<void> => {
     if (isCapacitor) {
-        await SecureStoragePlugin.remove({key: 'keys'});
+        await SecureStoragePlugin.remove({key});
     } else if (PLATFORM === 'web') {
-        localStorage.removeItem('keys');
+        localStorage.removeItem(key);
     } else {
         throw new Error('Not implemented');
     }
 }
+
+export const getKeys = async (): Promise<Keys> => getItem('keys');
+export const storeKeys = async (keys: Keys): Promise<void> => setItem('keys', keys);
+export const removeKeys = async (): Promise<void> => removeItem('keys');
