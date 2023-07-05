@@ -16,6 +16,7 @@ import SettingsHeader from 'views/settings/components/settings-header';
 import SettingsContent from 'views/settings/components/settings-content';
 import ConfirmDialog from 'components/confirm-dialog';
 import {keysAtom} from 'atoms';
+import {removeKeys} from 'storage';
 
 
 const SettingsPage = (_: RouteComponentProps) => {
@@ -36,7 +37,7 @@ const SettingsPage = (_: RouteComponentProps) => {
     const logout = () => {
         showModal({
             body: <ConfirmDialog onConfirm={() => {
-                localStorage.removeItem('keys');
+                removeKeys().then();
                 setKeys(null);
                 window.location.href = '/';
             }}/>

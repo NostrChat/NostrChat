@@ -39,3 +39,13 @@ export const storeKeys = async (keys: Keys): Promise<void> => {
         throw new Error('Not implemented');
     }
 }
+
+export const removeKeys = async (): Promise<void> => {
+    if (isCapacitor) {
+        await SecureStoragePlugin.remove({key: 'keys'});
+    } else if (PLATFORM === 'web') {
+        localStorage.removeItem('keys');
+    } else {
+        throw new Error('Not implemented');
+    }
+}
