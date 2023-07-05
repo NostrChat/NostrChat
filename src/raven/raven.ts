@@ -15,16 +15,20 @@ import {
     PublicMessage,
     Reaction,
     ReadMarkMap,
+    RelayDict,
 } from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
 import {BgRaven} from 'raven/worker';
-import {getRelays} from 'helper';
+import {getRelays} from 'storage';
 import {GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {notEmpty} from 'util/misc';
-import {isSha256} from '../util/crypto';
+import {isSha256} from 'util/crypto';
 
-const relays = getRelays();
+let relays:RelayDict;
+getRelays().then(r => {
+    relays = r;
+});
 
 
 enum NewKinds {

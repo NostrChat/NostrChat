@@ -28,7 +28,7 @@ import SettingsContent from 'views/settings/components/settings-content';
 import ConfirmDialog from 'components/confirm-dialog';
 import {keysAtom, ravenAtom} from 'atoms';
 import {RelayDict} from 'types';
-import {getRelays} from 'helper';
+import {getRelays, setRelays} from 'storage';
 import ShareIcon from 'svg/share';
 import DeleteIcon from 'svg/delete';
 import Plus from 'svg/plus';
@@ -54,9 +54,10 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
 
 
     const load = () => {
-        const d = getRelays();
-        setPrevData(d);
-        setData(d);
+        getRelays().then(d => {
+            setPrevData(d);
+            setData(d);
+        });
     }
 
     useEffect(() => {
@@ -131,7 +132,7 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
             return;
         }
 
-        localStorage.setItem('relays', JSON.stringify(data));
+        setRelays(data).then();
         window.location.reload();
     }
 

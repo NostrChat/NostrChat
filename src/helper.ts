@@ -9,14 +9,3 @@ export const formatMessageFromNow = (unixTs: number) => moment.unix(unixTs).from
 export const formatMessageDate = (unixTs: number) => moment.unix(unixTs).format('dddd, MMMM Do');
 
 export const formatMessageDateTime = (unixTs: number) => moment.unix(unixTs).format('dddd, MMMM Do h:mm a');
-
-export const getRelays = (): RelayDict => {
-    let relayDict: RelayDict = DEFAULT_RELAYS;
-
-    try {
-        relayDict = JSON.parse(localStorage.getItem('relays') || '');
-    } catch (e) {
-    }
-
-    return relayDict;
-}
