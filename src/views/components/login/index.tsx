@@ -17,7 +17,7 @@ import Creation from 'svg/creation';
 import Import from 'svg/import';
 import Wallet from 'svg/wallet';
 import {PLATFORM} from 'const';
-import {storeKeys} from '../../../storage';
+import {storeKeys} from 'local-storage';
 
 
 const Login = (props: { onDone: () => void }) => {

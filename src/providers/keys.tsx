@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {getKeys} from 'storage';
+import {getKeys} from 'local-storage';
 import {useAtom} from 'jotai';
 import {keysAtom} from 'atoms';
 

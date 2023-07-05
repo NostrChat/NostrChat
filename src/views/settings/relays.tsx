@@ -28,7 +28,7 @@ import SettingsContent from 'views/settings/components/settings-content';
 import ConfirmDialog from 'components/confirm-dialog';
 import {keysAtom, ravenAtom} from 'atoms';
 import {RelayDict} from 'types';
-import {getRelays, getRelaysNullable, removeRelays, storeRelays} from 'storage';
+import {getRelays, getRelaysNullable, removeRelays, storeRelays} from 'local-storage';
 import ShareIcon from 'svg/share';
 import DeleteIcon from 'svg/delete';
 import Plus from 'svg/plus';

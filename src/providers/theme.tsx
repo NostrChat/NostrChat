@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {useAtom} from 'jotai';
 import {ThemeProvider as MThemeProvider, createTheme, CssBaseline} from '@mui/material';
-import {getAppTheme} from 'storage';
+import {getAppTheme} from 'local-storage';
 import {themeAtom} from 'atoms';
 import {DEFAULT_THEME} from 'const';
 

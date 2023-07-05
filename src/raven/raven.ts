@@ -20,7 +20,7 @@ import {
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
 import {BgRaven} from 'raven/worker';
-import {getRelays} from 'storage';
+import {getRelays} from 'local-storage';
 import {GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {notEmpty} from 'util/misc';
 import {isSha256} from 'util/crypto';

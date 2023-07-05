@@ -8,7 +8,7 @@ import useMediaBreakPoint from 'hooks/use-media-break-point';
 import Tools from 'views/components/chat-input/tools';
 import useMakeEditor from 'views/components/chat-input/editor';
 import Send from 'svg/send';
-import {getEditorValue, removeEditorValue, storeEditorValue} from '../../../storage';
+import {getEditorValue, removeEditorValue, storeEditorValue} from 'local-storage';
 
 
 const ChatInput = (props: { separator: string, senderFn: (message: string, mentions: string[]) => Promise<any> }) => {
