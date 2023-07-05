@@ -56,6 +56,7 @@ export const storeKeys = async (keys: Keys): Promise<void> => setItem('keys', ke
 export const removeKeys = async (): Promise<void> => removeItem('keys');
 export const getRelays = (): Promise<RelayDict> => getItem('relays').then(r => r || DEFAULT_RELAYS);
 export const getRelaysNullable = (): Promise<RelayDict | null> => getItem('relays');
-export const setRelays = async (relays: RelayDict) => setItem('relays', relays);
+export const storeRelays = async (relays: RelayDict) => setItem('relays', relays);
 export const removeRelays = async (): Promise<void> => removeItem('relays');
 export const getAppTheme = async (): Promise<PaletteMode> => getItem('app_theme');
+export const storeAppTheme = async (theme: PaletteMode) => setItem('app_theme', theme);
