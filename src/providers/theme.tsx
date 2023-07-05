@@ -88,7 +88,7 @@ const ThemeProvider = (props: { children: React.ReactNode }) => {
         });
     }, []);
 
-    if (appTheme === undefined) return null;
+    if (appTheme === undefined) return null;  // Wait until we find theme from storage
 
     return <MThemeProvider theme={themes[appTheme]}>{props.children}<CssBaseline/></MThemeProvider>;
 }
