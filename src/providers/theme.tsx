@@ -1,6 +1,9 @@
-import React from 'react';
+import React, {useEffect} from 'react';
+import {useAtom} from 'jotai';
 import {ThemeProvider as MThemeProvider, createTheme, CssBaseline} from '@mui/material';
-import useAppTheme from '../hooks/use-app-theme';
+import {getAppTheme} from 'storage';
+import {themeAtom} from 'atoms';
+import {DEFAULT_THEME} from 'const';
 
 declare module '@mui/material/Button' {
     interface ButtonPropsVariantOverrides {
@@ -77,7 +80,15 @@ const themes = {
 
 
 const ThemeProvider = (props: { children: React.ReactNode }) => {
-    const [appTheme,] = useAppTheme();
+    const [appTheme, setAppTheme] = useAtom(themeAtom);
+
+    useEffect(() => {
+        getAppTheme().then(s => {
+            setAppTheme(['dark', 'light'].includes(s) ? s : DEFAULT_THEME);
+        });
+    }, []);
+
+    if (appTheme === undefined) return null;
 
     return <MThemeProvider theme={themes[appTheme]}>{props.children}<CssBaseline/></MThemeProvider>;
 }

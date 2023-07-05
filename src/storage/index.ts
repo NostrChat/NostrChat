@@ -1,6 +1,7 @@
 import {SecureStoragePlugin} from 'capacitor-secure-storage-plugin';
 import {DEFAULT_RELAYS, PLATFORM} from 'const';
 import {Keys, RelayDict} from 'types';
+import {PaletteMode} from '@mui/material';
 
 const isCapacitor = PLATFORM === 'ios' || PLATFORM === 'android';
 
@@ -57,3 +58,4 @@ export const getRelays = (): Promise<RelayDict> => getItem('relays').then(r => r
 export const getRelaysNullable = (): Promise<RelayDict | null> => getItem('relays');
 export const setRelays = async (relays: RelayDict) => setItem('relays', relays);
 export const removeRelays = async (): Promise<void> => removeItem('relays');
+export const getAppTheme = async (): Promise<PaletteMode> => getItem('app_theme');

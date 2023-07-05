@@ -2,7 +2,7 @@ import {useAtom} from 'jotai';
 import {PaletteMode} from '@mui/material';
 import {themeAtom} from '../atoms';
 
-const useAppTheme = (): [PaletteMode, () => void] => {
+const useAppTheme = (): [PaletteMode | undefined, () => void] => {
     const [theme, setTheme] = useAtom(themeAtom);
 
     const toggleAppTheme = () => {

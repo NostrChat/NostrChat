@@ -1,4 +1,5 @@
 import {Capacitor} from '@capacitor/core';
+import {PaletteMode} from '@mui/material';
 import {Channel, Platform, RelayDict} from 'types';
 
 export const DEFAULT_RELAYS: RelayDict = {
@@ -23,3 +24,5 @@ export const GLOBAL_CHAT: Channel = {
 };
 
 export const PLATFORM = Capacitor.getPlatform() as Platform;
+
+export const DEFAULT_THEME: PaletteMode = 'dark';
