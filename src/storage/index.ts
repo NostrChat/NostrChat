@@ -54,4 +54,5 @@ export const getKeys = async (): Promise<Keys> => getItem('keys');
 export const storeKeys = async (keys: Keys): Promise<void> => setItem('keys', keys);
 export const removeKeys = async (): Promise<void> => removeItem('keys');
 export const getRelays = (): Promise<RelayDict> => getItem('relays').then(r => r || DEFAULT_RELAYS);
+export const getRelaysNullable = (): Promise<RelayDict | null> => getItem('relays');
 export const setRelays = async (relays: RelayDict) => setItem('relays', relays);

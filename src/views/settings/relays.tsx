@@ -28,7 +28,7 @@ import SettingsContent from 'views/settings/components/settings-content';
 import ConfirmDialog from 'components/confirm-dialog';
 import {keysAtom, ravenAtom} from 'atoms';
 import {RelayDict} from 'types';
-import {getRelays, setRelays} from 'storage';
+import {getRelays, getRelaysNullable, setRelays} from 'storage';
 import ShareIcon from 'svg/share';
 import DeleteIcon from 'svg/delete';
 import Plus from 'svg/plus';
@@ -45,6 +45,7 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
     const [prevData, setPrevData] = useState<RelayDict>({});
     const [data, setData] = useState<RelayDict>({});
     const [newAddress, setNewAddress] = useState('');
+    const [canRestore, setCanRestore] = useState<boolean>(false);
 
     useEffect(() => {
         if (!keys) {
@@ -64,8 +65,13 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
         load();
     }, []);
 
+    useEffect(() => {
+        getRelaysNullable().then((r) => {
+            setCanRestore(r !== null);
+        });
+    }, [data]);
+
     const canSave = useMemo(() => JSON.stringify(prevData) !== JSON.stringify(data), [data, prevData]);
-    const canRestore = useMemo(() => localStorage.getItem('relays') !== null, []);
 
     if (!keys) {
         return null;
