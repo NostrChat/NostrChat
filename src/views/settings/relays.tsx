@@ -28,7 +28,7 @@ import SettingsContent from 'views/settings/components/settings-content';
 import ConfirmDialog from 'components/confirm-dialog';
 import {keysAtom, ravenAtom} from 'atoms';
 import {RelayDict} from 'types';
-import {getRelays, getRelaysNullable, setRelays} from 'storage';
+import {getRelays, getRelaysNullable, removeRelays, setRelays} from 'storage';
 import ShareIcon from 'svg/share';
 import DeleteIcon from 'svg/delete';
 import Plus from 'svg/plus';
@@ -153,7 +153,7 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
     const restore = () => {
         showModal({
             body: <ConfirmDialog onConfirm={() => {
-                localStorage.removeItem('relays');
+                removeRelays().then();
                 window.location.reload();
             }}/>
         });
