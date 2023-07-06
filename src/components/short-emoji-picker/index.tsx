@@ -1,13 +1,18 @@
 import {useEffect, useState} from 'react';
+import data from '@emoji-mart/data'
+import {init} from 'emoji-mart'
 import {FrequentlyUsed, getEmojiDataFromNative} from 'emoji-mart';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import Plus from 'svg/plus';
 
+// this is required for getEmojiDataFromNative queries
+init({data}).then();
+
 const ShortEmojiPicker = (props: { onSelect: (selected: string) => void, onMore: () => void }) => {
     const {onSelect, onMore} = props;
+    const theme = useTheme();
     const [frequent, setFrequent] = useState<string[] | null>(null);
-    const theme = useTheme()
     useEffect(() => {
         if (frequent === null) {
             // @ts-ignore
@@ -17,14 +22,11 @@ const ShortEmojiPicker = (props: { onSelect: (selected: string) => void, onMore:
             })).map(x => getEmojiDataFromNative(x));
             Promise.all(promises).then(freq => {
                 setFrequent(freq.map(x => x.native))
-            })
-
+            });
         }
     }, [frequent]);
 
-    if (frequent === null) {
-        return null;
-    }
+    if (frequent === null) return null;
 
     const commonSx = {
         width: '40px',
@@ -51,13 +53,10 @@ const ShortEmojiPicker = (props: { onSelect: (selected: string) => void, onMore:
                         onSelect(e);
                     }} key={i}>{e}</Box>
                 )}
-                <Box sx={{
-                    ...commonSx,
-                }} onClick={onMore}>
+                <Box sx={commonSx} onClick={onMore}>
                     <Plus height={20}/>
                 </Box>
             </Box>
-
         </Box>
     </>
 }
