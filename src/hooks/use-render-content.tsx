@@ -81,7 +81,8 @@ const useRenderContent = () => {
                             body: <ProfileDialog profile={profile} pubkey={profile.creator} onDM={() => {
                                 navigate(`/dm/${nip19.npubEncode(profile.creator)}`).then();
                             }}/>,
-                            maxWidth: 'xs'
+                            maxWidth: 'xs',
+                            hideOnBackdrop: true
                         });
                     }} key={i}>{match}</Link>
                 }) as ReactNode[];

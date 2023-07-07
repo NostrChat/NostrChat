@@ -47,7 +47,8 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
             body: <ProfileDialog profile={profile} pubkey={message.creator} onDM={() => {
                     navigate(`/dm/${nip19.npubEncode(message.creator)}`).then();
                 }}/>,
-            maxWidth: 'xs'
+            maxWidth: 'xs',
+            hideOnBackdrop: true
         });
     };
 

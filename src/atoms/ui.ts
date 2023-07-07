@@ -8,7 +8,7 @@ export interface Toast {
     type: ToastType
 }
 
-export type Modal = { body: JSX.Element, fullScreen?: boolean, maxWidth?: Breakpoint } | null;
+export type Modal = { body: JSX.Element, fullScreen?: boolean, maxWidth?: Breakpoint, hideOnBackdrop?: boolean } | null;
 
 export type Popover =
     { body: JSX.Element, anchorEl: HTMLElement, toRight?: boolean, toBottom?: boolean, onClose?: () => void }
