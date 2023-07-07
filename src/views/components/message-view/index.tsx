@@ -15,12 +15,14 @@ import Avatar from 'views/components/avatar';
 import ProfileDialog from 'views/components/dialogs/profile';
 import MessageMenu from 'views/components/message-menu';
 import MessageReactions from 'views/components/message-reactions';
+import MessageMobileView from 'views/components/message-mobile-view';
 import {activeMessageAtom, profilesAtom, threadRootAtom} from 'atoms';
 import {Message,} from 'types';
 import {formatMessageTime, formatMessageFromNow, formatMessageDateTime} from 'helper';
 import ChevronRight from 'svg/chevron-right';
 import {PLATFORM} from 'const';
 import {truncateMiddle} from 'util/truncate';
+
 
 const MessageView = (props: { message: Message, compactView: boolean, dateFormat: 'time' | 'fromNow', inThreadView?: boolean }) => {
     const {message, compactView, dateFormat, inThreadView} = props;
@@ -36,6 +38,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const renderer = useContentRenderer();
     const holderEl = useRef<HTMLDivElement | null>(null);
     const [menu, setMenu] = useState<boolean>(false);
+    const [mobileView, setMobileView] = useState<boolean>(false);
     const [isVisible, setIsVisible] = useState<boolean>(true);
     const renderedBody = useMemo(() => renderer(message), [message]);
     const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 26), ':'), [profile, message]);
@@ -95,6 +98,9 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
             if (PLATFORM === 'web') {
                 setMenu(false);
             }
+        }}
+        onClick={() => {
+            setMobileView(true);
         }}>
         {(menu || activeMessage === message.id) && (<Box sx={{
             position: 'absolute',
@@ -189,6 +195,9 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                 </Box>
             )}
             <MessageReactions message={message}/>
+            {mobileView && <MessageMobileView message={message} onClose={() => {
+                setMobileView(false)
+            }}/>}
         </Box>
     </Box>;
 }
