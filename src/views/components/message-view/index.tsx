@@ -8,11 +8,11 @@ import Tooltip from '@mui/material/Tooltip';
 import {useNavigate} from '@reach/router';
 import {nip19} from 'nostr-tools';
 import useContentRenderer from 'hooks/use-render-content';
-import usePopover from 'hooks/use-popover';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
+import useModal from 'hooks/use-modal';
 import Avatar from 'views/components/avatar';
-import ProfileCardMini from 'views/components/profile-card-mini';
+import ProfileDialog from 'views/components/dialogs/profile';
 import MessageMenu from 'views/components/message-menu';
 import MessageReactions from 'views/components/message-reactions';
 import {activeMessageAtom, profilesAtom, threadRootAtom} from 'atoms';
@@ -30,7 +30,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
     const [activeMessage] = useAtom(activeMessageAtom);
     const [t] = useTranslation();
-    const [, showPopover] = usePopover();
+    const [, showModal] = useModal();
     const {isMd} = useMediaBreakPoint();
     const renderer = useContentRenderer();
     const holderEl = useRef<HTMLDivElement | null>(null);
@@ -42,14 +42,12 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const messageDateTime = useMemo(() => formatMessageDateTime(message.created), [message]);
     const lastReply = useMemo(() => message.children && message.children.length > 0 ? formatMessageFromNow(message.children[message.children.length - 1].created) : null, [message]);
 
-    const profileClicked = (event: React.MouseEvent<HTMLDivElement>) => {
-        showPopover({
-            body: <Box sx={{width: '220px', padding: '10px'}}>
-                <ProfileCardMini profile={profile} pubkey={message.creator} onDM={() => {
+    const profileClicked = () => {
+        showModal({
+            body: <ProfileDialog profile={profile} pubkey={message.creator} onDM={() => {
                     navigate(`/dm/${nip19.npubEncode(message.creator)}`).then();
-                }}/>
-            </Box>,
-            anchorEl: event.currentTarget
+                }}/>,
+            maxWidth: 'xs'
         });
     };
 
