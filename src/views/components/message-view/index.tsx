@@ -19,6 +19,7 @@ import {activeMessageAtom, profilesAtom, threadRootAtom} from 'atoms';
 import {Message,} from 'types';
 import {formatMessageTime, formatMessageFromNow, formatMessageDateTime} from 'helper';
 import ChevronRight from 'svg/chevron-right';
+import {PLATFORM} from 'const';
 import {truncateMiddle} from 'util/truncate';
 
 const MessageView = (props: { message: Message, compactView: boolean, dateFormat: 'time' | 'fromNow', inThreadView?: boolean }) => {
@@ -45,8 +46,8 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const profileClicked = () => {
         showModal({
             body: <ProfileDialog profile={profile} pubkey={message.creator} onDM={() => {
-                    navigate(`/dm/${nip19.npubEncode(message.creator)}`).then();
-                }}/>,
+                navigate(`/dm/${nip19.npubEncode(message.creator)}`).then();
+            }}/>,
             maxWidth: 'xs',
             hideOnBackdrop: true
         });
@@ -80,15 +81,20 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
             p: `${!compactView ? '15px' : '3px'} ${ps} 0 ${ps}`,
             position: 'relative',
             background: activeMessage === message.id ? theme.palette.divider : null,
-            ':hover': {
+            ':hover': PLATFORM === 'web' ? {
                 background: theme.palette.divider
-            }
+            } : null,
+            userSelect: PLATFORM !== 'web' ? 'none' : null
         }}
         onMouseEnter={() => {
-            setMenu(true);
+            if (PLATFORM === 'web') {
+                setMenu(true);
+            }
         }}
         onMouseLeave={() => {
-            setMenu(false);
+            if (PLATFORM === 'web') {
+                setMenu(false);
+            }
         }}>
         {(menu || activeMessage === message.id) && (<Box sx={{
             position: 'absolute',
@@ -182,7 +188,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                     )}
                 </Box>
             )}
-            <MessageReactions message={message} />
+            <MessageReactions message={message}/>
         </Box>
     </Box>;
 }
