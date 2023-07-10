@@ -218,9 +218,13 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                 </Box>
             )}
             <MessageReactions message={message}/>
-            {mobileMenu && <MessageMobileMobile message={message} inThreadView={inThreadView} onClose={() => {
-                setMobileMenu(false);
-            }}/>}
+            {mobileMenu && <MessageMobileMobile
+                message={message}
+                profileName={profileName}
+                inThreadView={inThreadView}
+                onClose={() => {
+                    setMobileMenu(false);
+                }}/>}
         </Box>
     </Box>;
 }

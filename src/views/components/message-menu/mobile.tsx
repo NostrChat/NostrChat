@@ -8,6 +8,8 @@ import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import {useTheme} from '@mui/material/styles';
+import Tooltip from '@mui/material/Tooltip';
+import {darken} from '@mui/material';
 import useContentRenderer from 'hooks/use-render-content';
 import useToast from 'hooks/use-toast';
 import usePopover from 'hooks/use-popover';
@@ -19,14 +21,15 @@ import EmojiPicker from 'components/emoji-picker';
 import ConfirmDialog from 'components/confirm-dialog';
 import MessageReactions from 'views/components/message-reactions';
 import {Message} from 'types';
+import {formatMessageDateTime, formatMessageTime} from 'helper';
 import MessageReplyText from 'svg/message-reply-text';
 import ContentCopy from 'svg/content-copy';
 import EyeOff from 'svg/eye-off';
 import Close from 'svg/close';
 
 
-const MessageMobileView = (props: { message: Message, inThreadView?: boolean, onClose: () => void }) => {
-    const {message, inThreadView, onClose} = props;
+const MessageMobileView = (props: { message: Message, profileName: string, inThreadView?: boolean, onClose: () => void }) => {
+    const {message, profileName, inThreadView, onClose} = props;
     const theme = useTheme();
     const renderer = useContentRenderer();
     const [raven] = useAtom(ravenAtom);
@@ -40,6 +43,8 @@ const MessageMobileView = (props: { message: Message, inThreadView?: boolean, on
     const [, showPopover] = usePopover();
     const [, showModal] = useModal();
     const [t] = useTranslation();
+    const messageTime = useMemo(() => formatMessageTime(message.created), [message]);
+    const messageDateTime = useMemo(() => formatMessageDateTime(message.created), [message]);
 
     const emojiSelected = (emoji: string) => {
         raven?.sendReaction(message.id, message.creator, emoji).catch(e => {
@@ -162,8 +167,18 @@ const MessageMobileView = (props: { message: Message, inThreadView?: boolean, on
                 p: '12px',
                 borderRadius: '6px'
             }}>
+                <Box sx={{display: 'flex', alignItems: 'center', fontSize: '.7em',}}>
+                    <Box sx={{
+                        mr: '5px',
+                    }}>{profileName}</Box>
+                    <Tooltip title={messageDateTime} placement="bottom-start" enterTouchDelay={100}>
+                        <Box sx={{
+                            color: darken(theme.palette.text.secondary, 0.3),
+                        }}>{messageTime}</Box>
+                    </Tooltip>
+                </Box>
                 <Box sx={{
-                    fontSize: '0.9em',
+                    fontSize: '.9em',
                     mt: '4px',
                     wordBreak: 'break-word',
                     lineHeight: '1.4em',
