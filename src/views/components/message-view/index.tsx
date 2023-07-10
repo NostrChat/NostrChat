@@ -45,6 +45,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const messageTime = useMemo(() => dateFormat === 'time' ? formatMessageTime(message.created) : formatMessageFromNow(message.created), [message]);
     const messageDateTime = useMemo(() => formatMessageDateTime(message.created), [message]);
     const lastReply = useMemo(() => message.children && message.children.length > 0 ? formatMessageFromNow(message.children[message.children.length - 1].created) : null, [message]);
+    let mobileMenuTimer: any = null;
 
     const profileClicked = () => {
         showModal({
@@ -99,8 +100,15 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                 setMenu(false);
             }
         }}
-        onClick={() => {
-            setMobileMenu(true);
+        onTouchStart={() => {
+            mobileMenuTimer = setTimeout(() => {
+                setMobileMenu(true);
+            }, 500);
+        }}
+        onTouchEnd={() => {
+            if (!mobileMenu) {
+                clearTimeout(mobileMenuTimer);
+            }
         }}>
         {(menu || activeMessage === message.id) && (<Box sx={{
             position: 'absolute',
@@ -196,7 +204,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
             )}
             <MessageReactions message={message}/>
             {mobileMenu && <MessageMobileMobile message={message} inThreadView={inThreadView} onClose={() => {
-                setMobileMenu(false)
+                setMobileMenu(false);
             }}/>}
         </Box>
     </Box>;

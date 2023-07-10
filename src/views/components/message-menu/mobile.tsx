@@ -117,6 +117,12 @@ const MessageMobileView = (props: { message: Message, inThreadView?: boolean, on
 
     return <Box
         ref={holderEl}
+        onTouchStart={(e) => {
+            e.stopPropagation();
+        }}
+        onTouchEnd={(e) => {
+            e.stopPropagation();
+        }}
         onClick={(e) => {
             e.stopPropagation();
             if (e.target === holderEl.current || e.target === innerHolderEl.current) {
