@@ -135,10 +135,12 @@ const MessageMobileView = (props: { message: Message, inThreadView?: boolean, on
                     userSelect: 'text'
                 }}>{renderedBody}</Box>
             </Box>
-            <Box sx={{p: '6px 0'}}>
-                <MessageReactions message={message}/>
-            </Box>
-            <Paper sx={{width: 320, maxWidth: '100%', fontSize: '90%'}}>
+            {message.reactions && message.reactions.length > 0 && (
+                <Box sx={{pt: '10px', display: 'inline-flex'}}>
+                    <MessageReactions message={message}/>
+                </Box>
+            )}
+            <Paper sx={{width: '320px', maxWidth: '100%', fontSize: '90%', mt: '10px'}}>
                 <MenuList sx={{fontSize: '90%'}}>
                     {buttons.map((b, i) => <React.Fragment key={i}>{b}</React.Fragment>)}
                 </MenuList>
