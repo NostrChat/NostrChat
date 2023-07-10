@@ -1,4 +1,4 @@
-import React, {useMemo, useRef} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {keysAtom, ravenAtom, threadRootAtom} from 'atoms';
 import {useAtom} from 'jotai';
 import Box from '@mui/material/Box';
@@ -45,6 +45,19 @@ const MessageMobileView = (props: { message: Message, profileName: string, inThr
     const [t] = useTranslation();
     const messageTime = useMemo(() => formatMessageTime(message.created), [message]);
     const messageDateTime = useMemo(() => formatMessageDateTime(message.created), [message]);
+    const [shouldRender, setShouldRender] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (!shouldRender) {
+            setTimeout(() => {
+                setShouldRender(true);
+            }, 200);
+        }
+    }, [shouldRender]);
+
+    if (!shouldRender) {
+        return null;
+    }
 
     const emojiSelected = (emoji: string) => {
         if (message.reactions?.find(x => x.message === message.id && x.creator === keys?.pub && x.content === emoji) === undefined) {

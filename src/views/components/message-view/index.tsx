@@ -92,7 +92,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
             display: 'flex',
             p: `${!compactView ? '15px' : '3px'} ${ps} 0 ${ps}`,
             position: 'relative',
-            background: activeMessage === message.id ? theme.palette.divider : null,
+            background: activeMessage === message.id || mobileMenu ? theme.palette.divider : null,
             ':hover': PLATFORM === 'web' ? {
                 background: theme.palette.divider
             } : null,
