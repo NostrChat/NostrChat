@@ -42,7 +42,7 @@ const ShortEmojiPicker = (props: { onSelect: (selected: string) => void, onMore:
     }
 
     return <>
-        <Box sx={{p: '6px', background: theme.palette.background.default}}>
+        <Box sx={{p: '6px'}}>
             <Box sx={{display: 'flex'}}>
                 {frequent.map((e, i) =>
                     <Box sx={{

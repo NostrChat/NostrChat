@@ -7,19 +7,23 @@ import {useTheme} from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import {useNavigate} from '@reach/router';
 import {nip19} from 'nostr-tools';
+import {Haptics, ImpactStyle} from '@capacitor/haptics';
 import useContentRenderer from 'hooks/use-render-content';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
 import Avatar from 'views/components/avatar';
 import ProfileDialog from 'views/components/dialogs/profile';
-import MessageMenu from 'views/components/message-menu';
 import MessageReactions from 'views/components/message-reactions';
+import MessageMenuWeb from 'views/components/message-menu/web';
+import MessageMobileMobile from 'views/components/message-menu/mobile';
 import {activeMessageAtom, profilesAtom, threadRootAtom} from 'atoms';
 import {Message,} from 'types';
 import {formatMessageTime, formatMessageFromNow, formatMessageDateTime} from 'helper';
 import ChevronRight from 'svg/chevron-right';
+import {PLATFORM} from 'const';
 import {truncateMiddle} from 'util/truncate';
+
 
 const MessageView = (props: { message: Message, compactView: boolean, dateFormat: 'time' | 'fromNow', inThreadView?: boolean }) => {
     const {message, compactView, dateFormat, inThreadView} = props;
@@ -35,18 +39,20 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const renderer = useContentRenderer();
     const holderEl = useRef<HTMLDivElement | null>(null);
     const [menu, setMenu] = useState<boolean>(false);
+    const [mobileMenu, setMobileMenu] = useState<boolean>(false);
     const [isVisible, setIsVisible] = useState<boolean>(true);
     const renderedBody = useMemo(() => renderer(message), [message]);
     const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 26), ':'), [profile, message]);
     const messageTime = useMemo(() => dateFormat === 'time' ? formatMessageTime(message.created) : formatMessageFromNow(message.created), [message]);
     const messageDateTime = useMemo(() => formatMessageDateTime(message.created), [message]);
     const lastReply = useMemo(() => message.children && message.children.length > 0 ? formatMessageFromNow(message.children[message.children.length - 1].created) : null, [message]);
+    let mobileMenuTimer: any = null;
 
     const profileClicked = () => {
         showModal({
             body: <ProfileDialog profile={profile} pubkey={message.creator} onDM={() => {
-                    navigate(`/dm/${nip19.npubEncode(message.creator)}`).then();
-                }}/>,
+                navigate(`/dm/${nip19.npubEncode(message.creator)}`).then();
+            }}/>,
             maxWidth: 'xs',
             hideOnBackdrop: true
         });
@@ -69,6 +75,13 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
         }
     }, [isVisible]);
 
+    useEffect(() => {
+        if (mobileMenu && PLATFORM !== 'web') {
+            // Send a small vibration
+            Haptics.impact({style: ImpactStyle.Light}).then();
+        }
+    }, [mobileMenu]);
+
     const ps = isMd ? '24px' : '10px';
     return <Box
         data-visible={isVisible}
@@ -80,21 +93,43 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
             p: `${!compactView ? '15px' : '3px'} ${ps} 0 ${ps}`,
             position: 'relative',
             background: activeMessage === message.id ? theme.palette.divider : null,
-            ':hover': {
+            ':hover': PLATFORM === 'web' ? {
                 background: theme.palette.divider
-            }
+            } : null,
+            userSelect: PLATFORM !== 'web' ? 'none' : null
         }}
         onMouseEnter={() => {
-            setMenu(true);
+            if (PLATFORM === 'web') {
+                setMenu(true);
+            }
         }}
         onMouseLeave={() => {
-            setMenu(false);
-        }}>
+            if (PLATFORM === 'web') {
+                setMenu(false);
+            }
+        }}
+        onTouchStart={() => {
+            if (PLATFORM !== 'web') {
+                mobileMenuTimer = setTimeout(() => {
+                    setMobileMenu(true);
+                }, 600);
+            }
+        }}
+        onTouchEnd={() => {
+            clearTimeout(mobileMenuTimer);
+        }}
+        onTouchCancel={() => {
+            clearTimeout(mobileMenuTimer);
+        }}
+        onTouchMove={() => {
+            clearTimeout(mobileMenuTimer);
+        }}
+    >
         {(menu || activeMessage === message.id) && (<Box sx={{
             position: 'absolute',
             right: '10px',
             top: '-10px'
-        }}><MessageMenu message={message} inThreadView={inThreadView}/></Box>)}
+        }}><MessageMenuWeb message={message} inThreadView={inThreadView}/></Box>)}
         <Box sx={{
             display: 'flex',
             width: '40px',
@@ -182,7 +217,14 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                     )}
                 </Box>
             )}
-            <MessageReactions message={message} />
+            <MessageReactions message={message}/>
+            {mobileMenu && <MessageMobileMobile
+                message={message}
+                profileName={profileName}
+                inThreadView={inThreadView}
+                onClose={() => {
+                    setMobileMenu(false);
+                }}/>}
         </Box>
     </Box>;
 }
