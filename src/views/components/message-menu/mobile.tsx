@@ -1,28 +1,25 @@
 import React, {useMemo, useRef} from 'react';
-import Box from '@mui/material/Box';
+import {keysAtom, ravenAtom} from 'atoms';
 import {useAtom} from 'jotai';
-import {useTheme} from '@mui/material/styles';
+import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Divider from '@mui/material/Divider';
-
-import Typography from '@mui/material/Typography';
+import {useTheme} from '@mui/material/styles';
 import useContentRenderer from 'hooks/use-render-content';
+import useToast from 'hooks/use-toast';
+import usePopover from 'hooks/use-popover';
+import useTranslation from 'hooks/use-translation';
 import ShortEmojiPicker from 'components/short-emoji-picker';
 import EmojiPicker from 'components/emoji-picker';
 import MessageReactions from 'views/components/message-reactions';
-import useToast from 'hooks/use-toast';
-import usePopover from 'hooks/use-popover';
 import {Message} from 'types';
-import {keysAtom, ravenAtom} from 'atoms';
-import useTranslation from '../../../hooks/use-translation';
-import MessageReplyText from '../../../svg/message-reply-text';
-import ContentCopy from '../../../svg/content-copy';
-import EyeOff from '../../../svg/eye-off';
-import Close from '../../../svg/close';
+import MessageReplyText from 'svg/message-reply-text';
+import ContentCopy from 'svg/content-copy';
+import EyeOff from 'svg/eye-off';
+import Close from 'svg/close';
 
 
 const MessageMobileView = (props: { message: Message, inThreadView?: boolean, onClose: () => void }) => {
@@ -143,7 +140,7 @@ const MessageMobileView = (props: { message: Message, inThreadView?: boolean, on
             </Box>
             <Paper sx={{width: 320, maxWidth: '100%', fontSize: '90%'}}>
                 <MenuList sx={{fontSize: '90%'}}>
-                    {buttons}
+                    {buttons.map((b, i) => <React.Fragment key={i}>{b}</React.Fragment>)}
                 </MenuList>
             </Paper>
         </Box>

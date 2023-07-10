@@ -13,9 +13,9 @@ import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
 import Avatar from 'views/components/avatar';
 import ProfileDialog from 'views/components/dialogs/profile';
-import MessageMenu from 'views/components/message-menu';
 import MessageReactions from 'views/components/message-reactions';
-import MessageMobileView from 'views/components/message-mobile-view';
+import MessageMenuWeb from 'views/components/message-menu/web';
+import MessageMobileMobile from 'views/components/message-menu/mobile';
 import {activeMessageAtom, profilesAtom, threadRootAtom} from 'atoms';
 import {Message,} from 'types';
 import {formatMessageTime, formatMessageFromNow, formatMessageDateTime} from 'helper';
@@ -106,7 +106,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
             position: 'absolute',
             right: '10px',
             top: '-10px'
-        }}><MessageMenu message={message} inThreadView={inThreadView}/></Box>)}
+        }}><MessageMenuWeb message={message} inThreadView={inThreadView}/></Box>)}
         <Box sx={{
             display: 'flex',
             width: '40px',
@@ -195,7 +195,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                 </Box>
             )}
             <MessageReactions message={message}/>
-            {mobileView && <MessageMobileView message={message} inThreadView={inThreadView} onClose={() => {
+            {mobileView && <MessageMobileMobile message={message} inThreadView={inThreadView} onClose={() => {
                 setMobileView(false)
             }}/>}
         </Box>
