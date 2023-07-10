@@ -109,15 +109,22 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
             }
         }}
         onTouchStart={() => {
-            mobileMenuTimer = setTimeout(() => {
-                setMobileMenu(true);
-            }, 500);
+            if (PLATFORM !== 'web') {
+                mobileMenuTimer = setTimeout(() => {
+                    setMobileMenu(true);
+                }, 600);
+            }
         }}
         onTouchEnd={() => {
-            if (!mobileMenu) {
-                clearTimeout(mobileMenuTimer);
-            }
-        }}>
+            clearTimeout(mobileMenuTimer);
+        }}
+        onTouchCancel={() => {
+            clearTimeout(mobileMenuTimer);
+        }}
+        onTouchMove={() => {
+            clearTimeout(mobileMenuTimer);
+        }}
+    >
         {(menu || activeMessage === message.id) && (<Box sx={{
             position: 'absolute',
             right: '10px',
