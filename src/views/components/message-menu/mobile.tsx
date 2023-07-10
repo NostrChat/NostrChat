@@ -47,9 +47,11 @@ const MessageMobileView = (props: { message: Message, profileName: string, inThr
     const messageDateTime = useMemo(() => formatMessageDateTime(message.created), [message]);
 
     const emojiSelected = (emoji: string) => {
-        raven?.sendReaction(message.id, message.creator, emoji).catch(e => {
-            showMessage(e.toString(), 'error');
-        });
+        if (message.reactions?.find(x => x.message === message.id && x.creator === keys?.pub && x.content === emoji) === undefined) {
+            raven?.sendReaction(message.id, message.creator, emoji).catch(e => {
+                showMessage(e.toString(), 'error');
+            });
+        }
     }
 
     const emojiFull = () => {
