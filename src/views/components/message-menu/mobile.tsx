@@ -186,7 +186,7 @@ const MessageMobileView = (props: { message: Message, profileName: string, inThr
                     <Box sx={{
                         mr: '5px',
                     }}>{profileName}</Box>
-                    <Tooltip title={messageDateTime} placement="bottom-start" enterTouchDelay={100}>
+                    <Tooltip title={messageDateTime} placement="bottom-start" enterTouchDelay={500}>
                         <Box sx={{
                             color: darken(theme.palette.text.secondary, 0.3),
                         }}>{messageTime}</Box>
