@@ -1,5 +1,5 @@
 import React, {useMemo, useRef} from 'react';
-import {keysAtom, ravenAtom} from 'atoms';
+import {keysAtom, ravenAtom, threadRootAtom} from 'atoms';
 import {useAtom} from 'jotai';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -12,8 +12,11 @@ import useContentRenderer from 'hooks/use-render-content';
 import useToast from 'hooks/use-toast';
 import usePopover from 'hooks/use-popover';
 import useTranslation from 'hooks/use-translation';
+import useModal from 'hooks/use-modal';
 import ShortEmojiPicker from 'components/short-emoji-picker';
+import CopyToClipboard from 'components/copy-clipboard';
 import EmojiPicker from 'components/emoji-picker';
+import ConfirmDialog from 'components/confirm-dialog';
 import MessageReactions from 'views/components/message-reactions';
 import {Message} from 'types';
 import MessageReplyText from 'svg/message-reply-text';
@@ -28,12 +31,14 @@ const MessageMobileView = (props: { message: Message, inThreadView?: boolean, on
     const renderer = useContentRenderer();
     const [raven] = useAtom(ravenAtom);
     const [keys] = useAtom(keysAtom);
+    const [, setThreadRoot] = useAtom(threadRootAtom);
     const renderedBody = useMemo(() => renderer(message), [message]);
     const holderEl = useRef<HTMLDivElement | null>(null);
     const innerHolderEl = useRef<HTMLDivElement | null>(null);
     const fullEmojiPickerHolder = useRef<HTMLDivElement | null>(null);
     const [, showMessage] = useToast();
     const [, showPopover] = usePopover();
+    const [, showModal] = useModal();
     const [t] = useTranslation();
 
     const emojiSelected = (emoji: string) => {
@@ -51,24 +56,49 @@ const MessageMobileView = (props: { message: Message, inThreadView?: boolean, on
         });
     }
 
-    const buttons = [<MenuItem>
-        <ListItemIcon>
-            <ContentCopy height={18}/>
-        </ListItemIcon>
-        <ListItemText primaryTypographyProps={{fontSize: '.9em'}}>{t('Copy')}</ListItemText>
-    </MenuItem>];
+    const openThread = () => {
+        setThreadRoot(message);
+        onClose();
+    }
+
+    const hide = () => {
+        showModal({
+            body: <ConfirmDialog onConfirm={() => {
+                raven?.hideChannelMessage(message.id, '');
+                onClose();
+            }}/>
+        });
+    }
+
+    const del = () => {
+        showModal({
+            body: <ConfirmDialog onConfirm={() => {
+                raven?.deleteEvents([message.id]);
+                onClose();
+            }}/>
+        });
+    }
+
+    const buttons = [<CopyToClipboard copy={message.content}>
+        <MenuItem>
+            <ListItemIcon>
+                <ContentCopy height={18}/>
+            </ListItemIcon>
+            <ListItemText primaryTypographyProps={{fontSize: '.9em'}}>{t('Copy')}</ListItemText>
+        </MenuItem>
+    </CopyToClipboard>];
 
     if (!inThreadView) {
-        buttons.push(<MenuItem>
+        buttons.push(<MenuItem onClick={openThread}>
             <ListItemIcon>
                 <MessageReplyText height={18}/>
             </ListItemIcon>
             <ListItemText primaryTypographyProps={{fontSize: '.9em'}}>{t('Reply in thread')}</ListItemText>
-        </MenuItem>)
+        </MenuItem>);
     }
 
     if (keys?.pub !== message.creator && !('decrypted' in message)) { // only public messages
-        buttons.push(<MenuItem>
+        buttons.push(<MenuItem onClick={hide}>
             <ListItemIcon>
                 <EyeOff height={20}/>
             </ListItemIcon>
@@ -77,7 +107,7 @@ const MessageMobileView = (props: { message: Message, inThreadView?: boolean, on
     }
 
     if (keys?.pub === message.creator) {
-        buttons.push(<MenuItem>
+        buttons.push(<MenuItem onClick={del}>
             <ListItemIcon>
                 <Close height={20}/>
             </ListItemIcon>
