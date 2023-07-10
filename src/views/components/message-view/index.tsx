@@ -7,6 +7,7 @@ import {useTheme} from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import {useNavigate} from '@reach/router';
 import {nip19} from 'nostr-tools';
+import {Haptics, ImpactStyle} from '@capacitor/haptics';
 import useContentRenderer from 'hooks/use-render-content';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
@@ -73,6 +74,13 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
             observer.disconnect();
         }
     }, [isVisible]);
+
+    useEffect(() => {
+        if (mobileMenu && PLATFORM !== 'web') {
+            // Send a small vibration
+            Haptics.impact({style: ImpactStyle.Light}).then();
+        }
+    }, [mobileMenu]);
 
     const ps = isMd ? '24px' : '10px';
     return <Box
