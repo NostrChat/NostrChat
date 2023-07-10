@@ -22,7 +22,7 @@ const CopyToClipboard = (props: { children: JSX.Element, copy: string }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.children])
 
-    return <Tooltip title={title}>{clonedChildren}</Tooltip>;
+    return <Tooltip title={title} enterTouchDelay={0}>{clonedChildren}</Tooltip>;
 }
 
 export default CopyToClipboard;
