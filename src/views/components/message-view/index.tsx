@@ -195,7 +195,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                 </Box>
             )}
             <MessageReactions message={message}/>
-            {mobileView && <MessageMobileView message={message} onClose={() => {
+            {mobileView && <MessageMobileView message={message} inThreadView={inThreadView} onClose={() => {
                 setMobileView(false)
             }}/>}
         </Box>
