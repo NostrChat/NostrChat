@@ -65,6 +65,7 @@ const MessageMobileView = (props: { message: Message, profileName: string, inThr
                 showMessage(e.toString(), 'error');
             });
         }
+        showPopover(null);
     }
 
     const emojiFull = () => {
