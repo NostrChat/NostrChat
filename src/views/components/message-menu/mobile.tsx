@@ -60,7 +60,7 @@ const MessageMobileView = (props: { message: Message, profileName: string, inThr
     }
 
     const emojiSelected = (emoji: string) => {
-        if (message.reactions?.find(x => x.message === message.id && x.creator === keys?.pub && x.content === emoji) === undefined) {
+        if (message.reactions?.find(x => x.creator === keys?.pub && x.content === emoji) === undefined) {
             raven?.sendReaction(message.id, message.creator, emoji).catch(e => {
                 showMessage(e.toString(), 'error');
             });
