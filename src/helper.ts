@@ -1,6 +1,4 @@
 import moment from 'moment';
-import {RelayDict} from 'types';
-import {DEFAULT_RELAYS} from 'const';
 
 export const formatMessageTime = (unixTs: number) => moment.unix(unixTs).format('h:mm a');
 

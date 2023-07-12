@@ -12,6 +12,7 @@ import useContentRenderer from 'hooks/use-render-content';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
+import useStyles from 'hooks/use-styles';
 import Avatar from 'views/components/avatar';
 import ProfileDialog from 'views/components/dialogs/profile';
 import MessageReactions from 'views/components/message-reactions';
@@ -28,6 +29,7 @@ import {truncateMiddle} from 'util/truncate';
 const MessageView = (props: { message: Message, compactView: boolean, dateFormat: 'time' | 'fromNow', inThreadView?: boolean }) => {
     const {message, compactView, dateFormat, inThreadView} = props;
     const theme = useTheme();
+    const styles = useStyles();
     const navigate = useNavigate();
     const [profiles] = useAtom(profilesAtom);
     const profile = profiles.find(x => x.creator === message.creator);
@@ -93,27 +95,23 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
             p: `${!compactView ? '15px' : '3px'} ${ps} 0 ${ps}`,
             position: 'relative',
             background: activeMessage === message.id || mobileMenu ? theme.palette.divider : null,
-            ':hover': PLATFORM === 'web' ? {
-                background: theme.palette.divider
-            } : null,
-            userSelect: PLATFORM !== 'web' ? 'none' : null
+            ...styles.withHover({
+                ':hover': {
+                    background: theme.palette.divider
+                }
+            }),
+            userSelect: styles.canTouch() ? 'none' : null
         }}
         onMouseEnter={() => {
-            if (PLATFORM === 'web') {
-                setMenu(true);
-            }
+            if (styles.canHover()) setMenu(true);
         }}
         onMouseLeave={() => {
-            if (PLATFORM === 'web') {
-                setMenu(false);
-            }
+            if (styles.canHover()) setMenu(false);
         }}
         onTouchStart={() => {
-            if (PLATFORM !== 'web') {
-                mobileMenuTimer = setTimeout(() => {
-                    setMobileMenu(true);
-                }, 600);
-            }
+            mobileMenuTimer = setTimeout(() => {
+                setMobileMenu(true);
+            }, 600);
         }}
         onTouchEnd={() => {
             clearTimeout(mobileMenuTimer);
@@ -123,6 +121,10 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
         }}
         onTouchMove={() => {
             clearTimeout(mobileMenuTimer);
+        }}
+        onContextMenu={(e) => {
+            // dont wanna see context menu on dev tools
+            e.preventDefault()
         }}
     >
         {(menu || activeMessage === message.id) && (<Box sx={{
