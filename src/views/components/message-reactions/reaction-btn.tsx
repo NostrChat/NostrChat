@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {useAtom} from 'jotai';
 import Box from '@mui/material/Box';
-import {blue} from '@mui/material/colors';
+import {blue, grey} from '@mui/material/colors';
 import {useTheme} from '@mui/material/styles';
 import {ravenAtom} from 'atoms';
 import {Message, ReactionCombined} from 'types';
@@ -26,7 +26,7 @@ const ReactionBtn = (props: { message: Message, r: ReactionCombined, mr: boolean
         pointerEvents: inProgress ? 'none' : null,
         ':hover': {
             borderColor: theme.palette.divider,
-        },
+        }
     }} onClick={() => {
         if (inProgress) return;
         setInProgress(true);
@@ -36,7 +36,7 @@ const ReactionBtn = (props: { message: Message, r: ReactionCombined, mr: boolean
     }}>
         <Box sx={{mr: '3px'}}>{r.symbol}</Box>
         <Box sx={{
-            color: theme.palette.text.disabled,
+            color: grey[300],
             fontSize: '0.9em',
         }}>{r.count}</Box>
     </Box>
