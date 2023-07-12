@@ -1,82 +1,85 @@
 :root {
-    --app-height: 100%;
-    -webkit-tap-highlight-color: rgba(113, 102, 255, .3);
+  --app-height: 100%;
+  -webkit-tap-highlight-color: rgba(113, 102, 255, .3);
 }
 
 html,
 body {
-    padding: 0;
-    margin: 0;
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
-    height: var(--app-height);
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  height: var(--app-height);
 }
 
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @font-face {
-    font-weight: 400;
-    font-family: 'Faktum';
-    font-style: normal;
-    src: url('assets/fonts/faktum/FaktumWideMedium.otf') format('opentype'),
-    url('assets/fonts/faktum/FaktumWideMedium.woff') format('woff'),
-    url('assets/fonts/faktum/FaktumWideMedium.woff2') format('woff2');
-    font-display: block;
+  font-weight: 400;
+  font-family: 'Faktum';
+  font-style: normal;
+  src: url('assets/fonts/faktum/FaktumWideMedium.otf') format('opentype'),
+  url('assets/fonts/faktum/FaktumWideMedium.woff') format('woff'),
+  url('assets/fonts/faktum/FaktumWideMedium.woff2') format('woff2');
+  font-display: block;
 }
 
 @font-face {
-    font-weight: 600;
-    font-family: 'Faktum';
-    font-style: normal;
-    src: url('assets/fonts/faktum/FaktumWideSemiBold.otf') format('opentype'),
-    url('assets/fonts/faktum/FaktumWideSemiBold.woff') format('woff'),
-    url('assets/fonts/faktum/FaktumWideSemiBold.woff2') format('woff2');
-    font-display: block;
+  font-weight: 600;
+  font-family: 'Faktum';
+  font-style: normal;
+  src: url('assets/fonts/faktum/FaktumWideSemiBold.otf') format('opentype'),
+  url('assets/fonts/faktum/FaktumWideSemiBold.woff') format('woff'),
+  url('assets/fonts/faktum/FaktumWideSemiBold.woff2') format('woff2');
+  font-display: block;
 }
 
-#root{
-    height: 100%;
+#root {
+  height: 100%;
+}
+
+a {
+  -webkit-touch-callout: none;
 }
 
 ::-webkit-scrollbar-track {
-    border-radius: 10px;
-
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    background: rgba(43, 45, 49);
+  border-radius: 10px;
+  background: rgba(43, 45, 49);
 }
 
 
 em-emoji-picker {
-    --rgb-background: 1, 1, 1;
-    --border-radius: 4px;
+  --rgb-background: 1, 1, 1;
+  --border-radius: 4px;
 }
 
 .ProseMirror {
-    outline: none !important;
-    font-size: 15px;
-    max-height: 200px;
-    overflow: auto;
+  outline: none !important;
+  font-size: 15px;
+  max-height: 200px;
+  overflow: auto;
 
-    > * + * {
-        margin-top: 0.75em;
-    }
+  > * + * {
+    margin-top: 0.75em;
+  }
 
-   .mention{
-       color: #FFD60A;
-   }
+  .mention {
+    color: #FFD60A;
+  }
 }
