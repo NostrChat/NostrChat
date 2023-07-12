@@ -8,6 +8,7 @@ import {IntermediateRepresentation} from 'linkifyjs';
 import reactStringReplace from 'react-string-replace';
 import Link from '@mui/material/Link';
 import useModal from 'hooks/use-modal';
+import useStyles from 'hooks/use-styles';
 import ExternalLinkDialog from 'components/external-link-dialog';
 import ProfileDialog from 'views/components/dialogs/profile';
 import {Message} from 'types';
@@ -19,6 +20,7 @@ const channelReg = new RegExp(`^${window.location.protocol}//${window.location.h
 
 const useRenderContent = () => {
     const [, showModal] = useModal();
+    const styles = useStyles();
     const navigate = useNavigate();
     const [profiles] = useAtom(profilesAtom);
 
@@ -49,7 +51,7 @@ const useRenderContent = () => {
                             <Box component="img" src={href} sx={{
                                 maxWidth: '300px',
                                 maxHeight: '300px',
-                                pointerEvents: 'none'
+                                pointerEvents: styles.canTouch() ? 'none' : null
                             }} onLoad={() => {
                                 window.dispatchEvent(new Event('chat-media-loaded', {bubbles: true}))
                             }}/>
