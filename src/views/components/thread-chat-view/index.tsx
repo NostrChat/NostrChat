@@ -11,6 +11,7 @@ import ChatInput from 'views/components/chat-input';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
 import useStyles from 'hooks/use-styles';
+import useAppTheme from 'hooks/use-app-theme';
 import {threadRootAtom} from 'atoms';
 import Close from 'svg/close';
 
@@ -18,6 +19,7 @@ import Close from 'svg/close';
 const ThreadChatView = (props: { senderFn: (message: string, mentions: string[]) => Promise<any> }) => {
     const {isMd} = useMediaBreakPoint();
     const theme = useTheme();
+    const [appTheme] = useAppTheme();
     const styles = useStyles();
     const [t] = useTranslation();
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
@@ -40,7 +42,7 @@ const ThreadChatView = (props: { senderFn: (message: string, mentions: string[])
         height: '100%',
         flexGrow: 0,
         flexShrink: 0,
-        background: lighten(theme.palette.background.default, .03),
+        background: (appTheme === 'dark' ? lighten : darken)(theme.palette.background.default, .03),
         display: 'flex',
         flexDirection: 'column'
     }}>
