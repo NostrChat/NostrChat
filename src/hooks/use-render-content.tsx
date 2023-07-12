@@ -49,6 +49,7 @@ const useRenderContent = () => {
                             <Box component="img" src={href} sx={{
                                 maxWidth: '300px',
                                 maxHeight: '300px',
+                                pointerEvents: 'none'
                             }} onLoad={() => {
                                 window.dispatchEvent(new Event('chat-media-loaded', {bubbles: true}))
                             }}/>
