@@ -11,7 +11,7 @@ import ChatInput from 'views/components/chat-input';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
 import useStyles from 'hooks/use-styles';
-import {threadRootAtom} from 'store';
+import {threadRootAtom} from 'atoms';
 import Close from 'svg/close';
 
 

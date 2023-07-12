@@ -1,5 +1,5 @@
 import {useAtom} from 'jotai';
-import {channelAtom, channelUpdatesAtom, eventDeletionsAtom, leftChannelListAtom} from 'store';
+import {channelAtom, channelUpdatesAtom, eventDeletionsAtom, leftChannelListAtom} from 'atoms';
 
 const useLiveChannel = () => {
     const [channel] = useAtom(channelAtom);

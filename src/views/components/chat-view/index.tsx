@@ -9,7 +9,7 @@ import useStyles from 'hooks/use-styles';
 import {formatMessageDate, formatMessageTime} from 'helper';
 import {Message} from 'types';
 import {SCROLL_DETECT_THRESHOLD} from 'const';
-import {keysAtom, ravenAtom, readMarkMapAtom} from 'store';
+import {keysAtom, ravenAtom, readMarkMapAtom} from 'atoms';
 import {notEmpty} from 'util/misc';
 
 const ChatView = (props: { messages: Message[], separator: string, loading?: boolean }) => {
@@ -17,7 +17,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
     const theme = useTheme();
     const styles = useStyles();
     const ref = useRef<HTMLDivElement | null>(null);
-    const [isBottom, setIsBottom] = useState(true);
+    const [isAtBottom, setIsAtBottom] = useState(true);
     const [firstMessageEl, setFirstMessageEl] = useState<HTMLDivElement | null>(null);
     const [scrollTop, setScrollTop] = useState<number>(0);
     const [raven] = useAtom(ravenAtom);
@@ -29,7 +29,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
     }
 
     useEffect(() => {
-        if (ref.current && isBottom) {
+        if (ref.current && isAtBottom) {
             scrollToBottom();
         }
     }, [messages]);
@@ -39,7 +39,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
     }, [separator]);
 
     useEffect(() => {
-        if (isBottom) {
+        if (isAtBottom) {
             if (messages.length === 0) return;
 
             if (readMarkMap[separator] === undefined) {
@@ -52,7 +52,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
                 raven?.updateReadMarkMap({...readMarkMap, ...{[separator]: Math.floor(Date.now() / 1000)}});
             }
         }
-    }, [separator, isBottom, messages, readMarkMap]);
+    }, [separator, isAtBottom, messages, readMarkMap]);
 
     useEffect(() => {
         let scrollTimer: any;
@@ -62,10 +62,10 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
             clearTimeout(scrollTimer);
             scrollTimer = setTimeout(() => {
                 setScrollTop(div!.scrollTop);
-                const isBottom = Math.abs((div!.scrollHeight - div!.scrollTop) - div!.clientHeight) <= SCROLL_DETECT_THRESHOLD
-                setIsBottom(isBottom);
-                const isTop = (div!.scrollHeight > div!.clientHeight) && div!.scrollTop < SCROLL_DETECT_THRESHOLD;
-                if (isTop) {
+                const isAtBottom = Math.abs((div!.scrollHeight - div!.scrollTop) - div!.clientHeight) <= SCROLL_DETECT_THRESHOLD
+                setIsAtBottom(isAtBottom);
+                const isAtTop = (div!.scrollHeight > div!.clientHeight) && div!.scrollTop < SCROLL_DETECT_THRESHOLD;
+                if (isAtTop) {
                     window.dispatchEvent(new Event('chat-view-top', {bubbles: true}))
                 }
             }, 50);
@@ -79,7 +79,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
 
     useEffect(() => {
         const imageLoaded = () => {
-            if (ref.current && isBottom) {
+            if (ref.current && isAtBottom) {
                 scrollToBottom();
             }
         }
@@ -88,7 +88,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
         return () => {
             window.removeEventListener('chat-media-loaded', imageLoaded)
         }
-    }, [isBottom]);
+    }, [isAtBottom]);
 
     useEffect(() => {
         // After loading new messages, scrolls to the first one of them.
@@ -128,6 +128,23 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
             clearInterval(interval);
         }
     }, [raven, messages, scrollTop]);
+
+    useEffect(() => {
+        // Observe chat view size change and keep scrolled to bottom
+        if (!ref.current) return;
+
+        const observer = new ResizeObserver(() => {
+            if (ref.current && isAtBottom) {
+                scrollToBottom();
+            }
+        });
+
+        observer.observe(ref.current);
+
+        return () => {
+            observer.disconnect();
+        }
+    }, [isAtBottom]);
 
     return <Box ref={ref} sx={{
         mt: 'auto',

@@ -1,7 +1,7 @@
 import {useRef} from 'react';
 import {useAtom} from 'jotai';
-import {toastAtom} from '../store';
-import {Toast, ToastType} from '../store';
+import {toastAtom} from '../atoms';
+import {Toast, ToastType} from '../atoms';
 
 const useToast = (): [Toast, (message: string, type: ToastType, timeout?: number) => void, () => void] => {
     const [toast, setToast] = useAtom(toastAtom);

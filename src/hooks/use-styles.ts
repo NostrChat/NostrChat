@@ -1,9 +1,16 @@
 import {useTheme} from '@mui/material/styles';
+import {SxProps} from '@mui/material';
 
 const useStyles = () => {
     const theme = useTheme();
 
+
     return {
+        canTouch: () => window.matchMedia('(hover: none)').matches,
+        canHover: () => !window.matchMedia('(hover: none)').matches,
+        withHover: (sx: SxProps) => {
+            return {'@media (hover: hover)': {...sx}}
+        },
         ellipsis: {
             overflow: 'hidden',
             whiteSpace: 'nowrap',

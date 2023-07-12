@@ -1,3 +1,5 @@
+export type Platform = 'web' | 'ios' | 'android'
+
 export type Keys = {
     pub: string;
     priv: string;

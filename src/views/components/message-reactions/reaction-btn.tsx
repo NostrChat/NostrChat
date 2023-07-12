@@ -3,7 +3,7 @@ import {useAtom} from 'jotai';
 import Box from '@mui/material/Box';
 import {blue} from '@mui/material/colors';
 import {useTheme} from '@mui/material/styles';
-import {ravenAtom} from 'store';
+import {ravenAtom} from 'atoms';
 import {Message, ReactionCombined} from 'types';
 
 const ReactionBtn = (props: { message: Message, r: ReactionCombined, mr: boolean }) => {

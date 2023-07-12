@@ -15,7 +15,7 @@ const Transition = React.forwardRef(function Transition(
 });
 
 const ModalProvider = (props: { children: React.ReactNode }) => {
-    const [modal,] = useModal();
+    const [modal, showModal] = useModal();
     return <>
         {props.children}
         {modal && (
@@ -26,6 +26,11 @@ const ModalProvider = (props: { children: React.ReactNode }) => {
                 fullScreen={modal.fullScreen || false}
                 disableEscapeKeyDown={false}
                 maxWidth={modal.maxWidth || 'sm'}
+                onClose={() => {
+                    if (modal?.hideOnBackdrop) {
+                        showModal(null);
+                    }
+                }}
             >
                 {modal.body}
             </Dialog>

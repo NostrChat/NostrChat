@@ -1,5 +1,5 @@
 import {useAtom} from 'jotai';
-import {popoverAtom, Popover} from 'store';
+import {popoverAtom, Popover} from 'atoms';
 
 const usePopover = (): [Popover, (popover: Popover) => void] => {
     const [popover, setPopover] = useAtom(popoverAtom);

@@ -5,7 +5,7 @@ import Avatar from 'views/components/avatar';
 import AppContentHeaderBase from 'views/components/app-content-header-base';
 import Menu from 'views/direct-message/components/dm-header/menu';
 import useStyle from 'hooks/use-styles';
-import {directMessageAtom, profilesAtom} from 'store';
+import {directMessageAtom, profilesAtom} from 'atoms';
 
 const DmHeader = () => {
     const theme = useTheme();

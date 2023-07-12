@@ -8,11 +8,10 @@ import {IntermediateRepresentation} from 'linkifyjs';
 import reactStringReplace from 'react-string-replace';
 import Link from '@mui/material/Link';
 import useModal from 'hooks/use-modal';
-import usePopover from 'hooks/use-popover';
 import ExternalLinkDialog from 'components/external-link-dialog';
-import ProfileCardMini from 'views/components/profile-card-mini';
+import ProfileDialog from 'views/components/dialogs/profile';
 import {Message} from 'types';
-import {profilesAtom} from 'store';
+import {profilesAtom} from 'atoms';
 import {notEmpty} from 'util/misc';
 
 const imgReg = /(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/;
@@ -21,7 +20,6 @@ const channelReg = new RegExp(`^${window.location.protocol}//${window.location.h
 const useRenderContent = () => {
     const [, showModal] = useModal();
     const navigate = useNavigate();
-    const [, showPopover] = usePopover();
     const [profiles] = useAtom(profilesAtom);
 
     return (message: Message) => {
@@ -51,6 +49,7 @@ const useRenderContent = () => {
                             <Box component="img" src={href} sx={{
                                 maxWidth: '300px',
                                 maxHeight: '300px',
+                                pointerEvents: 'none'
                             }} onLoad={() => {
                                 window.dispatchEvent(new Event('chat-media-loaded', {bubbles: true}))
                             }}/>
@@ -79,13 +78,12 @@ const useRenderContent = () => {
                 res = reactStringReplace(res, `@${profile.name}`, (match, i) => {
                     return <Link href='#' onClick={(e) => {
                         e.preventDefault();
-                        showPopover({
-                            body: <Box sx={{width: '220px', padding: '10px'}}>
-                                <ProfileCardMini profile={profile} pubkey={profile.creator} onDM={() => {
-                                    navigate(`/dm/${nip19.npubEncode(profile.creator)}`).then();
-                                }}/>
-                            </Box>,
-                            anchorEl: e.currentTarget
+                        showModal({
+                            body: <ProfileDialog profile={profile} pubkey={profile.creator} onDM={() => {
+                                navigate(`/dm/${nip19.npubEncode(profile.creator)}`).then();
+                            }}/>,
+                            maxWidth: 'xs',
+                            hideOnBackdrop: true
                         });
                     }} key={i}>{match}</Link>
                 }) as ReactNode[];

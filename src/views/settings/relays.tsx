@@ -26,9 +26,9 @@ import SettingsMenu from 'views/settings/components/settings-menu';
 import SettingsHeader from 'views/settings/components/settings-header';
 import SettingsContent from 'views/settings/components/settings-content';
 import ConfirmDialog from 'components/confirm-dialog';
-import {keysAtom, ravenAtom} from 'store';
+import {keysAtom, ravenAtom} from 'atoms';
 import {RelayDict} from 'types';
-import {getRelays} from 'helper';
+import {getRelays, getRelaysNullable, removeRelays, storeRelays} from 'local-storage';
 import ShareIcon from 'svg/share';
 import DeleteIcon from 'svg/delete';
 import Plus from 'svg/plus';
@@ -45,6 +45,7 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
     const [prevData, setPrevData] = useState<RelayDict>({});
     const [data, setData] = useState<RelayDict>({});
     const [newAddress, setNewAddress] = useState('');
+    const [canRestore, setCanRestore] = useState<boolean>(false);
 
     useEffect(() => {
         if (!keys) {
@@ -54,17 +55,23 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
 
 
     const load = () => {
-        const d = getRelays();
-        setPrevData(d);
-        setData(d);
+        getRelays().then(d => {
+            setPrevData(d);
+            setData(d);
+        });
     }
 
     useEffect(() => {
         load();
     }, []);
 
+    useEffect(() => {
+        getRelaysNullable().then((r) => {
+            setCanRestore(r !== null);
+        });
+    }, [data]);
+
     const canSave = useMemo(() => JSON.stringify(prevData) !== JSON.stringify(data), [data, prevData]);
-    const canRestore = useMemo(() => localStorage.getItem('relays') !== null, []);
 
     if (!keys) {
         return null;
@@ -131,7 +138,7 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
             return;
         }
 
-        localStorage.setItem('relays', JSON.stringify(data));
+        storeRelays(data).then();
         window.location.reload();
     }
 
@@ -146,7 +153,7 @@ const SettingsRelaysPage = (_: RouteComponentProps) => {
     const restore = () => {
         showModal({
             body: <ConfirmDialog onConfirm={() => {
-                localStorage.removeItem('relays');
+                removeRelays().then();
                 window.location.reload();
             }}/>
         });

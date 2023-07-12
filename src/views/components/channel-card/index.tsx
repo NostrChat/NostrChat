@@ -7,7 +7,7 @@ import Paper from '@mui/material/Paper';
 import {useTheme} from '@mui/material/styles';
 import useTranslation from 'hooks/use-translation';
 import {Channel} from 'types';
-import {keysAtom, leftChannelListAtom} from 'store';
+import {keysAtom, leftChannelListAtom} from 'atoms';
 import {truncate} from 'util/truncate';
 
 

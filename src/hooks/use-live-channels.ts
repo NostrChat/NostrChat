@@ -1,5 +1,5 @@
 import {useAtom} from 'jotai';
-import {channelsAtom, channelUpdatesAtom, eventDeletionsAtom, leftChannelListAtom, publicMessagesAtom} from 'store';
+import {channelsAtom, channelUpdatesAtom, eventDeletionsAtom, leftChannelListAtom, publicMessagesAtom} from 'atoms';
 import {useMemo} from 'react';
 
 const useLiveChannels = () => {

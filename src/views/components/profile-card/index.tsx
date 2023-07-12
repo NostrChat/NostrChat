@@ -14,7 +14,7 @@ import useTranslation from 'hooks/use-translation';
 import useStyles from 'hooks/use-styles';
 import KeyVariant from 'svg/key-variant';
 import {Profile} from 'types';
-import {keysAtom} from 'store';
+import {keysAtom} from 'atoms';
 import CheckDecagram from 'svg/check-decagram';
 import {truncate} from 'util/truncate';
 

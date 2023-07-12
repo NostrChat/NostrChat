@@ -3,7 +3,7 @@ import {useAtom} from 'jotai';
 import {
     eventDeletionsAtom,
     reactionsAtom
-} from 'store';
+} from 'atoms';
 
 const useLiveReactions = () => {
     const [eventDeletions] = useAtom(eventDeletionsAtom);

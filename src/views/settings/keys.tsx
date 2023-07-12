@@ -16,7 +16,7 @@ import SettingsMenu from 'views/settings/components/settings-menu';
 import SettingsHeader from 'views/settings/components/settings-header';
 import SettingsContent from 'views/settings/components/settings-content';
 import CopyToClipboard from 'components/copy-clipboard';
-import {keysAtom} from 'store';
+import {keysAtom} from 'atoms';
 import ContentCopy from 'svg/content-copy';
 import Eye from 'svg/eye';
 import EyeOff from 'svg/eye-off';

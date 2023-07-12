@@ -6,7 +6,8 @@ import {useTheme} from '@mui/material/styles';
 import useTranslation from 'hooks/use-translation';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import usePopover from 'hooks/use-popover';
-import {backupWarnAtom} from 'store';
+import useModal from 'hooks/use-modal';
+import {backupWarnAtom} from 'atoms';
 import Alert from 'svg/alert';
 
 
@@ -18,9 +19,12 @@ const AppWrapper = (props: { children: React.ReactNode }) => {
     const location = useLocation();
     const [backupWarn, setBackupWarn] = useAtom(backupWarnAtom);
     const [, setPopover] = usePopover();
+    const [, setModal] = useModal();
 
+    // Hide popover and modal on page change
     useEffect(() => {
         setPopover(null);
+        setModal(null);
     }, [location.pathname]);
 
     const warnHeight = isSm ? '36px' : '50px';

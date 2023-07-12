@@ -15,16 +15,20 @@ import {
     PublicMessage,
     Reaction,
     ReadMarkMap,
+    RelayDict,
 } from 'types';
 import chunk from 'lodash.chunk';
 import uniq from 'lodash.uniq';
 import {BgRaven} from 'raven/worker';
-import {getRelays} from 'helper';
+import {getRelays} from 'local-storage';
 import {GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {notEmpty} from 'util/misc';
-import {isSha256} from '../util/crypto';
+import {isSha256} from 'util/crypto';
 
-const relays = getRelays();
+let relays:RelayDict;
+getRelays().then(r => {
+    relays = r;
+});
 
 
 enum NewKinds {
@@ -455,7 +459,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         return this.publish(NewKinds.Arbitrary, tags, JSON.stringify(channelIds));
     }
 
-    public async updateReadMarkMap(map: ReadMarkMap){
+    public async updateReadMarkMap(map: ReadMarkMap) {
         const tags = [['d', 'read-mark-map']];
         return this.publish(NewKinds.Arbitrary, tags, JSON.stringify(map));
     }
@@ -786,7 +790,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
 
 export default Raven;
 
-export const initRaven = (keys: Keys): Raven | undefined => {
+export const initRaven = (keys: Keys | undefined): Raven | undefined => {
     if (window.raven) {
         window.raven.close();
         window.raven = undefined;

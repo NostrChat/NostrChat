@@ -9,7 +9,7 @@ import useModal from 'hooks/use-modal';
 import useToast from 'hooks/use-toast';
 import useTranslation from 'hooks/use-translation';
 import MetadataForm from 'views/components/metadata-form';
-import {ravenAtom} from 'store';
+import {ravenAtom} from 'atoms';
 
 const CreateChannel = (props: { onSuccess: (id: string) => void }) => {
     const {onSuccess} = props;

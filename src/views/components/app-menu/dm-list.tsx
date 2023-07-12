@@ -10,7 +10,7 @@ import StartDM from 'views/components/dialogs/start-dm';
 import useLiveDirectContacts from 'hooks/use-live-direct-contacts';
 import useLiveDirectMessages from 'hooks/use-live-direct-messages';
 import useModal from 'hooks/use-modal';
-import {directMessageAtom, directMessagesAtom, profilesAtom, readMarkMapAtom, showRequestsAtom} from 'store';
+import {directMessageAtom, directMessagesAtom, profilesAtom, readMarkMapAtom, showRequestsAtom} from 'atoms';
 import Plus from 'svg/plus';
 import {DirectContact} from 'types';
 import {truncateMiddle} from 'util/truncate';
