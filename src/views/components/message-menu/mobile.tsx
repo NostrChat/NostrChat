@@ -100,7 +100,7 @@ const MessageMobileView = (props: { message: Message, profileName: string, inThr
         });
     }
 
-    const buttons = [<CopyToClipboard copy={message.content}>
+    const buttons = [<CopyToClipboard copy={message.content} key="copy">
         <MenuItem>
             <ListItemIcon>
                 <ContentCopy height={18}/>
@@ -110,7 +110,7 @@ const MessageMobileView = (props: { message: Message, profileName: string, inThr
     </CopyToClipboard>];
 
     if (!inThreadView) {
-        buttons.push(<MenuItem onClick={openThread}>
+        buttons.push(<MenuItem onClick={openThread} key="thread">
             <ListItemIcon>
                 <MessageReplyText height={18}/>
             </ListItemIcon>
@@ -119,7 +119,7 @@ const MessageMobileView = (props: { message: Message, profileName: string, inThr
     }
 
     if (keys?.pub !== message.creator && !('decrypted' in message)) { // only public messages
-        buttons.push(<MenuItem onClick={hide}>
+        buttons.push(<MenuItem onClick={hide} key="hide">
             <ListItemIcon>
                 <EyeOff height={20}/>
             </ListItemIcon>
@@ -128,7 +128,7 @@ const MessageMobileView = (props: { message: Message, profileName: string, inThr
     }
 
     if (keys?.pub === message.creator) {
-        buttons.push(<MenuItem onClick={del}>
+        buttons.push(<MenuItem onClick={del} key="del">
             <ListItemIcon>
                 <Close height={20}/>
             </ListItemIcon>
@@ -209,7 +209,7 @@ const MessageMobileView = (props: { message: Message, profileName: string, inThr
             )}
             <Paper sx={{width: '320px', maxWidth: '100%', fontSize: '90%', mt: '10px'}}>
                 <MenuList sx={{fontSize: '90%'}}>
-                    {buttons.map((b, i) => <React.Fragment key={i}>{b}</React.Fragment>)}
+                    {buttons}
                 </MenuList>
             </Paper>
         </Box>
