@@ -49,6 +49,8 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const messageDateTime = useMemo(() => formatMessageDateTime(message.created), [message]);
     const lastReply = useMemo(() => message.children && message.children.length > 0 ? formatMessageFromNow(message.children[message.children.length - 1].created) : null, [message]);
     let mobileMenuTimer: any = null;
+    const canTouch = styles.canTouch();
+    const canHover = styles.canHover();
 
     const profileClicked = () => {
         showModal({
@@ -100,13 +102,13 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                     background: theme.palette.divider
                 }
             }),
-            userSelect: styles.canTouch() ? 'none' : null
+            userSelect: canTouch ? 'none' : null
         }}
         onMouseEnter={() => {
-            if (styles.canHover()) setMenu(true);
+            if (canHover) setMenu(true);
         }}
         onMouseLeave={() => {
-            if (styles.canHover()) setMenu(false);
+            if (canHover) setMenu(false);
         }}
         onTouchStart={() => {
             mobileMenuTimer = setTimeout(() => {
@@ -123,8 +125,10 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
             clearTimeout(mobileMenuTimer);
         }}
         onContextMenu={(e) => {
-            // dont wanna see context menu on dev tools
-            e.preventDefault()
+            if (canTouch) {
+                // don't want to see context menu while using dev tools
+                e.preventDefault();
+            }
         }}
     >
         {(menu || activeMessage === message.id) && (<Box sx={{
