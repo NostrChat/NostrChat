@@ -1,9 +1,13 @@
 import {useTheme} from '@mui/material/styles';
+import {SxProps} from '@mui/material';
 
 const useStyles = () => {
     const theme = useTheme();
 
     return {
+        withHover: (sx: SxProps) => {
+            return {'@media (hover: hover)': {...sx}}
+        },
         ellipsis: {
             overflow: 'hidden',
             whiteSpace: 'nowrap',

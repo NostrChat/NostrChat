@@ -5,6 +5,7 @@ import {FrequentlyUsed, getEmojiDataFromNative} from 'emoji-mart';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import Plus from 'svg/plus';
+import useStyles from '../../hooks/use-styles';
 
 // this is required for getEmojiDataFromNative queries
 init({data}).then();
@@ -12,6 +13,7 @@ init({data}).then();
 const ShortEmojiPicker = (props: { onSelect: (selected: string) => void, onMore: () => void }) => {
     const {onSelect, onMore} = props;
     const theme = useTheme();
+    const styles = useStyles();
     const [frequent, setFrequent] = useState<string[] | null>(null);
     useEffect(() => {
         if (frequent === null) {
@@ -36,9 +38,11 @@ const ShortEmojiPicker = (props: { onSelect: (selected: string) => void, onMore:
         alignItems: 'center',
         cursor: 'pointer',
         borderRadius: '50%',
-        ':hover': {
-            background: theme.palette.divider
-        },
+        ...styles.withHover({
+            ':hover': {
+                background: theme.palette.divider
+            }
+        })
     }
 
     return <>
