@@ -4,12 +4,13 @@ const config: CapacitorConfig = {
   appId: 'org.nostrchat.app',
   appName: 'NostrChat',
   webDir: 'build',
-  backgroundColor: '#141414',
+  backgroundColor: '#343434',
   server: {
     androidScheme: 'https'
   },
   ios: {
-    contentInset: 'always'
+    contentInset: 'always',
+    allowsLinkPreview: false
   }
 };
 
