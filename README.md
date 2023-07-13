@@ -53,4 +53,3 @@ NostrChat will open in your browser.
 - iOS app
 - Notifications (push/fetch)
 - Android app
-- NIP-29 support
