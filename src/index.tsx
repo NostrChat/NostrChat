@@ -5,8 +5,6 @@ import '@fontsource/inter';
 import App from 'App';
 import reportWebVitals from 'reportWebVitals';
 import Providers from 'providers';
-import { StatusBar, Style } from '@capacitor/status-bar';
- StatusBar.setStyle({ style: Style.Light });
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement

@@ -9,8 +9,6 @@ PODS:
     - SwiftKeychainWrapper
   - CapacitorSplashScreen (5.0.4):
     - Capacitor
-  - CapacitorStatusBar (5.0.6):
-    - Capacitor
   - SwiftKeychainWrapper (4.0.1)
 
 DEPENDENCIES:
@@ -19,7 +17,6 @@ DEPENDENCIES:
   - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
   - CapacitorSecureStoragePlugin (from `../../node_modules/capacitor-secure-storage-plugin`)
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
-  - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
 
 SPEC REPOS:
   trunk:
@@ -36,8 +33,6 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/capacitor-secure-storage-plugin"
   CapacitorSplashScreen:
     :path: "../../node_modules/@capacitor/splash-screen"
-  CapacitorStatusBar:
-    :path: "../../node_modules/@capacitor/status-bar"
 
 SPEC CHECKSUMS:
   Capacitor: d3d4463573438b9fa65326d1f3549da6f4c21634
@@ -45,9 +40,8 @@ SPEC CHECKSUMS:
   CapacitorHaptics: 4b1a7e1bac1794d1515842d304f9fce46ef5084c
   CapacitorSecureStoragePlugin: e91d7df060f2495a1acff9583641a6953e3aacba
   CapacitorSplashScreen: 93a389d4f7673c08214ae25bb6f21d867d5305c5
-  CapacitorStatusBar: 565c0a1ebd79bb40d797606a8992b4a105885309
   SwiftKeychainWrapper: 807ba1d63c33a7d0613288512399cd1eda1e470c
 
-PODFILE CHECKSUM: e988253673f11dfe683adcde2f5ac306a3084cc0
+PODFILE CHECKSUM: ef8a30517f9b45102b51a61065f357d9fb030a71
 
 COCOAPODS: 1.12.1
