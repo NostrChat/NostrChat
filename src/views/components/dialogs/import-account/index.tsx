@@ -11,7 +11,7 @@ import CloseModal from 'components/close-modal';
 import useModal from 'hooks/use-modal';
 import useTranslation from 'hooks/use-translation';
 
-const ImportAccount = (props: { onSuccess: (key: string) => void }) => {
+const ImportAccount = (props: { onSuccess: (key: string, type: 'pub' | 'priv') => void }) => {
     const {onSuccess} = props;
     const [, showModal] = useModal();
     const [t] = useTranslation();
@@ -32,8 +32,11 @@ const ImportAccount = (props: { onSuccess: (key: string) => void }) => {
                 return;
             }
 
-            if (dec.type === 'nsec' || dec.type === 'npub') {
-                onSuccess(dec.data as string);
+            const key = dec.data as string;
+            if (dec.type === 'nsec') {
+                onSuccess(key, 'priv');
+            } else if (dec.type === 'npub') {
+                onSuccess(key, 'pub');
             } else {
                 setIsInvalid(true);
             }

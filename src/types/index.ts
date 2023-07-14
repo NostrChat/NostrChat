@@ -5,7 +5,7 @@ export type Keys = {
     priv: string;
 } | {
     pub: string;
-    priv: 'nip07';
+    priv: 'nip07' | 'none';
 } | null;
 
 
