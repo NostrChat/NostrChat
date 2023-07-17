@@ -2,6 +2,7 @@ import {Event, Filter, getEventHash, Kind, nip04, signEvent, SimplePool} from 'n
 import {TypedEventEmitter} from 'raven/helper/event-emitter';
 import * as Comlink from 'comlink';
 import {
+    PrivKey,
     Channel,
     ChannelMessageHide,
     ChannelUpdate,
@@ -25,7 +26,7 @@ import {GLOBAL_CHAT, MESSAGE_PER_PAGE} from 'const';
 import {notEmpty} from 'util/misc';
 import {isSha256} from 'util/crypto';
 
-let relays:RelayDict;
+let relays: RelayDict;
 getRelays().then(r => {
     relays = r;
 });
@@ -73,7 +74,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     private readonly worker: Worker;
     private bgRaven: Comlink.Remote<BgRaven>;
 
-    private readonly priv: string | 'nip07';
+    private readonly priv: PrivKey;
     private readonly pub: string;
 
     private readonly readRelays = Object.keys(relays).filter(r => relays[r].read);
@@ -209,6 +210,10 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         const promises = chunk(filters2, 10).map(f => this.fetch(f).then(events => events.forEach(ev => this.pushToEventBuffer(ev))));
         await Promise.all(promises);
         this.emit(RavenEvents.Ready);
+    }
+
+    private isSyntheticPrivKey = () => {
+        return this.priv === 'nip07' || this.priv === 'none';
     }
 
     public fetchPrevMessages(channel: string, until: number) {
@@ -648,7 +653,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 decrypted: false
             };
 
-            if (this.priv === 'nip07') {
+            if (this.isSyntheticPrivKey()) {
                 return msg;
             }
 
@@ -695,7 +700,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         if (muteListEv) {
             const visiblePubkeys = Raven.filterTagValue(muteListEv, 'p').map(x => x?.[1])
 
-            if (muteListEv.content !== '' && this.priv !== 'nip07') {
+            if (muteListEv.content !== '' && !this.isSyntheticPrivKey()) {
                 nip04.decrypt(this.priv, this.pub, muteListEv.content).then(e => JSON.parse(e)).then(resp => {
                     const allPubkeys = [...visiblePubkeys, ...resp.map((x: any) => x?.[1])];
                     this.emit(RavenEvents.MuteList, {

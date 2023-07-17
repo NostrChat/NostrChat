@@ -300,7 +300,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
 
     // muteList runtime decryption for nip04 wallet users.
     useEffect(() => {
-        if (muteList.encrypted && keys) {
+        if (keys?.priv === 'nip07' && muteList.encrypted) {
             window.nostr?.nip04.decrypt(keys.pub, muteList.encrypted).then(e => JSON.parse(e)).then(resp => {
                 setMuteList({
                     pubkeys: uniq(resp.map((x: any) => x?.[1])),
@@ -329,12 +329,12 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
 
     // decrypt direct messages one by one to avoid show nip7 wallet dialog many times.
     useEffect(() => {
-        if (directMessage) {
-            const decrypted = directMessages.filter(m => m.peer === directMessage).find(x => !x.decrypted);
-            if (decrypted) {
-                window.nostr?.nip04.decrypt(decrypted.peer, decrypted.content).then(content => {
+        if (keys?.priv === 'nip07' && directMessage) {
+            const toDecrypt = directMessages.filter(m => m.peer === directMessage).find(x => !x.decrypted);
+            if (toDecrypt) {
+                window.nostr?.nip04.decrypt(toDecrypt.peer, toDecrypt.content).then(content => {
                     setDirectMessages(directMessages.map(m => {
-                        if (m.id === decrypted.id) {
+                        if (m.id === toDecrypt.id) {
                             return {
                                 ...m,
                                 content,
