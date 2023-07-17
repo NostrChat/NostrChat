@@ -52,7 +52,7 @@ const SettingsKeysPage = (_: RouteComponentProps) => {
                 <SettingsContent>
                     {(() => {
 
-                        if (keys?.priv === 'nip07') {
+                        if (keys?.priv === 'nip07' || keys?.priv === 'none') {
                             return <Box sx={{
                                 mb: '50px',
                                 color: theme.palette.text.secondary,
@@ -61,7 +61,8 @@ const SettingsKeysPage = (_: RouteComponentProps) => {
                                 alignItems: 'center'
                             }}>
                                 <Information height={18}/>
-                                <Box sx={{ml: '6px'}}>{t('See your private key on the extension app.')}</Box>
+                                <Box
+                                    sx={{ml: '6px'}}>{keys?.priv == 'nip07' ? t('See your private key on the extension app.') : t('No private key provided.')}</Box>
                             </Box>;
                         }
 
