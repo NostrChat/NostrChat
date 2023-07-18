@@ -14,5 +14,6 @@ declare global {
                 decrypt: (pubkey: string, content: string) => Promise<string>;
             };
         };
+        requestPrivateKey: () => Promise<string>;
     }
 }

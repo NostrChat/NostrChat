@@ -30,6 +30,10 @@ const ModalProvider = (props: { children: React.ReactNode }) => {
                     if (modal?.hideOnBackdrop) {
                         showModal(null);
                     }
+
+                    if (modal?.onHide) {
+                        modal?.onHide();
+                    }
                 }}
             >
                 {modal.body}
