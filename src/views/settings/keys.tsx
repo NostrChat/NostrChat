@@ -62,7 +62,7 @@ const SettingsKeysPage = (_: RouteComponentProps) => {
                             }}>
                                 <Information height={18}/>
                                 <Box
-                                    sx={{ml: '6px'}}>{keys?.priv == 'nip07' ? t('See your private key on the extension app.') : t('No private key provided.')}</Box>
+                                    sx={{ml: '6px'}}>{keys?.priv === 'nip07' ? t('See your private key on the extension app.') : t('No private key provided.')}</Box>
                             </Box>;
                         }
 
