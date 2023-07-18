@@ -40,6 +40,8 @@ const ImportAccount = (props: { onSuccess: (key: string, type: 'pub' | 'priv') =
             } else {
                 setIsInvalid(true);
             }
+        } else {
+            setIsInvalid(true);
         }
     }
 
