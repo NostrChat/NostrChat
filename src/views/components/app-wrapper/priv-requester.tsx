@@ -102,7 +102,7 @@ const PrivRequiredDialog = (props: { onSuccess: (key: string) => void, onHide: (
     );
 }
 
-const PrivRequired = () => {
+const PrivRequester = () => {
     const [, showModal] = useModal();
 
     const rejected = () => {
@@ -133,4 +133,4 @@ const PrivRequired = () => {
 }
 
 
-export default PrivRequired;
+export default PrivRequester;

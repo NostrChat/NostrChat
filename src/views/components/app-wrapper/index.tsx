@@ -7,7 +7,7 @@ import useTranslation from 'hooks/use-translation';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import usePopover from 'hooks/use-popover';
 import useModal from 'hooks/use-modal';
-import PrivRequired from 'views/components/priv-required';
+import PrivRequester from 'views/components/app-wrapper/priv-requester';
 import {backupWarnAtom} from 'atoms';
 import Alert from 'svg/alert';
 
@@ -71,7 +71,7 @@ const AppWrapper = (props: { children: React.ReactNode }) => {
         }}>
             {props.children}
         </Box>
-        <PrivRequired />
+        <PrivRequester />
     </>
 }
 
