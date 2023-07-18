@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -9,11 +9,13 @@ import {DecodeResult} from 'nostr-tools/lib/nip19';
 import CloseModal from 'components/close-modal';
 import useModal from 'hooks/use-modal';
 import useTranslation from 'hooks/use-translation';
+import Box from '@mui/material/Box';
+import {useTheme} from '@mui/material/styles';
 
 
-window.requestPrivateKey = () => {
+window.requestPrivateKey = (event: any) => {
     return new Promise((resolve, reject) => {
-        window.dispatchEvent(new Event('request-priv'));
+        window.dispatchEvent(new CustomEvent('request-priv', {detail: {event}}));
 
         const handleResolve = (ev: CustomEvent) => {
             window.removeEventListener('resolve-priv', handleResolve as EventListener);
@@ -32,12 +34,18 @@ window.requestPrivateKey = () => {
     })
 }
 
-const PrivRequiredDialog = (props: { onSuccess: (key: string) => void, onHide: () => void }) => {
-    const {onSuccess, onHide} = props;
+const PrivRequiredDialog = (props: { event: any, onSuccess: (key: string) => void, onHide: () => void }) => {
+    const {event, onSuccess, onHide} = props;
     const [, showModal] = useModal();
     const [t] = useTranslation();
+    const theme = useTheme();
     const [userKey, setUserKey] = useState('');
     const [isInvalid, setIsInvalid] = useState(false);
+
+    const evToRender = useMemo(() => {
+        const {id: _, sig: __, ...ev} = event;
+        return JSON.stringify(ev, null, 2);
+    }, [event])
 
     const handleClose = () => {
         showModal(null);
@@ -80,6 +88,16 @@ const PrivRequiredDialog = (props: { onSuccess: (key: string) => void, onHide: (
                 <DialogContentText sx={{fontSize: '.8em', mb: '18px'}}>
                     {t('Please enter your private key in nsec format to sign this event.')}
                 </DialogContentText>
+                <Box component="pre" sx={{
+                    fontSize: '.6em',
+                    overflowY: 'auto',
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: '6px',
+                    p: '2px',
+                    color: theme.palette.text.secondary
+                }}>
+                    {evToRender}
+                </Box>
                 <TextField fullWidth autoComplete="off" autoFocus
                            value={userKey} onChange={handleUserKeyChange}
                            placeholder={t('Enter nsec')}
@@ -110,9 +128,9 @@ const PrivRequester = () => {
         showModal(null);
     }
 
-    const handleRequest = () => {
+    const handleRequest = (ev: CustomEvent) => {
         showModal({
-            body: <PrivRequiredDialog onSuccess={(key) => {
+            body: <PrivRequiredDialog event={ev.detail.event} onSuccess={(key) => {
                 window.dispatchEvent(new CustomEvent('resolve-priv', {detail: {key}}));
                 showModal(null);
             }} onHide={rejected}/>,
@@ -122,10 +140,10 @@ const PrivRequester = () => {
     }
 
     useEffect(() => {
-        window.addEventListener('request-priv', handleRequest);
+        window.addEventListener('request-priv', handleRequest as EventListener);
 
         return () => {
-            window.removeEventListener('request-priv', handleRequest);
+            window.removeEventListener('request-priv', handleRequest as EventListener);
         }
     }, []);
 

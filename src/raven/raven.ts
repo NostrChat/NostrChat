@@ -529,7 +529,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         if (this.priv === 'nip07') {
             return window.nostr?.signEvent(event);
         } else {
-            const priv = this.priv === 'none' ? await window.requestPrivateKey() : this.priv;
+            const priv = this.priv === 'none' ? await window.requestPrivateKey(event) : this.priv;
             return {
                 ...event,
                 id: getEventHash(event),
