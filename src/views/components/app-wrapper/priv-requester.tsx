@@ -113,7 +113,7 @@ const PrivRequiredDialog = (props: { event: any, onSuccess: (key: string) => voi
                            }}/>
             </DialogContent>
             <DialogActions sx={{display: 'flex', justifyContent: 'space-between'}}>
-                <Button onClick={handleClose}>{t('Cancel')}</Button>
+                <Button onClick={handleClose}>{t('Skip')}</Button>
                 <Button variant="contained" onClick={handleSubmit} disableElevation>{t('Submit')}</Button>
             </DialogActions>
         </>
