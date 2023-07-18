@@ -1,16 +1,19 @@
 import React, {useEffect, useMemo, useState} from 'react';
+import {useAtom} from 'jotai';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import {DialogContentText, TextField} from '@mui/material';
 import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import {useTheme} from '@mui/material/styles';
 import {nip19} from 'nostr-tools';
 import {DecodeResult} from 'nostr-tools/lib/nip19';
 import CloseModal from 'components/close-modal';
 import useModal from 'hooks/use-modal';
 import useTranslation from 'hooks/use-translation';
-import Box from '@mui/material/Box';
-import {useTheme} from '@mui/material/styles';
+import useMediaBreakPoint from 'hooks/use-media-break-point';
+import {tempPrivAtom} from 'atoms';
 
 
 window.requestPrivateKey = (event: any) => {
@@ -39,8 +42,11 @@ const PrivRequiredDialog = (props: { event: any, onSuccess: (key: string) => voi
     const [, showModal] = useModal();
     const [t] = useTranslation();
     const theme = useTheme();
-    const [userKey, setUserKey] = useState('');
+    const {isSm} = useMediaBreakPoint();
+    const [tempPriv, setTempPriv] = useAtom(tempPrivAtom);
+    const [userKey, setUserKey] = useState(tempPriv);
     const [isInvalid, setIsInvalid] = useState(false);
+    const [remember, setRemember] = useState(tempPriv !== '');
 
     const evToRender = useMemo(() => {
         const {id: _, sig: __, ...ev} = event;
@@ -52,9 +58,13 @@ const PrivRequiredDialog = (props: { event: any, onSuccess: (key: string) => voi
         onHide();
     };
 
-    const handleUserKeyChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    const handleUserKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setUserKey(e.target.value);
         setIsInvalid(false);
+    }
+
+    const handleRememberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setRemember(e.target.checked);
     }
 
     const handleSubmit = () => {
@@ -75,6 +85,7 @@ const PrivRequiredDialog = (props: { event: any, onSuccess: (key: string) => voi
             const key = dec.data as string;
             if (dec.type === 'nsec') {
                 onSuccess(key);
+                setTempPriv(remember ? userKey : '');
             } else {
                 setIsInvalid(true);
             }
@@ -95,14 +106,12 @@ const PrivRequiredDialog = (props: { event: any, onSuccess: (key: string) => voi
                     borderRadius: '6px',
                     p: '2px',
                     color: theme.palette.text.secondary
-                }}>
-                    {evToRender}
-                </Box>
-                <TextField fullWidth autoComplete="off" autoFocus
+                }}>{evToRender}</Box>
+                <TextField fullWidth autoComplete="off" autoFocus={userKey === ''}
                            value={userKey} onChange={handleUserKeyChange}
                            placeholder={t('Enter nsec')}
                            error={isInvalid}
-                           helperText={isInvalid ? t('Invalid key') : ' '}
+                           helperText={isInvalid ? t('Invalid key') : ''}
                            inputProps={{
                                autoCorrect: 'off',
                            }}
@@ -112,9 +121,30 @@ const PrivRequiredDialog = (props: { event: any, onSuccess: (key: string) => voi
                                }
                            }}/>
             </DialogContent>
-            <DialogActions sx={{display: 'flex', justifyContent: 'space-between'}}>
-                <Button onClick={handleClose}>{t('Skip')}</Button>
-                <Button variant="contained" onClick={handleSubmit} disableElevation>{t('Submit')}</Button>
+            <DialogActions sx={{
+                display: 'flex',
+                flexDirection: isSm ? 'row' : 'column',
+                justifyContent: 'space-between',
+                pl: isSm ? '24px' : null,
+                pr: isSm ? '24px' : null,
+                mt: isSm ? '10px' : null
+            }}>
+                <Box sx={{
+                    fontSize: '.7em',
+                    color: theme.palette.text.secondary,
+                    m: isSm ? null : '12px 0'
+                }}>
+                    <Box component="label" sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                    }}>
+                        <Box component="input" type="checkbox" checked={remember} onChange={handleRememberChange}/>
+                        {t('Remember for this session')}</Box>
+                </Box>
+                <Box>
+                    <Button onClick={handleClose} sx={{mr: '6px'}}>{t('Skip')}</Button>
+                    <Button variant="contained" onClick={handleSubmit} disableElevation>{t('Submit')}</Button>
+                </Box>
             </DialogActions>
         </>
     );

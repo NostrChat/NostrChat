@@ -20,6 +20,7 @@ import Raven from 'raven/raven';
 export * from 'atoms/ui';
 
 export const keysAtom = atom<Keys | undefined>(undefined);
+export const tempPrivAtom = atom<string>('');
 export const ravenAtom = atom<Raven | undefined>(undefined);
 export const ravenReadyAtom = atom<boolean>(false);
 export const profilesAtom = atom<Profile[]>([]);
