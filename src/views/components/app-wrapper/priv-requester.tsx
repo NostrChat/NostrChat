@@ -43,7 +43,7 @@ const PrivRequiredDialog = (props: { data: any, onSuccess: (key: string) => void
     const theme = useTheme();
     const [keys,] = useAtom(keysAtom);
     const [tempPriv, setTempPriv] = useAtom(tempPrivAtom);
-    const [userKey, setUserKey] = useState(tempPriv);
+    const [userKey, setUserKey] = useState(tempPriv ? nip19.nsecEncode(tempPriv) : '');
     const [isInvalid, setIsInvalid] = useState(false);
 
     const isEvent = data.id !== undefined && data.sig !== undefined;
@@ -82,12 +82,10 @@ const PrivRequiredDialog = (props: { data: any, onSuccess: (key: string) => void
             }
 
             const key = dec.data as string;
-            if (dec.type === 'nsec') {
-                if (keys?.pub === getPublicKey(key)) {
-                    onSuccess(key);
-                    setTempPriv(userKey);
-                    return;
-                }
+            if (dec.type === 'nsec' && keys?.pub === getPublicKey(key)) {
+                onSuccess(key);
+                setTempPriv(key);
+                return;
             }
 
             setIsInvalid(true);
