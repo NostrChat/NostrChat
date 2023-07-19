@@ -212,7 +212,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         this.emit(RavenEvents.Ready);
     }
 
-    private isSyntheticPrivKey = () => {
+    public isSyntheticPrivKey = () => {
         return this.priv === 'nip07' || this.priv === 'none';
     }
 

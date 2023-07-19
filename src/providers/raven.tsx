@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {useAtom} from 'jotai';
 import uniq from 'lodash.uniq';
-import {nip19} from 'nostr-tools';
+import {nip04, nip19} from 'nostr-tools';
 
 import {
     channelsAtom,
@@ -21,7 +21,7 @@ import {
     directMessageAtom,
     reactionsAtom,
     leftChannelListAtom,
-    readMarkMapAtom
+    readMarkMapAtom, tempPrivAtom
 } from 'atoms';
 import {initRaven, RavenEvents} from 'raven/raven';
 import {
@@ -44,6 +44,7 @@ const logger = createLogger('RavenProvider');
 
 const RavenProvider = (props: { children: React.ReactNode }) => {
     const [keys] = useAtom(keysAtom);
+    const [tempPriv] = useAtom(tempPrivAtom);
     const [, setRaven] = useAtom(ravenAtom);
     const [ravenReady, setRavenReady] = useAtom(ravenReadyAtom);
     const [profile, setProfile] = useAtom(profileAtom);
@@ -300,15 +301,22 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
 
     // muteList runtime decryption for nip04 wallet users.
     useEffect(() => {
-        if (keys?.priv === 'nip07' && muteList.encrypted) {
-            window.nostr?.nip04.decrypt(keys.pub, muteList.encrypted).then(e => JSON.parse(e)).then(resp => {
+        if ((keys?.priv === 'nip07' || keys?.priv === 'none') && muteList.encrypted) {
+            let promise;
+            if (keys.priv === 'none' && tempPriv) {
+                promise = nip04.decrypt(tempPriv, keys.pub, muteList.encrypted);
+            } else if (keys.priv === 'nip07') {
+                promise = window.nostr?.nip04.decrypt(keys.pub, muteList.encrypted);
+            }
+
+            promise?.then(e => JSON.parse(e)).then(resp => {
                 setMuteList({
                     pubkeys: uniq(resp.map((x: any) => x?.[1])),
                     encrypted: ''
                 })
             })
         }
-    }, [muteList, keys]);
+    }, [muteList, keys, tempPriv]);
 
     // reaction handler
     const handleReaction = (data: Reaction[]) => {
@@ -329,10 +337,17 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
 
     // decrypt direct messages one by one to avoid show nip7 wallet dialog many times.
     useEffect(() => {
-        if (keys?.priv === 'nip07' && directMessage) {
+        if ((keys?.priv === 'nip07' || keys?.priv === 'none') && directMessage) {
             const toDecrypt = directMessages.filter(m => m.peer === directMessage).find(x => !x.decrypted);
             if (toDecrypt) {
-                window.nostr?.nip04.decrypt(toDecrypt.peer, toDecrypt.content).then(content => {
+                let promise;
+                if (keys.priv === 'none' && tempPriv) {
+                    promise = nip04.decrypt(tempPriv, toDecrypt.peer, toDecrypt.content);
+                } else if (keys.priv === 'nip07') {
+                    promise = window.nostr?.nip04.decrypt(toDecrypt.peer, toDecrypt.content);
+                }
+
+                promise?.then(content => {
                     setDirectMessages(directMessages.map(m => {
                         if (m.id === toDecrypt.id) {
                             return {
@@ -346,7 +361,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
                 })
             }
         }
-    }, [directMessages, directMessage]);
+    }, [directMessages, directMessage, tempPriv, keys]);
 
     // Init raven
     useEffect(() => {
