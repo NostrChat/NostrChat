@@ -9,7 +9,7 @@ import useLiveChannels from 'hooks/use-live-channels';
 import useLivePublicMessages from 'hooks/use-live-public-messages';
 import ChannelAddMenu from 'views/components/app-menu/channel-add-menu';
 import ListItem from 'views/components/app-menu/list-item';
-import {channelAtom, readMarkMapAtom} from 'atoms';
+import {channelAtom, keysAtom, readMarkMapAtom} from 'atoms';
 import {Channel} from 'types';
 
 const ChannelListItem = (props: { c: Channel }) => {
@@ -19,9 +19,10 @@ const ChannelListItem = (props: { c: Channel }) => {
     const messages = useLivePublicMessages(c.id);
     const [readMarkMap] = useAtom(readMarkMapAtom);
     const [channel] = useAtom(channelAtom);
+    const [keys] = useAtom(keysAtom);
 
     const lMessage = messages[messages.length - 1];
-    const hasUnread = !!(readMarkMap[c.id] && lMessage && lMessage.created > readMarkMap[c.id]);
+    const hasUnread = keys?.priv !== 'none' && !!(readMarkMap[c.id] && lMessage && lMessage.created > readMarkMap[c.id]);
 
     const isSelected = c.id === channel?.id && location.pathname.startsWith('/channel/');
 

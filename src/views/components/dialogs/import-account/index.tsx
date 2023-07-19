@@ -4,14 +4,14 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import {TextField} from '@mui/material';
-import * as secp from '@noble/secp256k1';
 import {nip19} from 'nostr-tools';
+import {DecodeResult} from 'nostr-tools/lib/nip19';
 
 import CloseModal from 'components/close-modal';
 import useModal from 'hooks/use-modal';
 import useTranslation from 'hooks/use-translation';
 
-const ImportAccount = (props: { onSuccess: (key: string) => void }) => {
+const ImportAccount = (props: { onSuccess: (key: string, type: 'pub' | 'priv') => void }) => {
     const {onSuccess} = props;
     const [, showModal] = useModal();
     const [t] = useTranslation();
@@ -23,19 +23,25 @@ const ImportAccount = (props: { onSuccess: (key: string) => void }) => {
     };
 
     const handleSubmit = () => {
-        if (userKey.startsWith('nsec')) {
-            const dec = nip19.decode(userKey);
-            if (dec.type === 'nsec') {
-                onSuccess(dec.data as string);
+        if (userKey.startsWith('nsec') || userKey.startsWith('npub')) {
+            let dec: DecodeResult;
+            try {
+                dec = nip19.decode(userKey);
+            } catch (e) {
+                setIsInvalid(true);
                 return;
             }
-        }
 
-        if (!secp.utils.isValidPrivateKey(userKey)) {
-            setIsInvalid(true);
+            const key = dec.data as string;
+            if (dec.type === 'nsec') {
+                onSuccess(key, 'priv');
+            } else if (dec.type === 'npub') {
+                onSuccess(key, 'pub');
+            } else {
+                setIsInvalid(true);
+            }
         } else {
-            setIsInvalid(false);
-            onSuccess(userKey);
+            setIsInvalid(true);
         }
     }
 
@@ -50,9 +56,9 @@ const ImportAccount = (props: { onSuccess: (key: string) => void }) => {
             <DialogContent sx={{pb: '0'}}>
                 <TextField fullWidth autoComplete="off" autoFocus
                            value={userKey} onChange={handleUserKeyChange}
-                           placeholder={t('Enter account private key')}
+                           placeholder={t('Enter nsec or npub')}
                            error={isInvalid}
-                           helperText={isInvalid ? t('Invalid private key') : ' '}
+                           helperText={isInvalid ? t('Invalid key') : ' '}
                            inputProps={{
                                autoCorrect: 'off',
                            }}

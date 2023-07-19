@@ -18,6 +18,7 @@ import Import from 'svg/import';
 import Wallet from 'svg/wallet';
 import {PLATFORM} from 'const';
 import {storeKeys} from 'local-storage';
+import {Keys} from 'types';
 
 
 const Login = (props: { onDone: () => void }) => {
@@ -48,9 +49,13 @@ const Login = (props: { onDone: () => void }) => {
 
     const importAccount = () => {
         showModal({
-            body: <ImportAccount onSuccess={(priv: string) => {
+            body: <ImportAccount onSuccess={(key, type) => {
                 showModal(null);
-                loginPriv(priv);
+                if (type === 'priv') {
+                    loginPriv(key);
+                } else if (type === 'pub') {
+                    proceed({priv: 'none', pub: key});
+                }
             }}/>
         });
     }
@@ -64,19 +69,22 @@ const Login = (props: { onDone: () => void }) => {
         }
 
         const pub = await window.nostr.getPublicKey();
-        if (pub) proceed('nip07', pub);
+        if (pub) proceed({priv: 'nip07', pub});
     }
 
     const loginPriv = (priv: string) => {
         const pub = getPublicKey(priv);
-        proceed(priv, pub);
+        proceed({priv, pub});
     }
 
-    const proceed = (priv: string, pub: string) => {
-        const keys = {priv, pub};
+    const proceed = (keys: Keys) => {
         storeKeys(keys).then(() => {
-            setKeys({priv, pub});
+            setKeys(keys);
             setProfile(null);
+            if (keys?.priv === 'none') {
+                onDone();
+                return;
+            }
             setStep(1);
         });
     }
