@@ -2,26 +2,30 @@ import React, {useEffect, useRef, useState} from 'react';
 import {Box, darken} from '@mui/material';
 import Divider from '@mui/material/Divider';
 import {useTheme} from '@mui/material/styles';
+import Button from '@mui/material/Button';
 import {useAtom} from 'jotai';
 
 import MessageView from 'views/components/message-view';
 import useStyles from 'hooks/use-styles';
+import useTranslation from 'hooks/use-translation';
 import {formatMessageDate, formatMessageTime} from 'helper';
 import {Message} from 'types';
 import {SCROLL_DETECT_THRESHOLD} from 'const';
-import {keysAtom, ravenAtom, readMarkMapAtom} from 'atoms';
+import {keysAtom, ravenAtom, readMarkMapAtom, tempPrivAtom} from 'atoms';
 import {notEmpty} from 'util/misc';
 
-const ChatView = (props: { messages: Message[], separator: string, loading?: boolean }) => {
-    const {separator, messages, loading} = props;
+const ChatView = (props: { messages: Message[], separator: string, loading?: boolean, isDM?: boolean }) => {
+    const {separator, messages, loading, isDM} = props;
     const theme = useTheme();
     const styles = useStyles();
+    const [t] = useTranslation();
     const ref = useRef<HTMLDivElement | null>(null);
     const [isAtBottom, setIsAtBottom] = useState(true);
     const [firstMessageEl, setFirstMessageEl] = useState<HTMLDivElement | null>(null);
     const [scrollTop, setScrollTop] = useState<number>(0);
     const [raven] = useAtom(ravenAtom);
     const [keys] = useAtom(keysAtom);
+    const [tempPriv] = useAtom(tempPrivAtom);
     const [readMarkMap] = useAtom(readMarkMapAtom)
 
     const scrollToBottom = () => {
@@ -171,6 +175,16 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
 
             return <MessageView key={msg.id} message={msg} dateFormat='time' compactView={isCompact}/>;
         })}
+        {(isDM && keys?.priv === 'none' && !tempPriv) && (
+            <Box sx={{
+                textAlign: 'center',
+                m: '20px 0'
+            }}>
+                <Button variant="contained" onClick={() => {
+                    window.requestPrivateKey('').then();
+                }}>{t('Decrypt chat')}</Button>
+            </Box>
+        )}
     </Box>;
 }
 
