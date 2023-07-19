@@ -181,7 +181,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
                 m: '20px 0'
             }}>
                 <Button variant="contained" onClick={() => {
-                    window.requestPrivateKey('').then();
+                    window.requestPrivateKey().then();
                 }}>{t('Decrypt chat')}</Button>
             </Box>
         )}

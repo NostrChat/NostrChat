@@ -46,14 +46,17 @@ const PrivRequiredDialog = (props: { data: any, onSuccess: (key: string) => void
     const [userKey, setUserKey] = useState(tempPriv ? nip19.nsecEncode(tempPriv) : '');
     const [isInvalid, setIsInvalid] = useState(false);
 
-    const isEvent = data.id !== undefined && data.sig !== undefined;
+    const isObject = typeof data === 'object';
+    const isEvent = isObject && data.id !== undefined && data.sig !== undefined;
     const dataToRender = useMemo(() => {
         if (isEvent) {
             const {id: _, sig: __, ...ev} = data;
             return JSON.stringify(ev, null, 2);
-        } else {
+        } else if (isObject) {
             return JSON.stringify(data, null, 2);
         }
+
+        return null;
     }, [data]);
 
     const handleClose = () => {
@@ -92,21 +95,30 @@ const PrivRequiredDialog = (props: { data: any, onSuccess: (key: string) => void
         }
     }
 
+    let subTitle;
+    if (isEvent) {
+        subTitle = t('Please provide your private key in nsec format to sign this event:');
+    } else if (isObject) {
+        subTitle = t('Please provide your private key in nsec format to encrypt this message:');
+    } else {
+        subTitle = t('Please provide your private key in nsec format for decryption');
+    }
+
     return (
         <>
             <DialogTitle>{t('Private key required')}<CloseModal onClick={handleClose}/></DialogTitle>
             <DialogContent sx={{pb: '0'}}>
-                <DialogContentText sx={{fontSize: '.8em', mb: '12px'}}>
-                    {isEvent ? t('Please enter your private key in nsec format to sign this event:') : t('Please enter your private key in nsec format to encrypt this message:')}
-                </DialogContentText>
-                <Box component="pre" sx={{
-                    fontSize: '.6em',
-                    overflowY: 'auto',
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: '6px',
-                    p: '2px',
-                    color: theme.palette.text.secondary
-                }}>{dataToRender}</Box>
+                <DialogContentText sx={{fontSize: '.8em', mb: '12px'}}>{subTitle}</DialogContentText>
+                {dataToRender && (
+                    <Box component="pre" sx={{
+                        fontSize: '.6em',
+                        overflowY: 'auto',
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: '6px',
+                        p: '2px',
+                        color: theme.palette.text.secondary
+                    }}>{dataToRender}</Box>
+                )}
                 <TextField fullWidth autoComplete="off" autoFocus={userKey === ''}
                            value={userKey} onChange={handleUserKeyChange}
                            placeholder={t('Enter nsec')}
@@ -114,7 +126,7 @@ const PrivRequiredDialog = (props: { data: any, onSuccess: (key: string) => void
                            helperText={isInvalid ? t('Invalid key') : <Box component="span" sx={{
                                background: theme.palette.divider,
                                fontSize: '.9em'
-                           }}>{t('This will stay in browser/app memory and remembered during this session.')} </Box>}
+                           }}>{t('This will stay in memory and be remembered until you refresh page/app.')} </Box>}
                            inputProps={{
                                autoCorrect: 'off',
                            }}
