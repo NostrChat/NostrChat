@@ -96,8 +96,12 @@ const PrivRequiredDialog = (props: { event: any, onSuccess: (key: string) => voi
         <>
             <DialogTitle>{t('Private key required')}<CloseModal onClick={handleClose}/></DialogTitle>
             <DialogContent sx={{pb: '0'}}>
-                <DialogContentText sx={{fontSize: '.8em', mb: '18px'}}>
-                    {t('Please enter your private key in nsec format to sign this event.')}
+                <DialogContentText sx={{fontSize: '.8em', mb: '12px'}}>
+                    {t('Please enter your private key in nsec format to sign this event.')} <br/>
+                    <Box component="span" sx={{
+                        background: theme.palette.divider,
+                        fontSize: '.8em'
+                    }}>{t('The key you enter will be kept in only browser/app memory.')}</Box>
                 </DialogContentText>
                 <Box component="pre" sx={{
                     fontSize: '.6em',
