@@ -26,7 +26,7 @@ const Login = (props: { onDone: () => void }) => {
     const {isSm} = useMediaBreakPoint();
     const [t,] = useTranslation();
     const [, showModal] = useModal();
-    const [, setKeys] = useAtom(keysAtom);
+    const [keys, setKeys] = useAtom(keysAtom);
     const [profile, setProfile] = useAtom(profileAtom);
     const [, setBackupWarn] = useAtom(backupWarnAtom);
     const [raven] = useAtom(ravenAtom);
@@ -81,6 +81,10 @@ const Login = (props: { onDone: () => void }) => {
         storeKeys(keys).then(() => {
             setKeys(keys);
             setProfile(null);
+            if (keys?.priv === 'none') {
+                onDone();
+                return;
+            }
             setStep(1);
         });
     }
