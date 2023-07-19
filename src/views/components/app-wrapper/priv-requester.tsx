@@ -163,14 +163,16 @@ const PrivRequester = () => {
     }
 
     const handleRequest = (ev: CustomEvent) => {
-        showModal({
-            body: <PrivRequiredDialog event={ev.detail.event} onSuccess={(key) => {
-                window.dispatchEvent(new CustomEvent('resolve-priv', {detail: {key}}));
-                showModal(null);
-            }} onHide={rejected}/>,
-            onHide: rejected,
-            hideOnBackdrop: true
-        });
+        setTimeout(() => { // use a timer to solve modal rendering conflicts.
+            showModal({
+                body: <PrivRequiredDialog event={ev.detail.event} onSuccess={(key) => {
+                    window.dispatchEvent(new CustomEvent('resolve-priv', {detail: {key}}));
+                    showModal(null);
+                }} onHide={rejected}/>,
+                onHide: rejected,
+                hideOnBackdrop: true
+            });
+        }, 200);
     }
 
     useEffect(() => {
