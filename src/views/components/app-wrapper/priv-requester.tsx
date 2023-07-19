@@ -16,9 +16,9 @@ import useMediaBreakPoint from 'hooks/use-media-break-point';
 import {tempPrivAtom} from 'atoms';
 
 
-window.requestPrivateKey = (event: any) => {
+window.requestPrivateKey = (data: any) => {
     return new Promise((resolve, reject) => {
-        window.dispatchEvent(new CustomEvent('request-priv', {detail: {event}}));
+        window.dispatchEvent(new CustomEvent('request-priv', {detail: {data}}));
 
         const handleResolve = (ev: CustomEvent) => {
             window.removeEventListener('resolve-priv', handleResolve as EventListener);
@@ -37,8 +37,8 @@ window.requestPrivateKey = (event: any) => {
     })
 }
 
-const PrivRequiredDialog = (props: { event: any, onSuccess: (key: string) => void, onHide: () => void }) => {
-    const {event, onSuccess, onHide} = props;
+const PrivRequiredDialog = (props: { data: any, onSuccess: (key: string) => void, onHide: () => void }) => {
+    const {data, onSuccess, onHide} = props;
     const [, showModal] = useModal();
     const [t] = useTranslation();
     const theme = useTheme();
@@ -48,10 +48,15 @@ const PrivRequiredDialog = (props: { event: any, onSuccess: (key: string) => voi
     const [isInvalid, setIsInvalid] = useState(false);
     const [remember, setRemember] = useState(tempPriv !== '');
 
-    const evToRender = useMemo(() => {
-        const {id: _, sig: __, ...ev} = event;
-        return JSON.stringify(ev, null, 2);
-    }, [event])
+    const isEvent = data.id !== undefined && data.sig !== undefined;
+    const dataToRender = useMemo(() => {
+        if (isEvent) {
+            const {id: _, sig: __, ...ev} = data;
+            return JSON.stringify(ev, null, 2);
+        } else {
+            return JSON.stringify(data, null, 2);
+        }
+    }, [data]);
 
     const handleClose = () => {
         showModal(null);
@@ -97,7 +102,8 @@ const PrivRequiredDialog = (props: { event: any, onSuccess: (key: string) => voi
             <DialogTitle>{t('Private key required')}<CloseModal onClick={handleClose}/></DialogTitle>
             <DialogContent sx={{pb: '0'}}>
                 <DialogContentText sx={{fontSize: '.8em', mb: '12px'}}>
-                    {t('Please enter your private key in nsec format to sign this event.')} <br/>
+                    {isEvent ? t('Please enter your private key in nsec format to sign this event.') : t('Please enter your private key in nsec format to encrypt this message.')}
+                    <br/>
                     <Box component="span" sx={{
                         background: theme.palette.divider,
                         fontSize: '.8em'
@@ -110,7 +116,7 @@ const PrivRequiredDialog = (props: { event: any, onSuccess: (key: string) => voi
                     borderRadius: '6px',
                     p: '2px',
                     color: theme.palette.text.secondary
-                }}>{evToRender}</Box>
+                }}>{dataToRender}</Box>
                 <TextField fullWidth autoComplete="off" autoFocus={userKey === ''}
                            value={userKey} onChange={handleUserKeyChange}
                            placeholder={t('Enter nsec')}
@@ -165,7 +171,7 @@ const PrivRequester = () => {
     const handleRequest = (ev: CustomEvent) => {
         setTimeout(() => { // use a timer to solve modal rendering conflicts.
             showModal({
-                body: <PrivRequiredDialog event={ev.detail.event} onSuccess={(key) => {
+                body: <PrivRequiredDialog data={ev.detail.data} onSuccess={(key) => {
                     window.dispatchEvent(new CustomEvent('resolve-priv', {detail: {key}}));
                     showModal(null);
                 }} onHide={rejected}/>,
