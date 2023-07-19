@@ -10,7 +10,7 @@ import StartDM from 'views/components/dialogs/start-dm';
 import useLiveDirectContacts from 'hooks/use-live-direct-contacts';
 import useLiveDirectMessages from 'hooks/use-live-direct-messages';
 import useModal from 'hooks/use-modal';
-import {directMessageAtom, directMessagesAtom, profilesAtom, readMarkMapAtom, showRequestsAtom} from 'atoms';
+import {directMessageAtom, directMessagesAtom, keysAtom, profilesAtom, readMarkMapAtom, showRequestsAtom} from 'atoms';
 import Plus from 'svg/plus';
 import {DirectContact} from 'types';
 import {truncateMiddle} from 'util/truncate';
@@ -21,11 +21,12 @@ const DmListItem = (props: { contact: DirectContact }) => {
     const [profiles] = useAtom(profilesAtom);
     const [directMessage] = useAtom(directMessageAtom);
     const [readMarkMap] = useAtom(readMarkMapAtom);
+    const [keys] = useAtom(keysAtom);
     const location = useLocation();
     const messages = useLiveDirectMessages(contact.pub);
 
     const lMessage = messages[messages.length - 1];
-    const hasUnread = !!(readMarkMap[contact.pub] && lMessage && lMessage.created > readMarkMap[contact.pub]);
+    const hasUnread = keys?.priv !== 'none' && !!(readMarkMap[contact.pub] && lMessage && lMessage.created > readMarkMap[contact.pub]);
 
     const profile = profiles.find(x => x.creator === contact.pub);
     const label = profile?.name || truncateMiddle(contact.npub, 28, ':');

@@ -39,7 +39,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
     }, [separator]);
 
     useEffect(() => {
-        if (isAtBottom) {
+        if (isAtBottom && keys?.priv !== 'none') {
             if (messages.length === 0) return;
 
             if (readMarkMap[separator] === undefined) {
@@ -52,7 +52,7 @@ const ChatView = (props: { messages: Message[], separator: string, loading?: boo
                 raven?.updateReadMarkMap({...readMarkMap, ...{[separator]: Math.floor(Date.now() / 1000)}});
             }
         }
-    }, [separator, isAtBottom, messages, readMarkMap]);
+    }, [separator, isAtBottom, messages, readMarkMap, keys]);
 
     useEffect(() => {
         let scrollTimer: any;
