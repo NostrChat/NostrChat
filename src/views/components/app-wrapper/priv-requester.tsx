@@ -7,13 +7,12 @@ import {DialogContentText, TextField} from '@mui/material';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
-import {nip19} from 'nostr-tools';
+import {getPublicKey, nip19} from 'nostr-tools';
 import {DecodeResult} from 'nostr-tools/lib/nip19';
 import CloseModal from 'components/close-modal';
 import useModal from 'hooks/use-modal';
 import useTranslation from 'hooks/use-translation';
-import useMediaBreakPoint from 'hooks/use-media-break-point';
-import {tempPrivAtom} from 'atoms';
+import {keysAtom, tempPrivAtom} from 'atoms';
 
 
 window.requestPrivateKey = (data: any) => {
@@ -42,11 +41,10 @@ const PrivRequiredDialog = (props: { data: any, onSuccess: (key: string) => void
     const [, showModal] = useModal();
     const [t] = useTranslation();
     const theme = useTheme();
-    const {isSm} = useMediaBreakPoint();
+    const [keys,] = useAtom(keysAtom);
     const [tempPriv, setTempPriv] = useAtom(tempPrivAtom);
     const [userKey, setUserKey] = useState(tempPriv);
     const [isInvalid, setIsInvalid] = useState(false);
-    const [remember, setRemember] = useState(tempPriv !== '');
 
     const isEvent = data.id !== undefined && data.sig !== undefined;
     const dataToRender = useMemo(() => {
@@ -68,10 +66,6 @@ const PrivRequiredDialog = (props: { data: any, onSuccess: (key: string) => void
         setIsInvalid(false);
     }
 
-    const handleRememberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setRemember(e.target.checked);
-    }
-
     const handleSubmit = () => {
         if (!userKey.startsWith('nsec')) {
             setIsInvalid(true);
@@ -89,11 +83,14 @@ const PrivRequiredDialog = (props: { data: any, onSuccess: (key: string) => void
 
             const key = dec.data as string;
             if (dec.type === 'nsec') {
-                onSuccess(key);
-                setTempPriv(remember ? userKey : '');
-            } else {
-                setIsInvalid(true);
+                if (keys?.pub === getPublicKey(key)) {
+                    onSuccess(key);
+                    setTempPriv(userKey);
+                    return;
+                }
             }
+
+            setIsInvalid(true);
         }
     }
 
@@ -102,12 +99,7 @@ const PrivRequiredDialog = (props: { data: any, onSuccess: (key: string) => void
             <DialogTitle>{t('Private key required')}<CloseModal onClick={handleClose}/></DialogTitle>
             <DialogContent sx={{pb: '0'}}>
                 <DialogContentText sx={{fontSize: '.8em', mb: '12px'}}>
-                    {isEvent ? t('Please enter your private key in nsec format to sign this event.') : t('Please enter your private key in nsec format to encrypt this message.')}
-                    <br/>
-                    <Box component="span" sx={{
-                        background: theme.palette.divider,
-                        fontSize: '.8em'
-                    }}>{t('The key you enter will be kept in only browser/app memory.')}</Box>
+                    {isEvent ? t('Please enter your private key in nsec format to sign this event:') : t('Please enter your private key in nsec format to encrypt this message:')}
                 </DialogContentText>
                 <Box component="pre" sx={{
                     fontSize: '.6em',
@@ -121,7 +113,10 @@ const PrivRequiredDialog = (props: { data: any, onSuccess: (key: string) => void
                            value={userKey} onChange={handleUserKeyChange}
                            placeholder={t('Enter nsec')}
                            error={isInvalid}
-                           helperText={isInvalid ? t('Invalid key') : ''}
+                           helperText={isInvalid ? t('Invalid key') : <Box component="span" sx={{
+                               background: theme.palette.divider,
+                               fontSize: '.9em'
+                           }}>{t('This will stay in browser/app memory and remembered during this session.')} </Box>}
                            inputProps={{
                                autoCorrect: 'off',
                            }}
@@ -133,28 +128,11 @@ const PrivRequiredDialog = (props: { data: any, onSuccess: (key: string) => void
             </DialogContent>
             <DialogActions sx={{
                 display: 'flex',
-                flexDirection: isSm ? 'row' : 'column',
                 justifyContent: 'space-between',
-                pl: isSm ? '24px' : null,
-                pr: isSm ? '24px' : null,
-                mt: isSm ? '10px' : null
+                mt: '10px'
             }}>
-                <Box sx={{
-                    fontSize: '.7em',
-                    color: theme.palette.text.secondary,
-                    m: isSm ? null : '12px 0'
-                }}>
-                    <Box component="label" sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                    }}>
-                        <Box component="input" type="checkbox" checked={remember} onChange={handleRememberChange}/>
-                        {t('Remember for this session')}</Box>
-                </Box>
-                <Box>
-                    <Button onClick={handleClose} sx={{mr: '6px'}}>{t('Skip')}</Button>
-                    <Button variant="contained" onClick={handleSubmit} disableElevation>{t('Submit')}</Button>
-                </Box>
+                <Button onClick={handleClose} sx={{mr: '6px'}}>{t('Skip')}</Button>
+                <Button variant="contained" onClick={handleSubmit} disableElevation>{t('Submit')}</Button>
             </DialogActions>
         </>
     );
