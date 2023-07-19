@@ -26,7 +26,7 @@ const Login = (props: { onDone: () => void }) => {
     const {isSm} = useMediaBreakPoint();
     const [t,] = useTranslation();
     const [, showModal] = useModal();
-    const [keys, setKeys] = useAtom(keysAtom);
+    const [, setKeys] = useAtom(keysAtom);
     const [profile, setProfile] = useAtom(profileAtom);
     const [, setBackupWarn] = useAtom(backupWarnAtom);
     const [raven] = useAtom(ravenAtom);
