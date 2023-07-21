@@ -83,7 +83,20 @@ export class BgRaven {
         }
     }
 
-    public where(eventId: string) {
+    public async where(eventId: string) {
+        let try_ = 0;
+        while (!this.seenOn[eventId]) {
+            await this.fetch([{ids: [eventId]}]);
+            try_++;
+            if (try_ === 3) {
+                break;
+            }
+        }
+
+        if (!this.seenOn[eventId]) {
+            throw new Error('Could not find root event');
+        }
+
         return this.findHealthyRelay(this.seenOn[eventId]);
     }
 
