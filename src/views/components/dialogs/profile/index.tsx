@@ -31,7 +31,7 @@ const ProfileDialog = (props: { profile?: Profile, pubkey: string, onDM: () => v
     const {isSm} = useMediaBreakPoint();
     const [nip05Verified, setNip05Verified] = useState<boolean>(false);
 
-    const profileName = useMemo(() => profile?.name ? truncateMiddle(profile.name, 24, ':') : null, [profile]);
+    const profileName = useMemo(() => profile?.name ? truncateMiddle(profile.name, 22, ':') : null, [profile]);
     const pub = useMemo(() => nip19.npubEncode(pubkey), [pubkey]);
     const isMe = keys?.pub === pubkey;
 

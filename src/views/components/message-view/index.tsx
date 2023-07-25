@@ -44,7 +44,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const [mobileMenu, setMobileMenu] = useState<boolean>(false);
     const [isVisible, setIsVisible] = useState<boolean>(true);
     const renderedBody = useMemo(() => renderer(message), [message]);
-    const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 26), ':'), [profile, message]);
+    const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 22), ':'), [profile, message]);
     const messageTime = useMemo(() => dateFormat === 'time' ? formatMessageTime(message.created) : formatMessageFromNow(message.created), [message]);
     const messageDateTime = useMemo(() => formatMessageDateTime(message.created), [message]);
     const lastReply = useMemo(() => message.children && message.children.length > 0 ? formatMessageFromNow(message.children[message.children.length - 1].created) : null, [message]);
