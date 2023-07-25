@@ -9,6 +9,7 @@ import Tools from 'views/components/chat-input/tools';
 import useMakeEditor from 'views/components/chat-input/editor';
 import Send from 'svg/send';
 import {getEditorValue, removeEditorValue, storeEditorValue} from 'local-storage';
+import {PLATFORM} from 'const';
 
 
 const ChatInput = (props: { separator: string, senderFn: (message: string, mentions: string[]) => Promise<any> }) => {
@@ -31,7 +32,9 @@ const ChatInput = (props: { separator: string, senderFn: (message: string, menti
 
     useEffect(() => {
         editor?.commands.setContent(getEditorValue(storageKey) || '');
-        editor?.commands.focus();
+        if (PLATFORM === 'web') {
+            editor?.commands.focus();
+        }
     }, [storageKey]);
 
     function getMentions(data: JSONContent): string[] {
