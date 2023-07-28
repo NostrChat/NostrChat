@@ -155,7 +155,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             this.pushToEventBuffer(e);
         }
 
-        const channels = uniq(events.map(x => {
+        const channelIds = uniq(events.map(x => {
             if (x.kind === Kind.ChannelCreation) {
                 return x.id;
             }
@@ -167,8 +167,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             return null;
         }).filter(notEmpty).filter(x => !deletions.includes(x)).filter(notEmpty));
 
-        if (!channels.includes(GLOBAL_CHAT.id)) {
-            channels.push(GLOBAL_CHAT.id)
+        if (!channelIds.includes(GLOBAL_CHAT.id)) {
+            channelIds.push(GLOBAL_CHAT.id)
         }
 
         const directContacts = uniq(events.map(x => {
@@ -181,16 +181,22 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             return null;
         })).filter(notEmpty);
 
-        const filters2: Filter[] = [
-            {
+        // Get real channel list over the channel list collected from channel creations + public messages sent.
+        const channels = await this.fetch([
+            ...chunk(channelIds, 10).map(x => ({
                 kinds: [Kind.ChannelCreation],
-                ids: channels
-            },
-            ...channels.map(c => ({
+                ids: x
+            }))
+        ]);
+        channels.forEach(x => this.pushToEventBuffer(x));
+
+        // Get messages for all channels + DMs
+        const promises = chunk([
+            ...channels.map(x => x.id).map(c => ({
                 kinds: [Kind.ChannelMetadata, Kind.EventDeletion],
                 '#e': [c],
             })),
-            ...channels.map(c => ({
+            ...channels.map(x => x.id).map(c => ({
                 kinds: [Kind.ChannelMessage],
                 '#e': [c],
                 limit: MESSAGE_PER_PAGE
@@ -205,10 +211,9 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                 '#p': [x],
                 authors: [this.pub]
             }))
-        ];
-
-        const promises = chunk(filters2, 10).map(f => this.fetch(f).then(events => events.forEach(ev => this.pushToEventBuffer(ev))));
+        ], 10).map(f => this.fetch(f).then(events => events.forEach(ev => this.pushToEventBuffer(ev))));
         await Promise.all(promises);
+
         this.emit(RavenEvents.Ready);
     }
 
