@@ -39,6 +39,7 @@ enum NewKinds {
 
 export enum RavenEvents {
     Ready = 'ready',
+    SyncDone = 'sync_done',
     ProfileUpdate = 'profile_update',
     ChannelCreation = 'channel_creation',
     ChannelUpdate = 'channel_update',
@@ -55,6 +56,7 @@ export enum RavenEvents {
 
 type EventHandlerMap = {
     [RavenEvents.Ready]: () => void;
+    [RavenEvents.SyncDone]: () => void;
     [RavenEvents.ProfileUpdate]: (data: Profile[]) => void;
     [RavenEvents.ChannelCreation]: (data: Channel[]) => void;
     [RavenEvents.ChannelUpdate]: (data: ChannelUpdate[]) => void;
@@ -107,53 +109,23 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
     }
 
     private async init() {
-        const filters1: Filter[] = [{
-            kinds: [Kind.Metadata, Kind.EventDeletion, Kind.ChannelCreation],
+        // 1- Get all event created by the user
+        const events = await this.fetch([{
             authors: [this.pub],
-        }, {
-            kinds: [Kind.ChannelHideMessage, Kind.ChannelMuteUser],
-            authors: [this.pub],
-        }, {
-            // TODO: Find an elegant way
-            // @ts-ignore
-            kinds: [NewKinds.MuteList],
-            authors: [this.pub],
-        }, {
-            // TODO: Find an elegant way
-            // @ts-ignore
-            kinds: [NewKinds.Arbitrary],
-            authors: [this.pub],
-            '#d': ['left-channel-list', 'read-mark-map']
-        }, {
-            kinds: [Kind.ChannelMessage],
-            authors: [this.pub],
-        }, {
-            kinds: [Kind.EncryptedDirectMessage],
-            authors: [this.pub],
-        }, {
+        }]);
+        events.forEach(e => this.pushToEventBuffer(e));
+        this.emit(RavenEvents.Ready);
+
+        // 2- Get all incoming DMs to the user
+        const incomingDms = await this.fetch([{
             kinds: [Kind.EncryptedDirectMessage],
             '#p': [this.pub]
-        }];
+        }]);
+        incomingDms.forEach(e => this.pushToEventBuffer(e));
 
-        const resp = await this.fetch(filters1);
-        const deletions = resp.filter(x => x.kind === Kind.EventDeletion).map(x => Raven.findTagValue(x, 'e')).filter(notEmpty);
-        const events = resp.sort((a, b) => b.created_at - a.created_at);
-
-        const profile = events.find(x => x.kind === Kind.Metadata);
-        if (profile) this.pushToEventBuffer(profile);
-
-        const muteList = events.find(x => x.kind.toString() === NewKinds.MuteList.toString());
-        if (muteList) this.pushToEventBuffer(muteList);
-
-        const leftChannelList = events.find(x => x.kind.toString() === NewKinds.Arbitrary.toString() && Raven.findTagValue(x, 'd') === 'left-channel-list');
-        if (leftChannelList) this.pushToEventBuffer(leftChannelList);
-
-        const readMarkMap = events.find(x => x.kind.toString() === NewKinds.Arbitrary.toString() && Raven.findTagValue(x, 'd') === 'read-mark-map');
-        if (readMarkMap) this.pushToEventBuffer(readMarkMap);
-
-        for (const e of events.filter(x => [Kind.ChannelHideMessage, Kind.ChannelMuteUser].includes(x.kind))) {
-            this.pushToEventBuffer(e);
-        }
+        // 3- Get channels messages
+        // Build channel ids
+        const deletions = events.filter(x => x.kind === Kind.EventDeletion).map(x => Raven.findTagValue(x, 'e')).filter(notEmpty);
 
         const channelIds = uniq(events.map(x => {
             if (x.kind === Kind.ChannelCreation) {
@@ -171,16 +143,6 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             channelIds.push(GLOBAL_CHAT.id)
         }
 
-        const directContacts = uniq(events.map(x => {
-            if (x.kind === Kind.EncryptedDirectMessage) {
-                const receiver = Raven.findTagValue(x, 'p');
-                if (!receiver) return null;
-                return receiver === this.pub ? x.pubkey : receiver;
-            }
-
-            return null;
-        })).filter(notEmpty);
-
         // Get real channel list over the channel list collected from channel creations + public messages sent.
         const channels = await this.fetch([
             ...chunk(channelIds, 10).map(x => ({
@@ -190,31 +152,23 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         ]);
         channels.forEach(x => this.pushToEventBuffer(x));
 
-        // Get messages for all channels + DMs
+        // Get messages for all channels found
         const promises = chunk([
-            ...channels.map(x => x.id).map(c => ({
-                kinds: [Kind.ChannelMetadata, Kind.EventDeletion],
-                '#e': [c],
-            })),
-            ...channels.map(x => x.id).map(c => ({
-                kinds: [Kind.ChannelMessage],
-                '#e': [c],
-                limit: MESSAGE_PER_PAGE
-            })),
-            ...directContacts.map(x => ({
-                kinds: [Kind.EncryptedDirectMessage],
-                '#p': [this.pub],
-                authors: [x]
-            })),
-            ...directContacts.map(x => ({
-                kinds: [Kind.EncryptedDirectMessage],
-                '#p': [x],
-                authors: [this.pub]
-            }))
+            ...chunk(channels.map(x => x.id), 20).map(x => ([
+                {
+                    kinds: [Kind.ChannelMetadata, Kind.EventDeletion],
+                    '#e': x,
+                },
+                {
+                    kinds: [Kind.ChannelMessage],
+                    '#e': x,
+                    limit: MESSAGE_PER_PAGE
+                }
+            ])).flat()
         ], 10).map(f => this.fetch(f).then(events => events.forEach(ev => this.pushToEventBuffer(ev))));
         await Promise.all(promises);
 
-        this.emit(RavenEvents.Ready);
+        this.emit(RavenEvents.SyncDone);
     }
 
     public isSyntheticPrivKey = () => {
