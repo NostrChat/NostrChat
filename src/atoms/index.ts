@@ -12,7 +12,9 @@ import {
     Message,
     Reaction,
     DirectContact,
-    ReadMarkMap, Keys
+    ReadMarkMap,
+    Keys,
+    RavenState
 } from 'types';
 import {GLOBAL_CHAT} from 'const';
 import Raven from 'raven/raven';
@@ -22,7 +24,7 @@ export * from 'atoms/ui';
 export const keysAtom = atom<Keys | undefined>(undefined);
 export const tempPrivAtom = atom<string>('');
 export const ravenAtom = atom<Raven | undefined>(undefined);
-export const ravenReadyAtom = atom<boolean>(false);
+export const ravenStatusAtom = atom<RavenState>({ready: false, syncDone: false});
 export const profilesAtom = atom<Profile[]>([]);
 export const profileAtom = atom<Profile | null>(null);
 export const channelsAtom = atom<Channel[]>([GLOBAL_CHAT]);

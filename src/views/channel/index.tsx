@@ -22,7 +22,7 @@ import {
     channelAtom,
     keysAtom,
     ravenAtom,
-    ravenReadyAtom,
+    ravenStatusAtom,
     threadRootAtom,
     channelToJoinAtom,
     leftChannelListAtom
@@ -41,7 +41,7 @@ const ChannelPage = (props: RouteComponentProps) => {
     const messages = useLivePublicMessages(channel?.id);
     const [, setChannel] = useAtom(channelAtom);
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
-    const [ravenReady] = useAtom(ravenReadyAtom);
+    const [ravenStatus] = useAtom(ravenStatusAtom);
     const [raven] = useAtom(ravenAtom);
     const [channelToJoin, setChannelToJoin] = useAtom(channelToJoinAtom);
     const [leftChannelList] = useAtom(leftChannelListAtom);
@@ -53,8 +53,8 @@ const ChannelPage = (props: RouteComponentProps) => {
 
     useEffect(() => {
         // If the user didn't leave global chat for empty channel id
-        if (ravenReady && !cid && !leftChannelList.includes(GLOBAL_CHAT.id)) navigate(`/channel/${GLOBAL_CHAT.id}`).then();
-    }, [cid, ravenReady]);
+        if (ravenStatus.ready && !cid && !leftChannelList.includes(GLOBAL_CHAT.id)) navigate(`/channel/${GLOBAL_CHAT.id}`).then();
+    }, [cid, ravenStatus.ready]);
 
     useEffect(() => {
         if (!keys) navigate('/login').then();
@@ -100,7 +100,7 @@ const ChannelPage = (props: RouteComponentProps) => {
     }, [messages, threadRoot]);
 
     useEffect(() => {
-        if (ravenReady && !channel && cid && !channelToJoin) {
+        if (ravenStatus.ready && !channel && cid && !channelToJoin) {
             const timer = setTimeout(() => setNotFound(true), 5000);
 
             raven?.fetchChannel(cid).then(channel => {
@@ -112,11 +112,11 @@ const ChannelPage = (props: RouteComponentProps) => {
 
             return () => clearTimeout(timer);
         }
-    }, [ravenReady, channel, cid, channelToJoin]);
+    }, [ravenStatus.ready, channel, cid, channelToJoin]);
 
     if (!keys) return null;
 
-    if (!ravenReady) {
+    if (!ravenStatus.ready) {
         return <Box sx={{display: 'flex', alignItems: 'center'}}>
             <CircularProgress size={20} sx={{mr: '8px'}}/> {t('Loading...')}
         </Box>;

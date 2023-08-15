@@ -14,7 +14,7 @@ import {
     profilesAtom,
     publicMessagesAtom,
     ravenAtom,
-    ravenReadyAtom,
+    ravenStatusAtom,
     channelMessageHidesAtom,
     channelUserMutesAtom,
     muteListAtom,
@@ -46,7 +46,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
     const [keys] = useAtom(keysAtom);
     const [tempPriv] = useAtom(tempPrivAtom);
     const [, setRaven] = useAtom(ravenAtom);
-    const [ravenReady, setRavenReady] = useAtom(ravenReadyAtom);
+    const [ravenStatus, setRavenStatus] = useAtom(ravenStatusAtom);
     const [profile, setProfile] = useAtom(profileAtom);
     const [profiles, setProfiles] = useAtom(profilesAtom);
     const [channels, setChannels] = useAtom(channelsAtom);
@@ -68,7 +68,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
 
     // Listen for events in an interval.
     useEffect(() => {
-        if (!ravenReady) return;
+        if (!ravenStatus.syncDone) return;
 
         const timer = setTimeout(() => {
             raven?.listen(channels.map(x => x.id), Math.floor((since || Date.now()) / 1000));
@@ -78,7 +78,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
         return () => {
             clearTimeout(timer);
         }
-    }, [since, ravenReady, raven, channels]);
+    }, [since, ravenStatus.syncDone, raven, channels]);
 
     // Trigger listen once the window visibility changes.
     const visibilityChange = () => {
@@ -93,7 +93,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
         return () => {
             document.removeEventListener('visibilitychange', visibilityChange);
         }
-    }, [since, ravenReady, raven, channels]);
+    }, [since, ravenStatus, raven, channels]);
 
 
     useEffect(() => {
@@ -106,7 +106,7 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
     // Ready state handler
     const handleReadyState = () => {
         logger.info('handleReadyState');
-        setRavenReady(true);
+        setRavenStatus({ ...ravenStatus, ready: true});
     }
 
     useEffect(() => {
@@ -115,7 +115,20 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
         return () => {
             raven?.removeListener(RavenEvents.Ready, handleReadyState);
         }
-    }, [ravenReady, raven]);
+    }, [ravenStatus, raven]);
+
+    const handleSyncDoneState = () => {
+        logger.info('handleSyncDoneState');
+        setRavenStatus({ ...ravenStatus, syncDone: true});
+    }
+
+    useEffect(() => {
+        raven?.removeListener(RavenEvents.SyncDone, handleSyncDoneState);
+        raven?.addListener(RavenEvents.SyncDone, handleSyncDoneState);
+        return () => {
+            raven?.removeListener(RavenEvents.SyncDone, handleSyncDoneState);
+        }
+    }, [ravenStatus, raven]);
 
     // Profile update handler
     const handleProfileUpdate = (data: Profile[]) => {

@@ -12,7 +12,7 @@ import MetadataForm from 'views/components/metadata-form';
 import useMediaBreakPoint from 'hooks/use-media-break-point';
 import useTranslation from 'hooks/use-translation';
 import useModal from 'hooks/use-modal';
-import {keysAtom, profileAtom, backupWarnAtom, ravenAtom, ravenReadyAtom} from 'atoms';
+import {keysAtom, profileAtom, backupWarnAtom, ravenAtom, ravenStatusAtom} from 'atoms';
 import Creation from 'svg/creation';
 import Import from 'svg/import';
 import Wallet from 'svg/wallet';
@@ -30,12 +30,12 @@ const Login = (props: { onDone: () => void }) => {
     const [profile, setProfile] = useAtom(profileAtom);
     const [, setBackupWarn] = useAtom(backupWarnAtom);
     const [raven] = useAtom(ravenAtom);
-    const [ravenReady] = useAtom(ravenReadyAtom);
+    const [ravenStatus] = useAtom(ravenStatusAtom);
     const [step, setStep] = useState<0 | 1 | 2>(0);
 
     useEffect(() => {
-        if (step === 1 && ravenReady) setStep(2);
-    }, [step, ravenReady]);
+        if (step === 1 && ravenStatus.ready) setStep(2);
+    }, [step, ravenStatus.ready]);
 
     useEffect(() => {
         if (profile) onDone();

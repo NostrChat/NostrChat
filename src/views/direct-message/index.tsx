@@ -25,7 +25,7 @@ import {
     profilesAtom,
     profileToDmAtom,
     ravenAtom,
-    ravenReadyAtom,
+    ravenStatusAtom,
     threadRootAtom
 } from 'atoms';
 
@@ -39,7 +39,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     const [directMessage, setDirectMessage] = useAtom(directMessageAtom);
     const [directContacts] = useAtom(directContactsAtom);
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
-    const [ravenReady] = useAtom(ravenReadyAtom);
+    const [ravenStatus] = useAtom(ravenStatusAtom);
     const [muteList] = useAtom(muteListAtom);
     const [raven] = useAtom(ravenAtom);
     const [profiles] = useAtom(profilesAtom);
@@ -91,7 +91,7 @@ const DirectMessagePage = (props: RouteComponentProps) => {
     }, [messages, threadRoot]);
 
     useEffect(() => {
-        if (ravenReady && !directMessage && pub && !profileToDm) {
+        if (ravenStatus.ready && !directMessage && pub && !profileToDm) {
             const timer = setTimeout(() => setNotFound(true), 5000);
 
             raven?.fetchProfile(pub).then(profile => {
@@ -103,13 +103,13 @@ const DirectMessagePage = (props: RouteComponentProps) => {
 
             return () => clearTimeout(timer);
         }
-    }, [ravenReady, directMessage, props, profileToDm]);
+    }, [ravenStatus.ready, directMessage, props, profileToDm]);
 
     const profile = useMemo(() => profiles.find(x => x.creator === pub), [profiles, pub]);
 
     if (!npub || !pub || !keys) return null;
 
-    if (!ravenReady) {
+    if (!ravenStatus.ready) {
         return <Box sx={{display: 'flex', alignItems: 'center'}}>
             <CircularProgress size={20} sx={{mr: '8px'}}/> {t('Loading...')}
         </Box>;
