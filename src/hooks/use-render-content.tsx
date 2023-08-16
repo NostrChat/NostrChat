@@ -13,10 +13,8 @@ import ExternalLinkDialog from 'components/external-link-dialog';
 import ProfileDialog from 'views/components/dialogs/profile';
 import {Message} from 'types';
 import {profilesAtom} from 'atoms';
+import {imgReg, channelReg} from 'helper/reg';
 import {notEmpty} from 'util/misc';
-
-const imgReg = /(https:\/\/)([^\s(["<,>/]*)(\/)[^\s[",><]*(.png|.jpg|.jpeg|.gif|.webp)(\?[^\s[",><]*)?/;
-const channelReg = new RegExp(`^${window.location.protocol}//${window.location.host}/channel/[a-f0-9]{64}$`, 'm');
 
 const useRenderContent = () => {
     const [, showModal] = useModal();
