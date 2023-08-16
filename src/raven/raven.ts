@@ -39,6 +39,7 @@ enum NewKinds {
 
 export enum RavenEvents {
     Ready = 'ready',
+    DMsDone = 'dms_done',
     SyncDone = 'sync_done',
     ProfileUpdate = 'profile_update',
     ChannelCreation = 'channel_creation',
@@ -56,6 +57,7 @@ export enum RavenEvents {
 
 type EventHandlerMap = {
     [RavenEvents.Ready]: () => void;
+    [RavenEvents.DMsDone]: () => void;
     [RavenEvents.SyncDone]: () => void;
     [RavenEvents.ProfileUpdate]: (data: Profile[]) => void;
     [RavenEvents.ChannelCreation]: (data: Channel[]) => void;
@@ -122,6 +124,7 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
             '#p': [this.pub]
         }]);
         incomingDms.forEach(e => this.pushToEventBuffer(e));
+        this.emit(RavenEvents.DMsDone);
 
         // 3- Get channels messages
         // Build channel ids

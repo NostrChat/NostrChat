@@ -3,7 +3,7 @@ export type Platform = 'web' | 'ios' | 'android'
 export type SyntheticPrivKey = 'nip07' | 'none';
 export type PrivKey = string | SyntheticPrivKey;
 
-export type RavenState = { ready: boolean, syncDone: boolean };
+export type RavenState = { ready: boolean, dmsDone: boolean, syncDone: boolean };
 
 export type Keys = {
     pub: string;

@@ -148,6 +148,30 @@ const DirectMessagePage = (props: RouteComponentProps) => {
         </>
     }
 
+    if (!ravenStatus.dmsDone) {
+        return <>
+            <Helmet><title>{t(`NostrChat - ${profile?.name || npub}`)}</title></Helmet>
+            <AppWrapper>
+                <AppMenu/>
+                <AppContent>
+                    <DmHeader/>
+                    <Box sx={{
+                        flexGrow: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <CircularProgress size={20} sx={{mr: '8px'}}/> {t('Fetching messages...')}
+                    </Box>
+                    <ChatInput separator={pub} senderFn={() => {
+                        return new Promise(() => {
+                        }).then()
+                    }}/>
+                </AppContent>
+            </AppWrapper>
+        </>;
+    }
+
     return <>
         <Helmet><title>{t(`NostrChat - ${profile?.name || npub}`)}</title></Helmet>
         <AppWrapper>

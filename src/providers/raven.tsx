@@ -117,6 +117,19 @@ const RavenProvider = (props: { children: React.ReactNode }) => {
         }
     }, [ravenStatus, raven]);
 
+    const handleDmsDoneState = () => {
+        logger.info('handleDmsDoneState');
+        setRavenStatus({ ...ravenStatus, dmsDone: true});
+    }
+
+    useEffect(() => {
+        raven?.removeListener(RavenEvents.DMsDone, handleDmsDoneState);
+        raven?.addListener(RavenEvents.DMsDone, handleDmsDoneState);
+        return () => {
+            raven?.removeListener(RavenEvents.DMsDone, handleDmsDoneState);
+        }
+    }, [ravenStatus, raven]);
+
     const handleSyncDoneState = () => {
         logger.info('handleSyncDoneState');
         setRavenStatus({ ...ravenStatus, syncDone: true});
