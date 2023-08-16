@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import {useNavigate} from '@reach/router';
+import {red} from '@mui/material/colors';
 import {nip19} from 'nostr-tools';
 import {Haptics, ImpactStyle} from '@capacitor/haptics';
 import useContentRenderer from 'hooks/use-render-content';
@@ -169,6 +170,16 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
                     }}>{messageTime}</Box>
                 </Tooltip>
             </Box>)}
+            {('spam' in message && message.spam) && (
+                <Box sx={{
+                    background: red[400],
+                    fontSize: '.8em',
+                    display: 'inline-block',
+                    m: '6px 0'
+                }}>
+                    {t("This message appears to be spam and other users won't see it.")}
+                </Box>
+            )}
             <Box sx={{
                 fontSize: '0.9em',
                 mt: '4px',

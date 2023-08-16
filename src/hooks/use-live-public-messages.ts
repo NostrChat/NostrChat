@@ -23,6 +23,10 @@ const useLivePublicMessages = (channelId?: string) => {
     const channelUserMutes = useMemo(() => _channelUserMutes.filter(x => x.pubkey !== keys?.pub), [_channelUserMutes, keys]);
 
     const clean = useMemo(() => messages
+        .filter(c => {
+            if (!c.spam) return true;
+            return keys && keys.pub === c.creator;
+        })
         .filter(c => eventDeletions.find(x => x.eventId === c.id) === undefined)
         .filter(c => channelMessageHides.find(x => x.id === c.id) === undefined)
         .filter(c => channelUserMutes.find(x => x.pubkey === c.creator) === undefined)

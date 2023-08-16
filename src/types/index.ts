@@ -30,7 +30,7 @@ export type ChannelUpdate = { channelId: string } & Channel;
 
 export type EventDeletion = { eventId: string, why: string };
 
-export type PublicMessage = { id: string, root: string, content: string, creator: string, created: number, children?: PublicMessage[], reactions?: Reaction[], mentions: string[] };
+export type PublicMessage = { id: string, root: string, content: string, creator: string, created: number, children?: PublicMessage[], reactions?: Reaction[], mentions: string[], spam: boolean };
 
 export type DirectMessage = { id: string, root?: string, content: string, peer: string, creator: string, created: number, children?: DirectMessage[], reactions?: Reaction[], mentions: string[], decrypted: boolean };
 
