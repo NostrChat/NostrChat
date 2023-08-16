@@ -186,6 +186,31 @@ const ChannelPage = (props: RouteComponentProps) => {
         </>
     }
 
+    if (!ravenStatus.syncDone) {
+        return <>
+            <Helmet><title>{t(`NostrChat - ${channel.name}`)}</title></Helmet>
+            <AppWrapper>
+                <AppMenu/>
+                <AppContent>
+                    <ChannelHeader/>
+                    <Box sx={{
+                        flexGrow: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <CircularProgress size={20} sx={{mr: '8px'}}/> {t('Fetching messages...')}
+                    </Box>
+                    <ChatInput separator={channel.id} senderFn={() => {
+                        return new Promise(() => {
+                        }).then()
+                    }}/>
+                </AppContent>
+            </AppWrapper>
+        </>;
+    }
+
+
     return <>
         <Helmet><title>{t(`NostrChat - ${channel.name}`)}</title></Helmet>
         <AppWrapper>
