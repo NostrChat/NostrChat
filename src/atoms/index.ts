@@ -14,7 +14,8 @@ import {
     DirectContact,
     ReadMarkMap,
     Keys,
-    RavenState
+    RavenState,
+    Spammer
 } from 'types';
 import {GLOBAL_CHAT} from 'const';
 import Raven from 'raven/raven';
@@ -47,3 +48,4 @@ export const backupWarnAtom = atom<boolean>(false);
 export const activeMessageAtom = atom<string | null>(null);
 export const readMarkMapAtom = atom<ReadMarkMap>({});
 export const showRequestsAtom = atom<boolean>(false);
+export const spammersAtom = atom<Spammer[]>([]);

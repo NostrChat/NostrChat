@@ -49,3 +49,5 @@ export type Reaction = { id: string, message: string, peer: string, content: str
 export type ReactionCombined = { symbol: string, authors: string[], count: number, userReaction: Reaction | undefined };
 
 export type ReadMarkMap = Record<string, number>;
+
+export type Spammer = { pub: string, score: number };

@@ -5,6 +5,7 @@ import ModalProvider from 'providers/modal';
 import PopoverProvider from 'providers/popover';
 import RavenProvider from 'providers/raven';
 import KeysProvider from 'providers/keys';
+import RemoteDataProvider from 'providers/remote-data';
 
 const Providers = (props: { children: React.ReactNode }) => {
     return (
@@ -13,9 +14,11 @@ const Providers = (props: { children: React.ReactNode }) => {
                 <ToastProvider>
                     <PopoverProvider>
                         <KeysProvider>
-                            <RavenProvider>
-                                {props.children}
-                            </RavenProvider>
+                            <RemoteDataProvider>
+                                <RavenProvider>
+                                    {props.children}
+                                </RavenProvider>
+                            </RemoteDataProvider>
                         </KeysProvider>
                     </PopoverProvider>
                 </ToastProvider>
