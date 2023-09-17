@@ -47,3 +47,4 @@ export const backupWarnAtom = atom<boolean>(false);
 export const activeMessageAtom = atom<string | null>(null);
 export const readMarkMapAtom = atom<ReadMarkMap>({});
 export const showRequestsAtom = atom<boolean>(false);
+export const spammersAtom = atom<Record<string, number>>({});
