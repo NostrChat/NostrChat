@@ -5,6 +5,7 @@ import {darken} from '@mui/material';
 import Box from '@mui/material/Box';
 import {useTheme} from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
+import {grey} from '@mui/material/colors';
 import {useNavigate} from '@reach/router';
 import {nip19} from 'nostr-tools';
 import {Haptics, ImpactStyle} from '@capacitor/haptics';
@@ -18,7 +19,7 @@ import ProfileDialog from 'views/components/dialogs/profile';
 import MessageReactions from 'views/components/message-reactions';
 import MessageMenuWeb from 'views/components/message-menu/web';
 import MessageMobileMobile from 'views/components/message-menu/mobile';
-import {activeMessageAtom, profilesAtom, threadRootAtom} from 'atoms';
+import {activeMessageAtom, profilesAtom, threadRootAtom, spammersAtom} from 'atoms';
 import {Message,} from 'types';
 import {formatMessageTime, formatMessageFromNow, formatMessageDateTime} from 'helper';
 import ChevronRight from 'svg/chevron-right';
@@ -35,6 +36,7 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const profile = profiles.find(x => x.creator === message.creator);
     const [threadRoot, setThreadRoot] = useAtom(threadRootAtom);
     const [activeMessage] = useAtom(activeMessageAtom);
+    const [spammers] = useAtom(spammersAtom);
     const [t] = useTranslation();
     const [, showModal] = useModal();
     const {isMd} = useMediaBreakPoint();
@@ -43,7 +45,6 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     const [menu, setMenu] = useState<boolean>(false);
     const [mobileMenu, setMobileMenu] = useState<boolean>(false);
     const [isVisible, setIsVisible] = useState<boolean>(true);
-    const renderedBody = useMemo(() => renderer(message), [message]);
     const profileName = useMemo(() => truncateMiddle((profile?.name || nip19.npubEncode(message.creator)), (isMd ? 40 : 22), ':'), [profile, message]);
     const messageTime = useMemo(() => dateFormat === 'time' ? formatMessageTime(message.created) : formatMessageFromNow(message.created), [message]);
     const messageDateTime = useMemo(() => formatMessageDateTime(message.created), [message]);
@@ -51,6 +52,35 @@ const MessageView = (props: { message: Message, compactView: boolean, dateFormat
     let mobileMenuTimer: any = null;
     const canTouch = styles.canTouch();
     const canHover = styles.canHover();
+    const [showSpammer, setShowSpammer] = useState<boolean>(false);
+    const isSpammer = spammers[message.creator] !== undefined;
+    const renderedBody = useMemo(() => {
+        const sx = {
+            fontSize: '.8em',
+            background: grey[800],
+            display: 'inline-flex',
+            borderRadius: '6px',
+            p: '0 6px',
+            cursor: 'pointer',
+            ':hover': {
+                background: grey[600],
+            }
+        }
+        if (isSpammer && !showSpammer) {
+            return <Box sx={sx} onClick={() => {
+                setShowSpammer(true);
+            }}>{t('This account appears to be a spammer. Click to show message.')}</Box>
+        } else if (isSpammer && showSpammer) {
+            return <>
+                {renderer(message)}
+                <Box sx={{...sx, mt: '10px'}} onClick={() => {
+                    setShowSpammer(false);
+                }}>{t('Hide')}</Box>
+            </>
+        } else {
+            return renderer(message);
+        }
+    }, [message, isSpammer, showSpammer]);
 
     const profileClicked = () => {
         showModal({
