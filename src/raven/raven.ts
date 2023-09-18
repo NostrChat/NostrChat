@@ -115,7 +115,9 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         const events = await this.fetch([{
             authors: [this.pub],
         }]);
-        events.forEach(e => this.pushToEventBuffer(e));
+        events
+            .filter(e => e.kind !== Kind.ChannelMessage) // public messages comes with channel requests
+            .forEach(e => this.pushToEventBuffer(e));
         this.emit(RavenEvents.Ready);
 
         // 2- Get all incoming DMs to the user
