@@ -156,8 +156,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
         channels.forEach(x => this.pushToEventBuffer(x));
 
         // Get messages for all channels found
-        const promises = chunk([
-            ...chunk(channels.map(x => x.id), 20).map(x => ([
+        const filters = [
+            ...chunk(channels.map(x => x.id), 6).map(x => ([
                 {
                     kinds: [Kind.ChannelMetadata, Kind.EventDeletion],
                     '#e': x,
@@ -168,7 +168,8 @@ class Raven extends TypedEventEmitter<RavenEvents, EventHandlerMap> {
                     limit: MESSAGE_PER_PAGE
                 }
             ])).flat()
-        ], 10).map(f => this.fetch(f).then(events => events.forEach(ev => this.pushToEventBuffer(ev))));
+        ];
+        const promises = chunk(filters, 4).map(f => this.fetch(f).then(events => events.forEach(ev => this.pushToEventBuffer(ev))));
         await Promise.all(promises);
 
         this.emit(RavenEvents.SyncDone);
